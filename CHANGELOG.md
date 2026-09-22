@@ -1,0 +1,204 @@
+# Changelog
+
+Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
+versionamento semântico.
+
+## [0.5.0] - 2026-09-22
+
+### Adicionado
+
+- **Tela de Reservas remodelada** (Ferramentas > Reservas), com a mesma
+  estrutura da agenda: Calendário, Lista e Kanban sobre os mesmos dados,
+  período compartilhado e barra lateral. O eixo é o item reservável — a visão
+  **Por item** empilha uma faixa por recurso no mesmo período, o que a tela
+  nativa não permitia (ela mostra um item por vez, escolhido antes numa lista
+  separada). Kanban agrupável por situação (Em andamento / Próximas /
+  Encerradas) ou por item, filtro "Somente as minhas reservas" e atalho para
+  gerenciar itens reserváveis. Substitui o item de menu nativo pelo mesmo
+  mecanismo do planejamento, e é desligável na configuração.
+- **Reservas aparecem na agenda.** O GLPI não considera reserva um tipo de
+  planejamento, então o que a pessoa reservou nunca aparecia na agenda dela —
+  nem na nativa, nem na do plugin. Um recurso reservado ocupa o tempo de quem
+  reservou tanto quanto uma tarefa, e não vê-lo é o que leva alguém a marcar
+  uma reunião em cima de uma sala já reservada. Entram como mais um tipo, com
+  filtro e cor próprios, e respeitam o nível "livre/ocupado".
+- **Cores dos tipos de compromisso configuráveis**, com botão de voltar ao
+  padrão por tipo. Um valor que não seja hexadecimal é recusado: a cor vai
+  direto para um atributo `style`, e aceitar texto livre ali seria deixar o
+  administrador injetar CSS.
+
+### Alterado
+
+- **Cartão do Kanban mostra o nome da pessoa**, não só o avatar. Antes era
+  preciso passar o mouse (ou decorar as iniciais) para saber de quem era o
+  compromisso — justamente a pergunta que um Kanban de equipe responde.
+- **A barra lateral não tem mais rolagem própria.** Ela estava presa a uma
+  altura fixa e, como o conteúdo quase sempre passa dela, aparecia uma segunda
+  barra de rolagem dentro da página. Agora a lateral cresce e quem rola é a
+  página. Em tela estreita a rolagem interna continua, onde ela de fato ajuda.
+- **O aviso de "Ver todas as agendas" virou um ícone com dica ao passar o
+  mouse.** Ocupava quatro linhas fixas da barra lateral para algo que se lê
+  uma vez.
+
+### Corrigido
+
+- As iniciais do marcador de item eram calculadas duas vezes com regras
+  diferentes, e o marcador da barra lateral não batia com o dos cartões. Além
+  disso, tiradas do nome inteiro, itens com prefixo comum ("PLANNER-NOTE-01" e
+  "PLANNER-PROJETOR") recebiam as mesmas letras; agora saem da primeira letra
+  de cada pedaço do nome.
+
+## [0.4.0] - 2026-09-22
+
+Revisão dirigida do código depois das duas refatorações anteriores. Os achados
+abaixo saíram dessa revisão e foram confirmados um a um contra uma instância
+GLPI 11.0.9 real antes e depois da correção.
+
+### Corrigido
+
+- **Vazamento no nível "livre/ocupado".** O mascaramento apagava título,
+  descrição, itemtype e link, mas quatro campos escapavam por serem montados
+  depois, a partir da linha original: a **cor do tipo** (que pinta a borda do
+  cartão no Kanban e entrega se é chamado, problema ou projeto), o **estado** e
+  seu rótulo (que distribuem o cartão entre as colunas "A fazer"/"Concluído" e
+  aparecem na coluna Situação da Lista) e a **prioridade** do chamado, que nem
+  é usada na tela e ia junto no JSON. Quem recebeu "apenas livre/ocupado"
+  agora vê só o horário ocupado.
+- **Desmarcar todos os tipos de compromisso mostrava todos os eventos.** Um
+  array vazio era lido como "sem filtro". Como o jQuery não serializa array
+  vazio, o servidor não conseguia distinguir "não filtrei" de "filtrei para
+  nada"; passou a existir uma marca explícita para isso.
+- **Lista, Kanban e indicadores congelavam ao estreitar o período.** De Semana
+  para Dia o FullCalendar não refaz a busca (o novo intervalo já está contido
+  no anterior), então o rótulo do período mudava mas a tabela e os números
+  continuavam sendo os da semana.
+- **A cor de cada pessoa divergia entre a barra lateral e os eventos.** Os dois
+  lados indexavam a paleta pela posição na lista, e cada um iterava numa ordem
+  diferente. Agora a cor é derivada do id da pessoa: a mesma pessoa tem o mesmo
+  tom em toda a tela, em qualquer ordem.
+- **Um modo inicial inválido deixava a tela em branco**, escondendo os três
+  painéis sem erro. Valores de lista fechada passaram a ser validados ao
+  salvar, caindo para o padrão (ou para o nível mais restritivo).
+- **Nenhuma confirmação aparecia após arrastar um compromisso.** O código
+  chamava `glpi_toast_info()`, que não existe como global nesta tela; a chamada
+  falhava em silêncio. O aviso agora é montado com a mesma marcação que o GLPI
+  usa nas mensagens pós-redirect.
+- Três rótulos de reserva do Kanban tinham ficado em português no JavaScript,
+  resíduo da conversão de idioma.
+- `AccessPolicy::filterRequested()` recalculava o mapa inteiro de agendas
+  visíveis uma vez por agenda pedida — com oito agendas abertas, oito vezes o
+  mesmo trabalho a cada navegação no calendário. Agora calcula uma vez.
+
+### Adicionado
+
+- **Arrastar e redimensionar compromissos**, delegando a gravação ao endpoint
+  `update_event_times` do próprio GLPI, que reconfere `canUpdate()` e
+  `canUpdateItem()` e cuida do que é específico de cada tipo (chamado pai da
+  tarefa de ITIL, tabela de equipe da tarefa de projeto, reatribuição entre
+  pessoas). Na visão por pessoa, arrastar entre faixas reatribui o
+  compromisso. Eventos recorrentes seguem não arrastáveis: mover uma ocorrência
+  de uma série é ambíguo e o core resolve isso com um diálogo próprio que o
+  plugin não reproduz.
+
+## [0.3.0] - 2026-09-22
+
+### Alterado
+
+- **Todas as strings-fonte passaram para inglês**, seguindo a convenção do
+  GLPI. As 113 strings do plugin foram convertidas, e o português virou
+  tradução em vez de texto embutido no código.
+
+### Adicionado
+
+- Catálogos de tradução: `locales/planner.pot` (modelo), `locales/pt_BR.po/.mo`
+  (português do Brasil, completo) e `locales/en_GB.po/.mo`.
+- `tools/update_locales.sh` — extrai, mescla e compila os catálogos preservando
+  as traduções existentes.
+- `tools/twig2php.php` — torna as strings dos templates Twig visíveis para o
+  `xgettext`, que sozinho deixava 81 das 113 strings de fora.
+
+### Corrigido
+
+- Dois textos de ajuda diziam "campo Responsável"; o GLPI em português rotula
+  `users_id_supervisor` como **Supervisor**. Corrigido na tradução.
+- Os rótulos de data da Lista e do Kanban seguiam o idioma do **navegador**, e
+  não a preferência do usuário no GLPI: quem usava o GLPI em português num
+  navegador em inglês via "Tuesday, September 22" no meio de uma tela em
+  português. Agora usam o atributo `lang` do `<html>`, que o GLPI preenche a
+  partir dessa preferência.
+- Sem `locales/en_GB.mo`, um usuário com a interface em inglês numa instância
+  cujo padrão é pt_BR receberia o plugin em português — a cadeia de fallback de
+  `Plugin::loadLang()` cai no idioma padrão da instância antes do inglês.
+
+## [0.2.0] - 2026-09-22
+
+### Adicionado
+
+- **Três modos de visualização** sobre os mesmos dados: Calendário, Lista e
+  Kanban. Período (Dia/Semana/Mês) e navegação são compartilhados pelos três, e
+  trocar de modo não faz nova consulta ao servidor.
+  - **Lista**: ordem cronológica agrupada por dia, com quem, tipo e situação.
+  - **Kanban**: cartões agrupados por Situação ou por Pessoa.
+- **Substituição do Planejamento nativo** (ligada por padrão): o item de
+  Assistência passa a abrir a tela do plugin mantendo o rótulo do core, e a URL
+  antiga `/front/planning.php` redireciona. Exportação iCal e popup de
+  disponibilidade seguem no core. Pode ser desligada na configuração.
+- Link de configuração em **Configuração > Plugins**.
+- Aviso na barra lateral explicando, para quem tem "Ver todas as agendas", por
+  que enxerga a agenda de todo mundo.
+- Opção de configuração para o modo inicial da tela.
+
+### Alterado
+
+- A visão por pessoa deixou de ser um quarto período e virou um **alternador**
+  que respeita o período escolhido: semana e mês passaram a usar colunas de um
+  dia. Antes, uma semana rendia ~60 colunas horárias e os compromissos ficavam
+  fora da tela.
+- "Abrir outra agenda" foi movida para logo acima de "Gerenciar
+  compartilhamentos", juntando as duas ações sobre agendas de terceiros.
+- A coluna de raias da visão por pessoa passou a se chamar "Pessoa" em vez do
+  "Resources" padrão do FullCalendar.
+
+### Corrigido
+
+- Colunas do Kanban saíam fora de ordem: chaves de objeto que parecem inteiros
+  são percorridas em ordem numérica em JavaScript, não na ordem de inserção.
+- O atributo `hidden` era sobreposto pelo `display` do Tabler, deixando o botão
+  "Por pessoa" visível fora do calendário.
+- O ponto colorido do tipo não aparecia nas células da tabela do modo Lista.
+
+## [0.1.0] - 2026-09-22
+
+Primeira versão. Validada contra uma instância GLPI 11.0.9 real (imagem
+oficial `glpi/glpi:11.0.9`).
+
+### Adicionado
+
+- Tela **Assistência > Planner**: agenda remodelada com visões Dia, Semana,
+  Mês, Equipe (linha do tempo por pessoa) e Lista, barra lateral de agendas
+  agrupadas pela origem do acesso, filtros por tipo de compromisso e
+  indicadores de horas planejadas, a fazer, concluídos e agendas abertas.
+- Visibilidade de **equipe** derivada do campo *Responsável* do usuário
+  (`users_id_supervisor`), opcionalmente recursiva por toda a hierarquia.
+- Visibilidade por **grupo** em comum.
+- **Compartilhamento de agenda** entre usuários, nas duas direções: concessão
+  pelo dono (ativa na hora) e pedido do interessado (só vale após aceite do
+  dono). Revogação imediata por qualquer uma das partes.
+- Dois **níveis de detalhe**: "Detalhes" e "Livre/ocupado". No nível
+  livre/ocupado, título, descrição, link e itemtype são removidos no servidor,
+  antes de a resposta sair.
+- Direito próprio `plugin_planner_planning` com aba dedicada em
+  **Administração > Perfis > Planner**.
+- Tela de configuração do plugin, guardada no contexto `plugin:planner` do
+  `glpi_configs`.
+- `docker-compose.yml` com GLPI 11.0.9 na porta 8081 para desenvolvimento
+  isolado.
+
+### Notas
+
+- Os compromissos são buscados pelo `populatePlanning()` do core, que filtra
+  por `canViewItem()` de quem olha. O plugin amplia quais agendas podem ser
+  abertas, nunca o que a pessoa pode ler de um chamado. Ver README.
+- O planejamento nativo continua disponível e intocado.
+- Arrastar/redimensionar eventos está desligado nesta versão; a tela é de
+  leitura e navegação.

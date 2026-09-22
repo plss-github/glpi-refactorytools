@@ -1,0 +1,63 @@
+# Ambiente isolado para desenvolver/testar SÓ este plugin: GLPI 11.0.9
+# (imagem oficial glpi/glpi) + MariaDB, com esta pasta montada como o plugin
+# "planner" dentro do container. NÃO é configuração de produção (senhas fracas,
+# sem TLS).
+#
+# Porta 8081 de propósito: o ambiente de desenvolvimento compartilhado da
+# equipe (em ../analyticdesign/docker-compose.yml) já ocupa a 8080 e monta
+# este mesmo plugin. Use aquele quando quiser os dois plugins e a base de
+# testes existente; use este quando precisar de um GLPI limpo só com o Planner.
+#
+# Uso:
+#   cp .env.example .env
+#   docker compose up -d
+#   # aguardar a instalação automática do GLPI (alguns minutos na 1a vez)
+#   docker compose exec glpi php bin/console glpi:plugin:install -u glpi planner
+#   docker compose exec glpi php bin/console glpi:plugin:activate planner
+#   # abrir http://localhost:8081 (login padrão: glpi / glpi)
+
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${GLPI_DB_NAME:-glpi}
+      MARIADB_USER: ${GLPI_DB_USER:-glpi}
+      MARIADB_PASSWORD: ${GLPI_DB_PASSWORD:-glpi}
+      MARIADB_ROOT_PASSWORD: ${GLPI_DB_ROOT_PASSWORD:-glpi_root}
+    volumes:
+      - glpi_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  glpi:
+    image: glpi/glpi:11.0.9
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GLPI_DB_HOST: db
+      GLPI_DB_PORT: 3306
+      GLPI_DB_NAME: ${GLPI_DB_NAME:-glpi}
+      GLPI_DB_USER: ${GLPI_DB_USER:-glpi}
+      GLPI_DB_PASSWORD: ${GLPI_DB_PASSWORD:-glpi}
+    ports:
+      - "8081:80"
+    volumes:
+      - glpi_config:/var/glpi/config
+      - glpi_files:/var/glpi/files
+      - glpi_logs:/var/glpi/logs
+      - glpi_marketplace:/var/glpi/marketplace
+      # Plugin montado direto do repositório — editar aqui reflete no container.
+      - ./:/var/www/glpi/plugins/planner:ro
+
+volumes:
+  glpi_db_data:
+  glpi_config:
+  glpi_files:
+  glpi_logs:
+  glpi_marketplace:

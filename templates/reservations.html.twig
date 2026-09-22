@@ -1,0 +1,200 @@
+{#
+ # Planner — tela de Reservas remodelada.
+ #
+ # Mesma estrutura da agenda (mesmas classes, mesmo JavaScript), com um eixo
+ # diferente: cada faixa é um ITEM RESERVÁVEL, não uma pessoa. Reaproveitar as
+ # classes `planner-*` não é economia de digitação — é o que garante que as
+ # duas telas continuem parecidas quando uma delas mudar.
+ #}
+
+<div class="planner-page" id="planner-app"
+     data-root="{{ root_doc }}"
+     data-me="{{ me }}"
+     data-today="{{ today }}">
+
+    <div class="planner-topbar">
+        <div class="planner-nav">
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm planner-prev" title="{{ __('Previous', 'planner') }}">
+                    <i class="ti ti-chevron-left"></i>
+                </button>
+                <button type="button" class="btn btn-sm planner-today">{{ __('Today', 'planner') }}</button>
+                <button type="button" class="btn btn-sm planner-next" title="{{ __('Next', 'planner') }}">
+                    <i class="ti ti-chevron-right"></i>
+                </button>
+            </div>
+            <span class="planner-period" data-period>&nbsp;</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            {% if can_reserve %}
+                <a href="{{ root_doc }}/front/reservation.php" class="btn btn-sm btn-primary">
+                    <i class="ti ti-plus"></i> {{ __('New reservation', 'planner') }}
+                </a>
+            {% endif %}
+            <div class="planner-modes btn-group" role="group" aria-label="{{ __('View mode', 'planner') }}">
+                <button type="button" class="btn btn-sm" data-mode="calendar">
+                    <i class="ti ti-calendar-month"></i> {{ __('Calendar', 'planner') }}
+                </button>
+                <button type="button" class="btn btn-sm" data-mode="list">
+                    <i class="ti ti-list-details"></i> {{ __('List', 'planner') }}
+                </button>
+                <button type="button" class="btn btn-sm" data-mode="kanban">
+                    <i class="ti ti-layout-kanban"></i> {{ __('Kanban', 'planner') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="planner-subbar">
+        <div class="planner-subopts">
+            <div class="btn-group planner-ranges" role="group">
+                <button type="button" class="btn btn-sm" data-range="day">{{ __('Day', 'planner') }}</button>
+                <button type="button" class="btn btn-sm" data-range="week">{{ __('Week', 'planner') }}</button>
+                <button type="button" class="btn btn-sm" data-range="month">{{ __('Month', 'planner') }}</button>
+            </div>
+
+            <button type="button" class="btn btn-sm planner-team-toggle"
+                    title="{{ __('One lane per item, same period', 'planner') }}">
+                <i class="ti ti-layout-rows"></i> {{ __('By item', 'planner') }}
+            </button>
+
+            <div class="planner-kanban-opts" hidden>
+                <span class="planner-subbar-label">{{ __('Group by', 'planner') }}</span>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm" data-group="state">{{ __('Status', 'planner') }}</button>
+                    <button type="button" class="btn btn-sm" data-group="actor">{{ __('Item', 'planner') }}</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="planner-kpis">
+            <div class="planner-kpi">
+                <span class="planner-kpi-value" data-kpi="hours">—</span>
+                <span class="planner-kpi-label">{{ __('Reserved hours', 'planner') }}</span>
+            </div>
+            <div class="planner-kpi">
+                <span class="planner-kpi-value" data-kpi="todo">—</span>
+                <span class="planner-kpi-label">{{ __('In progress', 'planner') }}</span>
+            </div>
+            <div class="planner-kpi">
+                <span class="planner-kpi-value" data-kpi="done">—</span>
+                <span class="planner-kpi-label">{{ __('Mine', 'planner') }}</span>
+            </div>
+            <div class="planner-kpi">
+                <span class="planner-kpi-value" data-kpi="people">—</span>
+                <span class="planner-kpi-label">{{ __('Items in use', 'planner') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="planner-body">
+
+        <aside class="planner-sidebar card">
+            <div class="planner-sidebar-scroll">
+
+                {% if items_count == 0 %}
+                    <div class="planner-hint">
+                        <i class="ti ti-info-circle"></i>
+                        {{ __('No reservable item is available in this entity. An item becomes reservable from its own form, under the Reservations tab.', 'planner') }}
+                    </div>
+                {% endif %}
+
+                {% for group in item_groups %}
+                    <div class="planner-section">
+                        <div class="planner-section-title">{{ group.label }}</div>
+                        <ul class="planner-actors">
+                            {% for item in group.items %}
+                                <li class="planner-actor" data-actor="{{ item.id }}">
+                                    <label class="planner-actor-label">
+                                        <input type="checkbox" class="form-check-input planner-actor-toggle"
+                                               value="{{ item.id }}"
+                                               data-color="{{ item.color }}"
+                                               data-name="{{ item.name }}" checked>
+                                        <span class="planner-avatar planner-avatar-square"
+                                              style="--planner-actor-color: {{ item.color }}">{{ item.initials }}</span>
+                                        <span class="planner-actor-name">{{ item.name }}</span>
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+
+                {% if items_count > 0 %}
+                    <div class="planner-section">
+                        <div class="planner-section-title">{{ __('Filters', 'planner') }}</div>
+                        <label class="planner-type-label">
+                            {# `data-planner-flag` faz o JavaScript mandar esta
+                               caixa como parâmetro na busca de eventos, sem
+                               precisar de código específico desta tela. #}
+                            <input type="checkbox" class="form-check-input planner-type-toggle"
+                                   id="planner-only-mine" data-planner-flag="only_mine">
+                            <span>{{ __('Only my reservations', 'planner') }}</span>
+                        </label>
+                        <label class="planner-type-label">
+                            <input type="checkbox" class="form-check-input" id="planner-show-done" checked>
+                            <span>{{ __('Show finished', 'planner') }}</span>
+                        </label>
+                    </div>
+                {% endif %}
+
+                <div class="planner-section planner-section-footer">
+                    <a href="{{ root_doc }}/front/reservationitem.php"
+                       class="btn btn-sm btn-ghost-secondary w-100">
+                        <i class="ti ti-settings"></i>
+                        {{ __('Manage reservable items', 'planner') }}
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="planner-main card">
+            <div class="planner-loading" hidden>
+                <div class="spinner-border spinner-border-sm"></div>
+                {{ __('Loading reservations…', 'planner') }}
+            </div>
+
+            <div class="planner-pane" data-pane="calendar">
+                <div id="planner-calendar"></div>
+            </div>
+
+            <div class="planner-pane" data-pane="list" hidden>
+                <div class="planner-list"></div>
+            </div>
+
+            <div class="planner-pane" data-pane="kanban" hidden>
+                <div class="planner-kanban"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        GlpiPlanner.init({
+            root_doc: {{ root_doc|json_encode|raw }},
+            events_url: {{ (root_doc ~ '/plugins/planner/ajax/reservation_events.php')|json_encode|raw }},
+            me: {{ me }},
+            default_mode: {{ default_mode|json_encode|raw }},
+            // O eixo desta tela é o item reservável, não a pessoa.
+            actor_param: 'items_ids',
+            resource_prefix: {{ constant('GlpiPlugin\\Planner\\ReservationView::RESOURCE_PREFIX')|json_encode|raw }},
+            // Faixas aqui são itens, não pessoas: não existe reatribuir uma
+            // reserva arrastando de uma faixa para outra.
+            resource_itemtype: null,
+            state_columns: {{ state_columns|json_encode|raw }},
+            labels: {
+                no_actor: {{ __('Select at least one item in the sidebar.', 'planner')|json_encode|raw }},
+                no_event: {{ __('No reservation in this period.', 'planner')|json_encode|raw }},
+                person: {{ __('Item', 'planner')|json_encode|raw }},
+                allday: {{ __('All day', 'planner')|json_encode|raw }},
+                col_when: {{ __('When', 'planner')|json_encode|raw }},
+                col_who: {{ __('Item', 'planner')|json_encode|raw }},
+                col_type: {{ __('Note', 'planner')|json_encode|raw }},
+                col_subject: {{ __('Reserved by', 'planner')|json_encode|raw }},
+                col_state: {{ __('Status', 'planner')|json_encode|raw }}
+            }
+        });
+    });
+</script>

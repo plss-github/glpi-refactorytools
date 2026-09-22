@@ -1,0 +1,802 @@
+/*
+ * Planner — estilos da agenda remodelada.
+ *
+ * Todas as cores saem das variáveis do Tabler que o GLPI 11 já define
+ * (--tblr-*), nunca de valores fixos. É o que faz a tela seguir o tema
+ * claro/escuro e a paleta da instância sem um segundo sistema de design —
+ * e o que evita que uma troca de tema no GLPI quebre o contraste aqui.
+ *
+ * As únicas cores literais são as dos eventos, que vêm inline do servidor
+ * (cor por tipo de compromisso) porque são dados, não tema.
+ */
+
+/* --------------------------------------------------------------------- */
+/* Layout                                                                 */
+/* --------------------------------------------------------------------- */
+
+.planner-page {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 0;
+}
+
+.planner-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.planner-body {
+    display: flex;
+    align-items: stretch;
+    gap: 0.75rem;
+    min-height: 0;
+}
+
+.planner-sidebar {
+    flex: 0 0 264px;
+    max-width: 264px;
+    overflow: hidden;
+}
+
+/* Sem altura máxima e sem rolagem própria: a barra lateral cresce com o
+   conteúdo e quem rola é a página.
+   A versão anterior prendia a lista numa altura fixa e, como o conteúdo quase
+   sempre passa dela, aparecia uma segunda barra de rolagem dentro da página —
+   o usuário tinha que rolar a lateral para achar "Gerenciar compartilhamentos"
+   enquanto o resto da tela estava parado. Uma lista de agendas é curta; não
+   vale um contêiner rolável só para ela. */
+.planner-sidebar-scroll {
+    padding: 0.875rem;
+}
+
+.planner-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.5rem 0.75rem 0.75rem;
+    position: relative;
+}
+
+/* Um painel por modo. O do calendário fica no DOM mesmo escondido: o
+   FullCalendar é o motor de datas dos três modos e precisa continuar vivo. */
+.planner-pane[hidden] {
+    display: none;
+}
+
+.planner-subbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.planner-subopts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.planner-subbar-label {
+    font-size: 0.75rem;
+    color: var(--tblr-secondary);
+    margin-right: 0.25rem;
+}
+
+.planner-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.planner-period {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.planner-hint {
+    display: flex;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: var(--tblr-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.planner-hint .ti {
+    flex: 0 0 auto;
+    margin-top: 0.1rem;
+}
+
+/* Abaixo de 992px a barra lateral vira uma faixa acima do calendário, com
+   os nomes em linha — numa tela estreita, um calendário de 200px não serve
+   para nada, e a lista de agendas é curta. */
+@media (max-width: 991.98px) {
+    .planner-body {
+        flex-direction: column;
+    }
+
+    .planner-sidebar {
+        flex: 1 1 auto;
+        max-width: none;
+    }
+
+    /* Em tela estreita a barra lateral vira uma faixa acima do calendário.
+       Aqui a rolagem própria faz sentido: sem ela, a lista empurraria o
+       calendário inteiro para fora da primeira dobra. */
+    .planner-sidebar-scroll {
+        max-height: 18rem;
+        overflow-y: auto;
+    }
+}
+
+/* --------------------------------------------------------------------- */
+/* Indicadores                                                            */
+/* --------------------------------------------------------------------- */
+
+.planner-kpis {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.planner-kpi {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 7.5rem;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid var(--tblr-border-color);
+    border-radius: var(--tblr-border-radius);
+    background: var(--tblr-card-bg, var(--tblr-bg-surface));
+}
+
+.planner-kpi-value {
+    font-size: 1.375rem;
+    font-weight: 600;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.planner-kpi-label {
+    font-size: 0.75rem;
+    color: var(--tblr-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* --------------------------------------------------------------------- */
+/* Seletor de visão                                                       */
+/* --------------------------------------------------------------------- */
+
+.planner-modes .btn,
+.planner-team-toggle,
+.planner-ranges .btn,
+.planner-kanban-opts .btn,
+.planner-nav .btn {
+    border: 1px solid var(--tblr-border-color);
+    background: var(--tblr-card-bg, var(--tblr-bg-surface));
+    color: var(--tblr-body-color);
+}
+
+.planner-modes .btn.active,
+.planner-ranges .btn.active,
+.planner-kanban-opts .btn.active {
+    background: var(--tblr-primary);
+    border-color: var(--tblr-primary);
+    color: #fff;
+}
+
+.planner-modes .btn:hover:not(.active),
+.planner-ranges .btn:hover:not(.active),
+.planner-kanban-opts .btn:hover:not(.active),
+.planner-nav .btn:hover {
+    background: var(--tblr-active-bg, rgba(0, 0, 0, 0.04));
+}
+
+/* --------------------------------------------------------------------- */
+/* Barra lateral                                                          */
+/* --------------------------------------------------------------------- */
+
+.planner-section + .planner-section {
+    margin-top: 1.125rem;
+    padding-top: 1.125rem;
+    border-top: 1px solid var(--tblr-border-color);
+}
+
+.planner-section-title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tblr-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.planner-actors,
+.planner-types {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.planner-actor-label,
+.planner-type-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.3125rem 0.375rem;
+    margin: 0;
+    border-radius: var(--tblr-border-radius);
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.planner-actor-label:hover,
+.planner-type-label:hover {
+    background: var(--tblr-active-bg, rgba(var(--tblr-secondary-rgb, 110, 117, 130), 0.08));
+}
+
+.planner-actor-name {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.planner-actor-badge {
+    font-size: 0.625rem;
+    flex: 0 0 auto;
+}
+
+/* Avatar: a cor da pessoa é a mesma usada na borda dos eventos dela, para
+   ligar visualmente a barra lateral ao calendário sem precisar de legenda. */
+.planner-avatar {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--planner-actor-color, var(--tblr-secondary));
+    overflow: hidden;
+}
+
+.planner-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.planner-type-dot {
+    flex: 0 0 auto;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 3px;
+}
+
+.planner-section-footer {
+    margin-top: 1rem;
+}
+
+.planner-picker .select2-container {
+    width: 100% !important;
+}
+
+/* --------------------------------------------------------------------- */
+/* Calendário (FullCalendar 4, o embarcado no GLPI 11)                    */
+/* --------------------------------------------------------------------- */
+
+.planner-main .fc-toolbar h2 {
+    font-size: 1.0625rem;
+    font-weight: 600;
+}
+
+.planner-main .fc-toolbar .fc-button {
+    background: transparent;
+    border: 1px solid var(--tblr-border-color);
+    color: var(--tblr-body-color);
+    box-shadow: none;
+    text-transform: capitalize;
+    font-size: 0.8125rem;
+    padding: 0.25rem 0.625rem;
+}
+
+.planner-main .fc-toolbar .fc-button:hover {
+    background: var(--tblr-active-bg, rgba(0, 0, 0, 0.04));
+}
+
+.planner-main .fc-toolbar .fc-button-active,
+.planner-main .fc-toolbar .fc-button:active {
+    background: var(--tblr-primary);
+    border-color: var(--tblr-primary);
+    color: #fff;
+}
+
+.planner-main .fc-view-container {
+    background: transparent;
+}
+
+.planner-main .fc-widget-header,
+.planner-main .fc-widget-content {
+    border-color: var(--tblr-border-color);
+}
+
+.planner-main .fc-day-header {
+    padding: 0.5rem 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--tblr-secondary);
+    border-color: var(--tblr-border-color);
+}
+
+.planner-main .fc-today {
+    background: rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.06) !important;
+}
+
+.planner-main .fc-axis,
+.planner-main .fc-time-grid .fc-slats td {
+    font-size: 0.75rem;
+    color: var(--tblr-secondary);
+}
+
+/* Eventos: cantos arredondados, sem borda dura, e uma barra à esquerda na
+   cor da pessoa — é o que permite distinguir de quem é o compromisso nas
+   visões sobrepostas (dia/semana), onde não existe uma raia por pessoa. */
+.planner-main .fc-event {
+    border: none;
+    border-left: 3px solid var(--tblr-border-color);
+    border-radius: 5px;
+    padding: 1px 4px;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.planner-main .fc-event .fc-title {
+    font-weight: 600;
+    white-space: normal;
+}
+
+.planner-main .fc-event .planner-event-meta {
+    display: block;
+    font-size: 0.6875rem;
+    opacity: 0.85;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.planner-main .fc-event.planner-event-done {
+    opacity: 0.6;
+}
+
+.planner-main .fc-event.planner-event-done .fc-title {
+    text-decoration: line-through;
+}
+
+/* Evento livre/ocupado: sem conteúdo, hachurado para sinalizar que o
+   detalhe existe mas não está sendo mostrado a quem olha. */
+.planner-main .fc-event.planner-event-busy {
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.18) 0,
+        rgba(255, 255, 255, 0.18) 4px,
+        transparent 4px,
+        transparent 8px
+    );
+}
+
+/* Visão de equipe: cabeçalho de raia com o nome da pessoa. */
+.planner-main .fc-resource-area .fc-cell-text {
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.planner-main .fc-resource-area th,
+.planner-main .fc-resource-area td {
+    border-color: var(--tblr-border-color);
+}
+
+/* --------------------------------------------------------------------- */
+/* Estados                                                                */
+/* --------------------------------------------------------------------- */
+
+.planner-loading {
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--tblr-secondary);
+}
+
+.planner-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 3rem 1rem;
+    color: var(--tblr-secondary);
+    text-align: center;
+}
+
+.planner-empty .ti {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+/* Tooltip do evento (qtip do core não é usado aqui — um popover simples
+   evita depender de uma lib que o GLPI pode trocar). */
+.planner-popover {
+    position: absolute;
+    z-index: 1080;
+    max-width: 22rem;
+    padding: 0.75rem;
+    border: 1px solid var(--tblr-border-color);
+    border-radius: var(--tblr-border-radius);
+    background: var(--tblr-card-bg, var(--tblr-bg-surface));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    font-size: 0.8125rem;
+}
+
+.planner-popover-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.planner-popover-meta {
+    color: var(--tblr-secondary);
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.planner-popover-content {
+    max-height: 9rem;
+    overflow: auto;
+}
+
+/* --------------------------------------------------------------------- */
+/* Modo Lista                                                             */
+/* --------------------------------------------------------------------- */
+
+.planner-list {
+    padding: 0.25rem 0 0.5rem;
+}
+
+.planner-list-day + .planner-list-day {
+    margin-top: 1.25rem;
+}
+
+/* O dia fica "grudado" no topo ao rolar: numa lista longa, sem isso o
+   usuário perde a referência de qual data está lendo. */
+.planner-list-daytitle {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 0.375rem 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--tblr-secondary);
+    background: var(--tblr-card-bg, var(--tblr-bg-surface));
+    border-bottom: 1px solid var(--tblr-border-color);
+}
+
+.planner-list-table {
+    margin-bottom: 0;
+}
+
+.planner-list-table th {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--tblr-secondary);
+    font-weight: 600;
+    border-color: var(--tblr-border-color);
+}
+
+.planner-list-table td {
+    vertical-align: middle;
+    border-color: var(--tblr-border-color);
+}
+
+.planner-list-when {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    width: 1%;
+}
+
+.planner-list-who,
+.planner-list-type {
+    white-space: nowrap;
+    width: 1%;
+}
+
+.planner-list-who,
+.planner-list-type {
+    display: table-cell;
+}
+
+.planner-list-who > span,
+.planner-list-type > span {
+    vertical-align: middle;
+}
+
+.planner-list-who .planner-avatar,
+.planner-list-type .planner-type-dot {
+    margin-right: 0.375rem;
+}
+
+.planner-list-state {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.planner-avatar-sm {
+    width: 1.375rem;
+    height: 1.375rem;
+    font-size: 0.5625rem;
+}
+
+/* --------------------------------------------------------------------- */
+/* Modo Kanban                                                            */
+/* --------------------------------------------------------------------- */
+
+.planner-kanban {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding: 0.25rem 0 0.75rem;
+}
+
+.planner-kanban-col {
+    flex: 0 0 17rem;
+    max-width: 17rem;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--tblr-border-color);
+    border-radius: var(--tblr-border-radius);
+    background: var(--tblr-active-bg, rgba(var(--tblr-secondary-rgb, 110, 117, 130), 0.05));
+}
+
+.planner-kanban-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--tblr-border-color);
+}
+
+.planner-kanban-dot {
+    flex: 0 0 auto;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+}
+
+.planner-kanban-title {
+    flex: 1 1 auto;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.planner-kanban-count {
+    flex: 0 0 auto;
+    min-width: 1.5rem;
+    padding: 0 0.375rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--tblr-secondary);
+    background: var(--tblr-card-bg, var(--tblr-bg-surface));
+    border-radius: 999px;
+}
+
+.planner-kanban-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.625rem;
+    min-height: 4rem;
+    max-height: calc(100vh - 22rem);
+    overflow-y: auto;
+}
+
+.planner-kanban-empty {
+    min-height: 2rem;
+    border: 1px dashed var(--tblr-border-color);
+    border-radius: var(--tblr-border-radius);
+}
+
+.planner-kanban-card {
+    padding: 0.5rem 0.625rem;
+    border: 1px solid var(--tblr-border-color);
+    border-left: 3px solid var(--tblr-border-color);
+    border-radius: var(--tblr-border-radius);
+    background: var(--tblr-card-bg, var(--tblr-bg-surface));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.planner-kanban-when {
+    font-size: 0.6875rem;
+    color: var(--tblr-secondary);
+    font-variant-numeric: tabular-nums;
+    text-transform: capitalize;
+}
+
+.planner-kanban-cardtitle {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0.125rem 0 0.375rem;
+}
+
+.planner-kanban-cardtitle a {
+    color: inherit;
+}
+
+.planner-kanban-foot {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.planner-kanban-type {
+    font-size: 0.6875rem;
+    color: var(--tblr-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Livre/ocupado no Kanban: mesma hachura do calendário, para o usuário
+   reconhecer que ali existe um compromisso cujo detalhe ele não vê. */
+.planner-kanban-card.planner-event-busy .planner-kanban-cardtitle {
+    color: var(--tblr-secondary);
+    font-style: italic;
+}
+
+@media (max-width: 575.98px) {
+    .planner-kanban-col {
+        flex: 0 0 85vw;
+        max-width: 85vw;
+    }
+}
+
+/* --------------------------------------------------------------------- */
+/* Visibilidade                                                           */
+/* --------------------------------------------------------------------- */
+
+/* O atributo `hidden` só vale por causa da regra `display:none` da folha de
+   estilos do navegador, que qualquer `display` de autor sobrescreve — e
+   `.btn` do Tabler define `display:inline-block`. Sem esta regra, o botão
+   "Equipe" continuaria visível fora do modo Calendário e os painéis dos
+   modos inativos apareceriam empilhados. */
+.planner-page [hidden],
+.planner-shares [hidden] {
+    display: none !important;
+}
+
+/* O ponto de cor do tipo aparece tanto na barra lateral (dentro de um flex)
+   quanto nas células da tabela do modo Lista. Em `<td>` o contexto não é
+   flex, então `flex: 0 0 auto` não dá dimensão a um span vazio e o ponto
+   some — daí o display explícito. */
+.planner-type-dot {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.planner-team-toggle.active {
+    background: var(--tblr-primary);
+    border-color: var(--tblr-primary);
+    color: #fff;
+}
+
+/* Ícone de informação ao lado de um título de seção da barra lateral. */
+.planner-info {
+    margin-left: 0.25rem;
+    color: var(--tblr-secondary);
+    cursor: help;
+    vertical-align: -0.1em;
+}
+
+/* Rodapé do cartão do Kanban: avatar, nome e tipo numa linha só. O nome
+   encolhe antes do tipo, que é curto e serve de contexto. */
+.planner-kanban-actor {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.planner-kanban-type {
+    flex: 0 0 auto;
+    max-width: 45%;
+}
+
+/* --------------------------------------------------------------------- */
+/* Configuração: cores por tipo                                           */
+/* --------------------------------------------------------------------- */
+
+.planner-color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.375rem 1rem;
+}
+
+.planner-color-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.25rem 0.375rem;
+    border-radius: var(--tblr-border-radius);
+    cursor: pointer;
+}
+
+.planner-color-row:hover {
+    background: var(--tblr-active-bg, rgba(var(--tblr-secondary-rgb, 110, 117, 130), 0.08));
+}
+
+.planner-color-row input[type="color"] {
+    flex: 0 0 auto;
+    width: 2.25rem;
+    height: 1.75rem;
+    padding: 0;
+    border: 1px solid var(--tblr-border-color);
+    border-radius: var(--tblr-border-radius);
+    background: none;
+    cursor: pointer;
+}
+
+.planner-color-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.875rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.planner-color-reset {
+    flex: 0 0 auto;
+    opacity: 0;
+    transition: opacity .12s;
+}
+
+.planner-color-row:hover .planner-color-reset {
+    opacity: 1;
+}
+
+/* Marcador de item reservável. Quadrado arredondado em vez de círculo: o
+   avatar redondo é convenção de pessoa, e a tela de reservas lida com ativos.
+   A diferença de forma evita confundir as duas telas de relance. */
+.planner-avatar-square {
+    border-radius: 5px;
+    letter-spacing: -0.02em;
+}

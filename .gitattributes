@@ -1,0 +1,7 @@
+# Texto sempre gravado com LF no repositorio e no diretorio de trabalho.
+# tools/update_locales.sh e um script de shell: com CRLF ele quebra ao rodar
+# em Linux ou dentro de um container, com um erro que nao aponta para a causa.
+* text=auto eol=lf
+
+# Catalogos compilados sao binarios: normalizar quebra de linha corromperia.
+*.mo binary

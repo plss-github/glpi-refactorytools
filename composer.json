@@ -1,0 +1,14 @@
+{
+    "name": "pellissari/planner",
+    "description": "Planner - remodela o planejamento do GLPI 11 e adiciona visibilidade de agenda por equipe, grupo e compartilhamento com aceite",
+    "type": "glpi-plugin",
+    "license": "AGPL-3.0",
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "GlpiPlugin\Planner\\": "src/"
+        }
+    }
+}

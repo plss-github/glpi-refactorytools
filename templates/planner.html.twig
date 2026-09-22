@@ -1,0 +1,284 @@
+{#
+ # Planner — tela principal do planejamento.
+ #
+ # Três modos sobre os MESMOS dados: Calendário, Lista e Kanban. O FullCalendar
+ # continua sendo o motor de datas nos três — ele decide o período exibido, e
+ # Lista e Kanban desenham o que ele carregou. Assim os três nunca discordam
+ # sobre o que está no período, e não há uma segunda consulta ao servidor ao
+ # trocar de modo.
+ #
+ # A marcação usa as classes do Tabler que o GLPI 11 já carrega (card, btn,
+ # badge, form-check), e o CSS do plugin cuida só do que é específico do
+ # planejamento. Assim a tela acompanha o tema claro/escuro e a paleta da
+ # instância sem duplicar um sistema de design.
+ #}
+
+<div class="planner-page" id="planner-app"
+     data-root="{{ root_doc }}"
+     data-me="{{ me }}"
+     data-today="{{ today }}">
+
+    {# ------------------------------------------------------------------ #}
+    {# Barra superior: navegação do período + seletor de modo              #}
+    {# ------------------------------------------------------------------ #}
+    <div class="planner-topbar">
+        <div class="planner-nav">
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm planner-prev" title="{{ __('Previous', 'planner') }}">
+                    <i class="ti ti-chevron-left"></i>
+                </button>
+                <button type="button" class="btn btn-sm planner-today">{{ __('Today', 'planner') }}</button>
+                <button type="button" class="btn btn-sm planner-next" title="{{ __('Next', 'planner') }}">
+                    <i class="ti ti-chevron-right"></i>
+                </button>
+            </div>
+            <span class="planner-period" data-period>&nbsp;</span>
+        </div>
+
+        <div class="planner-modes btn-group" role="group" aria-label="{{ __('View mode', 'planner') }}">
+            <button type="button" class="btn btn-sm" data-mode="calendar">
+                <i class="ti ti-calendar-month"></i> {{ __('Calendar', 'planner') }}
+            </button>
+            <button type="button" class="btn btn-sm" data-mode="list">
+                <i class="ti ti-list-details"></i> {{ __('List', 'planner') }}
+            </button>
+            <button type="button" class="btn btn-sm" data-mode="kanban">
+                <i class="ti ti-layout-kanban"></i> {{ __('Kanban', 'planner') }}
+            </button>
+        </div>
+    </div>
+
+    {# ------------------------------------------------------------------ #}
+    {# Barra secundária: opções do modo ativo + indicadores                #}
+    {# ------------------------------------------------------------------ #}
+    <div class="planner-subbar">
+        <div class="planner-subopts">
+            <div class="btn-group planner-ranges" role="group">
+                <button type="button" class="btn btn-sm" data-range="day">{{ __('Day', 'planner') }}</button>
+                <button type="button" class="btn btn-sm" data-range="week">{{ __('Week', 'planner') }}</button>
+                <button type="button" class="btn btn-sm" data-range="month">{{ __('Month', 'planner') }}</button>
+            </div>
+
+            {# Alternador, não um quarto período: liga uma raia por pessoa
+               mantendo o período escolhido acima. Só faz sentido no
+               calendário — Lista e Kanban já identificam a pessoa em cada
+               linha ou card. #}
+            <button type="button" class="btn btn-sm planner-team-toggle"
+                    title="{{ __('One lane per person, same period', 'planner') }}">
+                <i class="ti ti-users-group"></i> {{ __('By person', 'planner') }}
+            </button>
+
+            <div class="planner-kanban-opts" hidden>
+                <span class="planner-subbar-label">{{ __('Group by', 'planner') }}</span>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm" data-group="state">{{ __('Status', 'planner') }}</button>
+                    <button type="button" class="btn btn-sm" data-group="actor">{{ __('Person', 'planner') }}</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="planner-kpis">
+            <div class="planner-kpi">
+                <span class="planner-kpi-value" data-kpi="hours">—</span>
+                <span class="planner-kpi-label">{{ __('Planned hours', 'planner') }}</span>
+            </div>
+            <div class="planner-kpi">
+                <span class="planner-kpi-value" data-kpi="todo">—</span>
+                <span class="planner-kpi-label">{{ __('To do', 'planner') }}</span>
+            </div>
+            <div class="planner-kpi">
+                <span class="planner-kpi-value" data-kpi="done">—</span>
+                <span class="planner-kpi-label">{{ __('Completed', 'planner') }}</span>
+            </div>
+            <div class="planner-kpi">
+                <span class="planner-kpi-value" data-kpi="people">—</span>
+                <span class="planner-kpi-label">{{ __('Schedules shown', 'planner') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="planner-body">
+
+        {# -------------------------------------------------------------- #}
+        {# Barra lateral                                                   #}
+        {# -------------------------------------------------------------- #}
+        <aside class="planner-sidebar card">
+            <div class="planner-sidebar-scroll">
+
+                {% if pending_count > 0 %}
+                    <a href="{{ root_doc }}/plugins/planner/front/share.php"
+                       class="planner-pending alert alert-warning d-block mb-3 py-2 px-3">
+                        <i class="ti ti-bell"></i>
+                        {{ __('%d access request(s) awaiting your decision', 'planner')|format(pending_count) }}
+                    </a>
+                {% endif %}
+
+                {% for group in actor_groups %}
+                    <div class="planner-section">
+                        <div class="planner-section-title">{{ group.label }}</div>
+                        <ul class="planner-actors">
+                            {% for actor in group.actors %}
+                                <li class="planner-actor" data-actor="{{ actor.id }}">
+                                    <label class="planner-actor-label">
+                                        <input type="checkbox" class="form-check-input planner-actor-toggle"
+                                               value="{{ actor.id }}"
+                                               data-color="{{ actor.color }}"
+                                               data-name="{{ actor.name }}"
+                                               {{ (actor.reason == 'self' or (auto_load_team and group.reason == 'team')) ? 'checked' : '' }}>
+                                        <span class="planner-avatar" style="--planner-actor-color: {{ actor.color }}">
+                                            {% if actor.picture %}
+                                                <img src="{{ actor.picture }}" alt="">
+                                            {% else %}
+                                                {{ actor.initials }}
+                                            {% endif %}
+                                        </span>
+                                        <span class="planner-actor-name">{{ actor.name }}</span>
+                                        {% if actor.level == level_busy %}
+                                            <span class="badge bg-secondary-lt planner-actor-badge"
+                                                  title="{{ __('You only see this person busy times', 'planner') }}">
+                                                {{ __('free/busy', 'planner') }}
+                                            </span>
+                                        {% endif %}
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+
+                <div class="planner-section">
+                    <div class="planner-section-title">{{ __('Event types', 'planner') }}</div>
+                    <ul class="planner-types">
+                        {% for type in types %}
+                            <li>
+                                <label class="planner-type-label">
+                                    <input type="checkbox" class="form-check-input planner-type-toggle"
+                                           value="{{ type.itemtype }}" checked>
+                                    <span class="planner-type-dot" style="background: {{ type.color }}"></span>
+                                    <span>{{ type.label }}</span>
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <label class="planner-type-label">
+                        <input type="checkbox" class="form-check-input" id="planner-show-done" checked>
+                        <span>{{ __('Show completed', 'planner') }}</span>
+                    </label>
+                </div>
+
+                {# Acesso a agendas de terceiros: as duas ações ficam juntas, no
+                   fim da barra, porque são sobre a mesma coisa — abrir uma
+                   agenda que não é minha. #}
+                {% if can_pick_any %}
+                    <div class="planner-section">
+                        {# O aviso de "Ver todas as agendas" é uma explicação,
+                           não uma instrução: ocupava quatro linhas fixas da
+                           barra lateral para algo que se lê uma vez. Virou
+                           ícone com dica ao passar o mouse, usando o tooltip do
+                           Bootstrap que o GLPI já inicializa nas páginas. #}
+                        <div class="planner-section-title">
+                            {{ __('Open another schedule', 'planner') }}
+                            {% if reads_all %}
+                                <i class="ti ti-info-circle planner-info"
+                                   data-bs-toggle="tooltip" data-bs-placement="top"
+                                   title="{{ __('Your profile has "See all schedules": you can open any user schedule, without depending on team, group or sharing.', 'planner') }}"></i>
+                            {% endif %}
+                        </div>
+                        {# Dropdown nativo (select2 com busca via ajax) em vez do
+                           wrapper `fields.dropdownField`, que traria rótulo e
+                           grade de formulário desnecessários na barra lateral. #}
+                        <div class="planner-picker">
+                            {{ 'User'|itemtype_dropdown({
+                                name: 'planner_add_user',
+                                value: 0,
+                                entity: session('glpiactive_entity'),
+                                entity_sons: session('glpiactive_entity_recursive'),
+                                right: 'all',
+                                width: '100%'
+                            }) }}
+                        </div>
+                    </div>
+                {% elseif can_request %}
+                    <div class="planner-section">
+                        <div class="planner-section-title">{{ __('Open another schedule', 'planner') }}</div>
+                        <a href="{{ root_doc }}/plugins/planner/front/share.php"
+                           class="btn btn-sm btn-outline-primary w-100">
+                            <i class="ti ti-lock-open"></i>
+                            {{ __('Request access to a schedule', 'planner') }}
+                        </a>
+                    </div>
+                {% endif %}
+
+                {% if can_share or reads_all %}
+                    <div class="planner-section planner-section-footer">
+                        {% if can_share %}
+                            <a href="{{ root_doc }}/plugins/planner/front/share.php"
+                               class="btn btn-sm btn-ghost-secondary w-100">
+                                <i class="ti ti-calendar-share"></i>
+                                {{ __('Manage shares', 'planner') }}
+                            </a>
+                        {% endif %}
+                        {% if reads_all %}
+                            <a href="{{ root_doc }}/plugins/planner/front/config.form.php"
+                               class="btn btn-sm btn-ghost-secondary w-100 mt-1">
+                                <i class="ti ti-settings"></i>
+                                {{ __('Planner configuration', 'planner') }}
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </aside>
+
+        {# -------------------------------------------------------------- #}
+        {# Área principal: um painel por modo                              #}
+        {# -------------------------------------------------------------- #}
+        <main class="planner-main card">
+            <div class="planner-loading" hidden>
+                <div class="spinner-border spinner-border-sm"></div>
+                {{ __('Loading schedule…', 'planner') }}
+            </div>
+
+            <div class="planner-pane" data-pane="calendar">
+                <div id="planner-calendar"></div>
+            </div>
+
+            <div class="planner-pane" data-pane="list" hidden>
+                <div class="planner-list"></div>
+            </div>
+
+            <div class="planner-pane" data-pane="kanban" hidden>
+                <div class="planner-kanban"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        GlpiPlanner.init({
+            root_doc: {{ root_doc|json_encode|raw }},
+            events_url: {{ (root_doc ~ '/plugins/planner/ajax/events.php')|json_encode|raw }},
+            me: {{ me }},
+            default_mode: {{ default_mode|json_encode|raw }},
+            labels: {
+                busy: {{ __('Busy', 'planner')|json_encode|raw }},
+                no_actor: {{ __('Select at least one schedule in the sidebar.', 'planner')|json_encode|raw }},
+                no_event: {{ __('No events in this period.', 'planner')|json_encode|raw }},
+                person: {{ __('Person', 'planner')|json_encode|raw }},
+                allday: {{ __('All day', 'planner')|json_encode|raw }},
+                state_info: {{ __('Information', 'planner')|json_encode|raw }},
+                state_todo: {{ __('To do', 'planner')|json_encode|raw }},
+                state_done: {{ __('Done', 'planner')|json_encode|raw }},
+                col_when: {{ __('When', 'planner')|json_encode|raw }},
+                col_who: {{ __('Person', 'planner')|json_encode|raw }},
+                col_type: {{ __('Type', 'planner')|json_encode|raw }},
+                col_subject: {{ __('Event', 'planner')|json_encode|raw }},
+                col_state: {{ __('Status', 'planner')|json_encode|raw }},
+                saved: {{ __('Schedule updated.', 'planner')|json_encode|raw }},
+                save_denied: {{ __('You are not allowed to move this event.', 'planner')|json_encode|raw }},
+                save_failed: {{ __('Could not save the new time.', 'planner')|json_encode|raw }}
+            }
+        });
+    });
+</script>

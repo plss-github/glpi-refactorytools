@@ -1,0 +1,8 @@
+/.env
+/vendor/
+/node_modules/
+*.log
+
+# Gerado por tools/update_locales.sh e removido no fim da execucao;
+# so aparece aqui se o script for interrompido no meio.
+/.locales-shadow/

@@ -1,0 +1,229 @@
+{#
+ # Planner — compartilhamentos de agenda.
+ #
+ # Três blocos, na ordem em que interessam a quem abre a tela:
+ #   1. pedidos aguardando MINHA decisão (a única coisa acionável e urgente);
+ #   2. quem eu já deixei ver minha agenda;
+ #   3. agendas que eu posso ver.
+ #
+ # Cada ação é um POST com token CSRF para ajax/share.php; a autorização é
+ # reconferida no servidor (Share::decide()), o formulário aqui é só o gesto.
+ #}
+
+<div class="planner-shares" data-root="{{ root_doc }}">
+
+    {# ------------------------------------------------------------------ #}
+    {% if pending is not empty %}
+        <div class="card mb-3 border-warning">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-bell text-warning"></i>
+                    {{ __('Requests awaiting your decision', 'planner') }}
+                    <span class="badge bg-warning ms-2">{{ pending|length }}</span>
+                </h3>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for row in pending %}
+                    <div class="list-group-item d-flex flex-wrap align-items-center gap-2">
+                        <div class="flex-fill">
+                            <strong>{{ row.other_name }}</strong>
+                            {{ __('wants to see your schedule', 'planner') }}
+                            <span class="badge bg-blue-lt">{{ level_labels[row.level] ?? row.level }}</span>
+                            {% if row.comment %}
+                                <div class="text-muted small mt-1">{{ row.comment }}</div>
+                            {% endif %}
+                        </div>
+                        <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php" class="d-inline">
+                            <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
+                            <input type="hidden" name="shares_id" value="{{ row.id }}">
+                            <input type="hidden" name="action" value="accept">
+                            <button type="submit" class="btn btn-sm btn-success">
+                                <i class="ti ti-check"></i> {{ __('Accept', 'planner') }}
+                            </button>
+                        </form>
+                        <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php" class="d-inline">
+                            <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
+                            <input type="hidden" name="shares_id" value="{{ row.id }}">
+                            <input type="hidden" name="action" value="refuse">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="ti ti-x"></i> {{ __('Refuse', 'planner') }}
+                            </button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="row row-cards">
+
+        {# -------------------------------------------------------------- #}
+        {# Quem vê minha agenda                                            #}
+        {# -------------------------------------------------------------- #}
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="ti ti-eye"></i> {{ __('Who can see my schedule', 'planner') }}
+                    </h3>
+                </div>
+
+                {% if can_share %}
+                    <div class="card-body border-bottom">
+                        <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php"
+                              class="row g-2 align-items-end">
+                            <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
+                            <input type="hidden" name="action" value="grant">
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label">{{ __('User', 'planner') }}</label>
+                                {{ 'User'|itemtype_dropdown({
+                                    name: 'users_id',
+                                    value: 0,
+                                    entity: session('glpiactive_entity'),
+                                    entity_sons: session('glpiactive_entity_recursive'),
+                                    right: 'all',
+                                    width: '100%'
+                                }) }}
+                            </div>
+                            <div class="col-8 col-sm-4">
+                                <label class="form-label">{{ __('Level', 'planner') }}</label>
+                                <select name="level" class="form-select">
+                                    {% for value, label in level_labels %}
+                                        <option value="{{ value }}" {{ value == default_level ? 'selected' : '' }}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-4 col-sm-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ti ti-plus"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+
+                <div class="list-group list-group-flush">
+                    {% for row in granted %}
+                        <div class="list-group-item d-flex flex-wrap align-items-center gap-2">
+                            <div class="flex-fill">
+                                <strong>{{ row.other_name }}</strong>
+                                <span class="badge bg-blue-lt">{{ level_labels[row.level] ?? row.level }}</span>
+                                <span class="badge {{ row.status == 'accepted' ? 'bg-green-lt' : 'bg-secondary-lt' }}">
+                                    {{ status_labels[row.status] ?? row.status }}
+                                </span>
+                                {% if row.date_end %}
+                                    <div class="text-muted small">
+                                        {{ __('Until', 'planner') }} {{ row.date_end }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php">
+                                <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
+                                <input type="hidden" name="shares_id" value="{{ row.id }}">
+                                <input type="hidden" name="action" value="delete">
+                                <button type="submit" class="btn btn-sm btn-ghost-danger"
+                                        title="{{ __('Remove', 'planner') }}">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="list-group-item text-muted">
+                            {{ __('Nobody has access to your schedule through sharing.', 'planner') }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {# -------------------------------------------------------------- #}
+        {# Agendas que eu vejo                                             #}
+        {# -------------------------------------------------------------- #}
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="ti ti-calendar-user"></i> {{ __('Schedules shared with me', 'planner') }}
+                    </h3>
+                </div>
+
+                {% if can_request %}
+                    <div class="card-body border-bottom">
+                        <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php"
+                              class="row g-2 align-items-end">
+                            <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
+                            <input type="hidden" name="action" value="request">
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label">{{ __('Request access to', 'planner') }}</label>
+                                {{ 'User'|itemtype_dropdown({
+                                    name: 'users_id',
+                                    value: 0,
+                                    entity: session('glpiactive_entity'),
+                                    entity_sons: session('glpiactive_entity_recursive'),
+                                    right: 'all',
+                                    width: '100%'
+                                }) }}
+                            </div>
+                            <div class="col-8 col-sm-4">
+                                <label class="form-label">{{ __('Level', 'planner') }}</label>
+                                <select name="level" class="form-select">
+                                    {% for value, label in level_labels %}
+                                        <option value="{{ value }}" {{ value == default_level ? 'selected' : '' }}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-4 col-sm-2">
+                                <button type="submit" class="btn btn-outline-primary w-100"
+                                        title="{{ __('Send request', 'planner') }}">
+                                    <i class="ti ti-send"></i>
+                                </button>
+                            </div>
+                            <div class="col-12">
+                                <span class="text-muted small">
+                                    {{ __('The request only takes effect after the person accepts it.', 'planner') }}
+                                </span>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+
+                <div class="list-group list-group-flush">
+                    {% for row in received %}
+                        <div class="list-group-item d-flex flex-wrap align-items-center gap-2">
+                            <div class="flex-fill">
+                                <strong>{{ row.other_name }}</strong>
+                                <span class="badge bg-blue-lt">{{ level_labels[row.level] ?? row.level }}</span>
+                                <span class="badge {{ row.status == 'accepted' ? 'bg-green-lt' : (row.status == 'pending' ? 'bg-yellow-lt' : 'bg-secondary-lt') }}">
+                                    {{ status_labels[row.status] ?? row.status }}
+                                </span>
+                            </div>
+                            {% if row.status == 'accepted' %}
+                                <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php">
+                                    <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
+                                    <input type="hidden" name="shares_id" value="{{ row.id }}">
+                                    <input type="hidden" name="action" value="revoke">
+                                    <button type="submit" class="btn btn-sm btn-ghost-secondary"
+                                            title="{{ __('Give up this access', 'planner') }}">
+                                        <i class="ti ti-eye-off"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="list-group-item text-muted">
+                            {{ __('No schedule has been shared with you.', 'planner') }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="text-muted small mt-3">
+        {{ __('Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > Planner.', 'planner') }}
+    </p>
+</div>

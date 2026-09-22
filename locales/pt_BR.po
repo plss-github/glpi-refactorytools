@@ -1,0 +1,602 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: GLPI Planner plugin\n"
+"Report-Msgid-Bugs-To: suporte@pellissari.com.br\n"
+"POT-Creation-Date: 2026-09-22 17:03+0000\n"
+"PO-Revision-Date: 2026-09-22 14:00+0000\n"
+"Last-Translator: Pellissari <suporte@pellissari.com.br>\n"
+"Language-Team: Pellissari <suporte@pellissari.com.br>\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ajax/share.php:50
+msgid "Access granted."
+msgstr "Acesso concedido."
+
+#: ajax/share.php:51
+msgid "Could not grant access."
+msgstr "Não foi possível conceder o acesso."
+
+#: ajax/share.php:63
+msgid "Request sent. It takes effect when the person accepts it."
+msgstr "Pedido enviado. Ele vale quando a pessoa aceitar."
+
+#: ajax/share.php:64
+msgid "Could not send the request."
+msgstr "Não foi possível enviar o pedido."
+
+#: ajax/share.php:70
+msgid "Request accepted."
+msgstr "Acesso liberado."
+
+#: ajax/share.php:71
+msgid "Could not accept the request."
+msgstr "Não foi possível aceitar o pedido."
+
+#: ajax/share.php:77
+msgid "Request refused."
+msgstr "Pedido recusado."
+
+#: ajax/share.php:78
+msgid "Could not refuse the request."
+msgstr "Não foi possível recusar o pedido."
+
+#: ajax/share.php:84
+msgid "Access revoked."
+msgstr "Acesso revogado."
+
+#: ajax/share.php:85
+msgid "Could not revoke access."
+msgstr "Não foi possível revogar o acesso."
+
+#: ajax/share.php:91
+msgid "Share removed."
+msgstr "Compartilhamento removido."
+
+#: ajax/share.php:92
+msgid "Could not remove the share."
+msgstr "Não foi possível remover o compartilhamento."
+
+#: ajax/share.php:96
+msgid "Unknown action."
+msgstr "Ação desconhecida."
+
+#: ajax/share.php:100
+msgid "You are not allowed to perform this action."
+msgstr "Você não tem permissão para esta ação."
+
+#: front/config.form.php:39
+msgid "Configuration saved."
+msgstr "Configuração salva."
+
+#: front/config.form.php:48 src/Menu.php:42 src/ProfileRights.php:30
+msgid "Planner"
+msgstr "Planner"
+
+#: front/config.form.php:48 src/Menu.php:170
+msgid "Configuration"
+msgstr "Configuração"
+
+#: hook.php:77 src/ProfileRights.php:57
+msgid "Planning (Planner)"
+msgstr "Planejamento (Planner)"
+
+#: setup.php:203
+msgid "Planner: GLPI dependencies not found or incompatible:"
+msgstr "Planner: dependências do GLPI não encontradas ou incompatíveis:"
+
+#: src/AccessPolicy.php:373
+msgid "My schedule"
+msgstr "Minha agenda"
+
+#: src/AccessPolicy.php:374
+msgid "Administrative access"
+msgstr "Acesso administrativo"
+
+#: src/AccessPolicy.php:375
+msgid "My team"
+msgstr "Minha equipe"
+
+#: src/AccessPolicy.php:376
+msgid "My group"
+msgstr "Meu grupo"
+
+#: src/AccessPolicy.php:377
+msgid "Shared with me"
+msgstr "Compartilhada comigo"
+
+#: src/EventProvider.php:181 templates/planner.html.twig:265
+msgid "Busy"
+msgstr "Ocupado"
+
+#: src/EventProvider.php:428 .locales-shadow/templates/planner.html.twig:87
+#: templates/planner.html.twig:271
+msgid "To do"
+msgstr "A fazer"
+
+#: src/EventProvider.php:429 templates/planner.html.twig:272
+msgid "Done"
+msgstr "Concluído"
+
+#: src/EventProvider.php:430 templates/planner.html.twig:270
+msgid "Information"
+msgstr "Informação"
+
+#: src/Menu.php:151
+msgid "Schedule"
+msgstr "Agenda"
+
+#: src/ProfileRights.php:67
+msgid "Someone else schedule can also be granted individually, with the owner approval, under Planner > Shares. That path does not depend on the rights above, except for \"Use Planner\"."
+msgstr "A agenda de terceiros também pode ser liberada individualmente, com aceite do dono, na tela Planner > Compartilhamentos — isso independe dos direitos acima, exceto por \"Usar o Planner\"."
+
+#: src/ReservationEventProvider.php:218 src/ReservationProvider.php:144
+#, php-format
+msgid "Reserved item #%d"
+msgstr "Item reservado #%d"
+
+#: src/ReservationView.php:80 src/ReservationView.php:96
+#: templates/reservations.html.twig:78
+msgid "In progress"
+msgstr "Em andamento"
+
+#: src/ReservationView.php:81
+msgid "Upcoming"
+msgstr "Próximas"
+
+#: src/ReservationView.php:82
+msgid "Finished"
+msgstr "Encerradas"
+
+#: src/ReservationView.php:97
+msgid "Finished reservation"
+msgstr "Encerrada"
+
+#: src/ReservationView.php:98
+msgid "Upcoming reservation"
+msgstr "Próxima"
+
+#: src/Right.php:58
+msgid "Use Planner"
+msgstr "Usar o Planner"
+
+#: src/Right.php:59
+msgid "See my team schedules"
+msgstr "Ver a agenda da minha equipe"
+
+#: src/Right.php:60
+msgid "See my group schedules"
+msgstr "Ver a agenda dos meus grupos"
+
+#: src/Right.php:61
+msgid "See all schedules"
+msgstr "Ver todas as agendas"
+
+#: src/Right.php:62
+msgid "Share own schedule"
+msgstr "Compartilhar a própria agenda"
+
+#: src/Right.php:63 .locales-shadow/templates/planner.html.twig:207
+msgid "Request access to a schedule"
+msgstr "Solicitar acesso a uma agenda"
+
+#: src/Settings.php:132 .locales-shadow/templates/planner.html.twig:40
+#: templates/reservations.html.twig:37
+msgid "Calendar"
+msgstr "Calendário"
+
+#: src/Settings.php:133 .locales-shadow/templates/planner.html.twig:43
+#: templates/reservations.html.twig:40
+msgid "List"
+msgstr "Lista"
+
+#: src/Settings.php:134 .locales-shadow/templates/planner.html.twig:46
+#: templates/reservations.html.twig:43
+msgid "Kanban"
+msgstr "Kanban"
+
+#: src/Share.php:51
+msgid "Schedule share"
+msgid_plural "Schedule shares"
+msgstr[0] "Compartilhamento de agenda"
+msgstr[1] "Compartilhamentos de agenda"
+
+#: src/Share.php:75
+msgid "Awaiting approval"
+msgstr "Aguardando aceite"
+
+#: src/Share.php:76
+msgid "Active"
+msgstr "Ativo"
+
+#: src/Share.php:77
+msgid "Refused"
+msgstr "Recusado"
+
+#: src/Share.php:78
+msgid "Revoked"
+msgstr "Revogado"
+
+#: src/Share.php:88
+msgid "Event details"
+msgstr "Detalhes dos compromissos"
+
+#: src/Share.php:89
+msgid "Free/busy only"
+msgstr "Apenas livre/ocupado"
+
+#: src/View.php:150 src/View.php:178
+#, php-format
+msgid "User #%d"
+msgstr "Usuário #%d"
+
+#: templates/config.html.twig:14 templates/planner.html.twig:225
+msgid "Planner configuration"
+msgstr "Configuração do Planner"
+
+#: templates/config.html.twig:19
+msgid "Team"
+msgstr "Equipe"
+
+#: templates/config.html.twig:27
+msgid "Include the whole hierarchy below the supervisor"
+msgstr "Incluir toda a hierarquia abaixo do supervisor"
+
+#: templates/config.html.twig:31
+msgid "When off, \"my team\" means direct reports only: the users whose Supervisor field points to me. When on, it also includes their own reports, and so on. In a tall org chart this lets a director see almost the whole company schedule."
+msgstr "Desligado, \"minha equipe\" são apenas os liderados diretos — os usuários cujo campo Supervisor aponta para mim. Ligado, inclui também os liderados dos meus liderados, e assim por diante: num organograma alto, isso faz um diretor enxergar a agenda de quase toda a empresa."
+
+#: templates/config.html.twig:36
+msgid "Detail level for the team"
+msgstr "Nível de detalhe para a equipe"
+
+#: templates/config.html.twig:46
+msgid "Groups"
+msgstr "Grupos"
+
+#: templates/config.html.twig:49
+msgid "Detail level for group colleagues"
+msgstr "Nível de detalhe para colegas de grupo"
+
+#: templates/config.html.twig:59
+msgid "Shares"
+msgstr "Compartilhamentos"
+
+#: templates/config.html.twig:62
+msgid "Suggested level when sharing"
+msgstr "Nível sugerido ao compartilhar"
+
+#: templates/config.html.twig:69
+msgid "Only the value preselected in the form. Whoever shares can change it."
+msgstr "Apenas o valor pré-selecionado no formulário. Quem compartilha pode mudar.Apenas o valor pré-selecionado no formulário. Quem compartilha pode mudar."
+
+#: templates/config.html.twig:79
+msgid "Allow users to request access to a schedule"
+msgstr "Permitir que usuários peçam acesso a uma agenda"
+
+#: templates/config.html.twig:83
+msgid "A request reveals nothing on its own: no event shows up before the owner accepts it."
+msgstr "O pedido não revela nada por si só: nenhum compromisso aparece antes de o dono aceitar."
+
+#: templates/config.html.twig:89
+msgid "Event type colours"
+msgstr "Cores dos tipos de compromisso"
+
+#: templates/config.html.twig:93
+msgid "The colour identifies the type of appointment on the calendar, in the list and on the Kanban cards. Leave a type untouched to keep the plugin default."
+msgstr "A cor identifica o tipo de compromisso no calendário, na lista e nos cartões do Kanban. Deixe um tipo intocado para manter o padrão do plugin."
+
+#: templates/config.html.twig:103
+msgid "Back to default"
+msgstr "Voltar ao padrão"
+
+#: templates/config.html.twig:113
+msgid "Screen"
+msgstr "Tela"
+
+#: templates/config.html.twig:121
+msgid "Replace the native Planning"
+msgstr "Substituir o Planejamento nativo"
+
+#: templates/config.html.twig:125
+msgid "When on, the \"Planning\" entry under Assistance opens this screen, and anyone reaching the old URL is redirected. The menu label stays \"Planning\": \"Planner\" is the plugin name, not the entry name. When off, the native planning is restored and Planner appears as a separate entry, which is useful to compare both screens."
+msgstr "Ligado, o item \"Planejamento\" de Assistência passa a abrir esta tela, e quem acessar a URL antiga é redirecionado. O rótulo do menu continua sendo \"Planejamento\" — \"Planner\" é o nome do plugin, não do item. Desligado, o planejamento nativo volta ao normal e o Planner aparece como entrada separada, o que serve para comparar as duas telas."
+
+#: templates/config.html.twig:135
+msgid "Replace the native Reservations"
+msgstr "Substituir as Reservas nativas"
+
+#: templates/config.html.twig:139
+msgid "When on, the \"Reservations\" entry under Tools opens this screen, and anyone reaching the old URL is redirected. Reserving a specific item still goes to the native form, which checks for conflicts."
+msgstr "Ligado, o item \"Reservas\" de Ferramentas passa a abrir esta tela, e quem acessar a URL antiga é redirecionado. Reservar um item específico continua indo para o formulário nativo, que confere conflitos."
+
+#: templates/config.html.twig:144
+msgid "Default mode"
+msgstr "Modo inicial"
+
+#: templates/config.html.twig:151
+msgid "How the screen opens. Users can switch between Calendar, List and Kanban at any time."
+msgstr "Como a tela abre. O usuário pode trocar a qualquer momento entre Calendário, Lista e Kanban."
+
+#: templates/config.html.twig:161
+msgid "Open the schedule with the team already selected"
+msgstr "Abrir a agenda já com a equipe marcada"
+
+#: templates/config.html.twig:170
+msgid "Save"
+msgstr "Salvar"
+
+#: templates/planner.html.twig:27 templates/reservations.html.twig:18
+msgid "Previous"
+msgstr "Anterior"
+
+#: templates/planner.html.twig:30 templates/reservations.html.twig:21
+msgid "Today"
+msgstr "Hoje"
+
+#: templates/planner.html.twig:31 templates/reservations.html.twig:22
+msgid "Next"
+msgstr "Próximo"
+
+#: templates/planner.html.twig:38 templates/reservations.html.twig:35
+msgid "View mode"
+msgstr "Modo de visualização"
+
+#: templates/planner.html.twig:57 templates/reservations.html.twig:52
+msgid "Day"
+msgstr "Dia"
+
+#: templates/planner.html.twig:58 templates/reservations.html.twig:53
+msgid "Week"
+msgstr "Semana"
+
+#: templates/planner.html.twig:59 templates/reservations.html.twig:54
+msgid "Month"
+msgstr "Mês"
+
+#: templates/planner.html.twig:67
+msgid "One lane per person, same period"
+msgstr "Uma faixa por pessoa, no mesmo período"
+
+#: templates/planner.html.twig:68
+msgid "By person"
+msgstr "Por pessoa"
+
+#: templates/planner.html.twig:72 templates/reservations.html.twig:63
+msgid "Group by"
+msgstr "Agrupar por"
+
+#: templates/planner.html.twig:74 templates/planner.html.twig:277
+#: templates/reservations.html.twig:65 templates/reservations.html.twig:196
+msgid "Status"
+msgstr "Situação"
+
+#: templates/planner.html.twig:75 templates/planner.html.twig:268
+#: templates/planner.html.twig:274
+msgid "Person"
+msgstr "Pessoa"
+
+#: templates/planner.html.twig:83
+msgid "Planned hours"
+msgstr "Horas planejadas"
+
+#: templates/planner.html.twig:91
+msgid "Completed"
+msgstr "Concluídos"
+
+#: templates/planner.html.twig:95
+msgid "Schedules shown"
+msgstr "Agendas abertas"
+
+#: templates/planner.html.twig:112
+#, php-format
+msgid "%d access request(s) awaiting your decision"
+msgstr "%d pedido(s) de acesso aguardando sua decisão"
+
+#: templates/planner.html.twig:138
+msgid "You only see this person busy times"
+msgstr "Você vê apenas os horários ocupados desta pessoa"
+
+#: templates/planner.html.twig:139
+msgid "free/busy"
+msgstr "livre/ocupado"
+
+#: templates/planner.html.twig:150
+msgid "Event types"
+msgstr "Tipos de compromisso"
+
+#: templates/planner.html.twig:165
+msgid "Show completed"
+msgstr "Mostrar concluídos"
+
+#: templates/planner.html.twig:180 templates/planner.html.twig:203
+msgid "Open another schedule"
+msgstr "Abrir outra agenda"
+
+#: templates/planner.html.twig:184
+msgid "Your profile has \"See all schedules\": you can open any user schedule, without depending on team, group or sharing."
+msgstr "Seu perfil tem \"Ver todas as agendas\": você pode abrir a agenda de qualquer usuário, sem depender de equipe, grupo ou compartilhamento."
+
+#: templates/planner.html.twig:218
+msgid "Manage shares"
+msgstr "Gerenciar compartilhamentos"
+
+#: templates/planner.html.twig:239
+msgid "Loading schedule…"
+msgstr "Carregando agenda…"
+
+#: templates/planner.html.twig:266
+msgid "Select at least one schedule in the sidebar."
+msgstr "Selecione ao menos uma agenda na barra lateral."
+
+#: templates/planner.html.twig:267
+msgid "No events in this period."
+msgstr "Nenhum compromisso neste período."
+
+#: templates/planner.html.twig:269 templates/reservations.html.twig:191
+msgid "All day"
+msgstr "Dia inteiro"
+
+#: templates/planner.html.twig:273 templates/reservations.html.twig:192
+msgid "When"
+msgstr "Quando"
+
+#: templates/planner.html.twig:275
+msgid "Type"
+msgstr "Tipo"
+
+#: templates/planner.html.twig:276
+msgid "Event"
+msgstr "Compromisso"
+
+#: templates/planner.html.twig:278
+msgid "Schedule updated."
+msgstr "Agenda atualizada."
+
+#: templates/planner.html.twig:279
+msgid "You are not allowed to move this event."
+msgstr "Você não tem permissão para mover este compromisso."
+
+#: templates/planner.html.twig:280
+msgid "Could not save the new time."
+msgstr "Não foi possível salvar o novo horário."
+
+#: templates/reservations.html.twig:32
+msgid "New reservation"
+msgstr "Nova reserva"
+
+#: templates/reservations.html.twig:58
+msgid "One lane per item, same period"
+msgstr "Uma faixa por item, no mesmo período"
+
+#: templates/reservations.html.twig:59
+msgid "By item"
+msgstr "Por item"
+
+#: templates/reservations.html.twig:66 templates/reservations.html.twig:190
+#: templates/reservations.html.twig:193
+msgid "Item"
+msgstr "Item"
+
+#: templates/reservations.html.twig:74
+msgid "Reserved hours"
+msgstr "Horas reservadas"
+
+#: templates/reservations.html.twig:82
+msgid "Mine"
+msgstr "Minhas"
+
+#: templates/reservations.html.twig:86
+msgid "Items in use"
+msgstr "Itens em uso"
+
+#: templates/reservations.html.twig:99
+msgid "No reservable item is available in this entity. An item becomes reservable from its own form, under the Reservations tab."
+msgstr "Nenhum item reservável está disponível nesta entidade. Um item passa a ser reservável no formulário dele, na aba Reservas."
+
+#: templates/reservations.html.twig:126
+msgid "Filters"
+msgstr "Filtros"
+
+#: templates/reservations.html.twig:133
+msgid "Only my reservations"
+msgstr "Somente as minhas reservas"
+
+#: templates/reservations.html.twig:137
+msgid "Show finished"
+msgstr "Mostrar encerradas"
+
+#: templates/reservations.html.twig:146
+msgid "Manage reservable items"
+msgstr "Gerenciar itens reserváveis"
+
+#: templates/reservations.html.twig:155
+msgid "Loading reservations…"
+msgstr "Carregando reservas…"
+
+#: templates/reservations.html.twig:188
+msgid "Select at least one item in the sidebar."
+msgstr "Selecione ao menos um item na barra lateral."
+
+#: templates/reservations.html.twig:189
+msgid "No reservation in this period."
+msgstr "Nenhuma reserva neste período."
+
+#: templates/reservations.html.twig:194
+msgid "Note"
+msgstr "Observação"
+
+#: templates/reservations.html.twig:195
+msgid "Reserved by"
+msgstr "Reservado por"
+
+#: templates/shares.html.twig:21
+msgid "Requests awaiting your decision"
+msgstr "Pedidos aguardando sua decisão"
+
+#: templates/shares.html.twig:30
+msgid "wants to see your schedule"
+msgstr "quer ver sua agenda"
+
+#: templates/shares.html.twig:41
+msgid "Accept"
+msgstr "Aceitar"
+
+#: templates/shares.html.twig:49
+msgid "Refuse"
+msgstr "Recusar"
+
+#: templates/shares.html.twig:67
+msgid "Who can see my schedule"
+msgstr "Quem pode ver minha agenda"
+
+#: templates/shares.html.twig:78
+msgid "User"
+msgstr "Usuário"
+
+#: templates/shares.html.twig:89 templates/shares.html.twig:170
+msgid "Level"
+msgstr "Nível"
+
+#: templates/shares.html.twig:118
+msgid "Until"
+msgstr "Até"
+
+#: templates/shares.html.twig:127
+msgid "Remove"
+msgstr "Remover"
+
+#: templates/shares.html.twig:134
+msgid "Nobody has access to your schedule through sharing."
+msgstr "Ninguém tem acesso à sua agenda por compartilhamento."
+
+#: templates/shares.html.twig:148
+msgid "Schedules shared with me"
+msgstr "Agendas compartilhadas comigo"
+
+#: templates/shares.html.twig:159
+msgid "Request access to"
+msgstr "Pedir acesso a"
+
+#: templates/shares.html.twig:181
+msgid "Send request"
+msgstr "Enviar pedido"
+
+#: templates/shares.html.twig:187
+msgid "The request only takes effect after the person accepts it."
+msgstr "O pedido só passa a valer depois que a pessoa aceitar."
+
+#: templates/shares.html.twig:210
+msgid "Give up this access"
+msgstr "Abrir mão deste acesso"
+
+#: templates/shares.html.twig:218
+msgid "No schedule has been shared with you."
+msgstr "Nenhuma agenda foi compartilhada com você."
+
+#: templates/shares.html.twig:227
+msgid "Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > Planner."
+msgstr "Compartilhamento é só uma das formas de acesso. Sua equipe (pelo campo Supervisor do usuário), seus grupos e o acesso administrativo são liberados pelo perfil, em Administração > Perfis > Planner."
