@@ -383,7 +383,11 @@
     opacity: 0.6;
 }
 
-.planner-main .fc-event.planner-event-done .fc-title {
+/* Riscado só na AGENDA, onde "concluído" quer dizer que a tarefa foi feita.
+   Numa reserva, "encerrada" quer dizer apenas que o período passou — riscar
+   sugeriria que ela foi cancelada, que é outra coisa. Lá basta a opacidade
+   menor da regra acima. */
+.planner-page:not(.planner-page-reservations) .fc-event.planner-event-done .fc-title {
     text-decoration: line-through;
 }
 
@@ -799,4 +803,49 @@
 .planner-avatar-square {
     border-radius: 5px;
     letter-spacing: -0.02em;
+}
+
+/* --------------------------------------------------------------------- */
+/* Formulário de nova reserva                                             */
+/* --------------------------------------------------------------------- */
+
+.planner-res-form .form-label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+/* O campo datetime-local traz o ícone de calendário do navegador, que no
+   tema escuro fica quase invisível. O filtro inverte só esse ícone. */
+.planner-res-form input[type="datetime-local"] {
+    min-height: 2.375rem;
+}
+
+:root[data-bs-theme="dark"] .planner-res-form input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+:root[data-theme="dark"] .planner-res-form input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) opacity(0.7);
+}
+
+/* Aviso de rodapé do formulário: informativo, não um erro. Fundo suave em
+   vez da borda vermelha que um `alert-danger` traria. */
+.planner-res-note {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--tblr-border-radius);
+    background: var(--tblr-active-bg, rgba(var(--tblr-secondary-rgb, 110, 117, 130), 0.08));
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--tblr-secondary);
+}
+
+.planner-res-note .ti {
+    flex: 0 0 auto;
+    margin-top: 0.1rem;
+}
+
+/* Marcador de TIPO na barra lateral: recebe um ícone em vez de iniciais. */
+.planner-avatar .ti {
+    font-size: 0.9375rem;
+    line-height: 1;
 }

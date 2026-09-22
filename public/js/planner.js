@@ -43,6 +43,12 @@ var GlpiPlanner = {
     /** itemtypes atualmente marcados */
     types: [],
 
+    /**
+     * Faixas mandadas pelo servidor, quando a tela não as deriva da barra
+     * lateral. null = usar as caixas marcadas (comportamento da agenda).
+     */
+    serverResources: null,
+
     init: function (config) {
         var root = document.getElementById('planner-app');
         if (!root || typeof FullCalendar === 'undefined') {
@@ -76,8 +82,14 @@ var GlpiPlanner = {
             };
         });
 
+        // Só caixas com `value` próprio entram como filtro de tipo. As caixas
+        // booleanas da barra lateral ("somente as minhas", "mostrar
+        // encerradas") viajam por `data-planner-flag` e não devem virar
+        // itemtype — sem esta checagem elas entravam na lista como "on".
         self.types = $('.planner-type-toggle:checked').map(function () {
-            return $(this).val();
+            var value = $(this).attr('value');
+
+            return value ? value : null;
         }).get();
     },
 
@@ -97,6 +109,13 @@ var GlpiPlanner = {
     getResources: function () {
         var self = this;
         var out = [];
+
+        // Quando o servidor manda as faixas, são elas que valem. É o caso da
+        // tela de reservas: a barra lateral marca TIPOS de ativo, e cada faixa
+        // é um APARELHO daquele tipo — a barra lateral não tem essa lista.
+        if (self.serverResources) {
+            return self.serverResources;
+        }
 
         $('.planner-actor-toggle:checked').each(function () {
             var resource = {
@@ -319,6 +338,17 @@ var GlpiPlanner = {
             data: payload
         }).done(function (response) {
             self.updateKpis(response.stats || {});
+
+            // Faixas novas só valem depois de guardadas; refetchResources()
+            // volta a chamar getResources(), que agora devolve estas.
+            if (response.resources) {
+                var changed = JSON.stringify(response.resources) !== JSON.stringify(self.serverResources);
+                self.serverResources = response.resources;
+                if (changed && self.calendar) {
+                    self.calendar.refetchResources();
+                }
+            }
+
             success(response.events || []);
             setTimeout(function () { self.renderPanes(); }, 0);
         }).fail(function (xhr) {

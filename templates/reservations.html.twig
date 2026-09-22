@@ -10,7 +10,10 @@
  # e Calendário e Lista já cobrem as duas.
  #}
 
-<div class="planner-page" id="planner-app"
+{# `planner-page-reservations` é o gancho de CSS que diferencia as duas telas
+   onde o significado muda: uma reserva "encerrada" é só uma que já passou,
+   não uma que foi cancelada. #}
+<div class="planner-page planner-page-reservations" id="planner-app"
      data-root="{{ root_doc }}"
      data-me="{{ me }}"
      data-today="{{ today }}">
@@ -66,14 +69,6 @@
                 <span class="planner-kpi-value" data-kpi="count">—</span>
                 <span class="planner-kpi-label">{{ __('Reservations', 'planner') }}</span>
             </div>
-            <div class="planner-kpi">
-                <span class="planner-kpi-value" data-kpi="todo">—</span>
-                <span class="planner-kpi-label">{{ __('In progress', 'planner') }}</span>
-            </div>
-            <div class="planner-kpi">
-                <span class="planner-kpi-value" data-kpi="people">—</span>
-                <span class="planner-kpi-label">{{ __('Items in use', 'planner') }}</span>
-            </div>
         </div>
     </div>
 
@@ -88,20 +83,27 @@
                         {{ __('No reservable item is available in this entity. An item becomes reservable from its own form, under the Reservations tab.', 'planner') }}
                     </div>
                 {% else %}
-                    {# Lista única, sem cabeçalho por tipo: o tipo vira dica ao
-                       passar o mouse e a barra lateral fica com menos ruído. #}
+                    {# A barra lateral marca TIPOS de ativo, não aparelhos.
+                       Marcar "Computador" traz todos os computadores
+                       reserváveis; cada aparelho vira uma faixa na visão Por
+                       item. Uma lista aparelho a aparelho não escala, e o que
+                       se quer quase sempre é "ver os computadores". #}
                     <div class="planner-section">
+                        <div class="planner-section-title">{{ __('Asset types', 'planner') }}</div>
                         <ul class="planner-actors">
-                            {% for item in items %}
-                                <li class="planner-actor" data-actor="{{ item.id }}">
-                                    <label class="planner-actor-label" title="{{ item.type_name }}">
+                            {% for type in types %}
+                                <li class="planner-actor" data-actor="{{ type.itemtype }}">
+                                    <label class="planner-actor-label">
                                         <input type="checkbox" class="form-check-input planner-actor-toggle"
-                                               value="{{ item.id }}"
-                                               data-color="{{ item.color }}"
-                                               data-name="{{ item.name }}" checked>
+                                               value="{{ type.itemtype }}"
+                                               data-color="{{ type.color }}"
+                                               data-name="{{ type.label }}" checked>
                                         <span class="planner-avatar planner-avatar-square"
-                                              style="--planner-actor-color: {{ item.color }}">{{ item.initials }}</span>
-                                        <span class="planner-actor-name">{{ item.name }}</span>
+                                              style="--planner-actor-color: {{ type.color }}">
+                                            <i class="{{ type.icon }}"></i>
+                                        </span>
+                                        <span class="planner-actor-name">{{ type.label }}</span>
+                                        <span class="badge bg-secondary-lt planner-actor-badge">{{ type.count }}</span>
                                     </label>
                                 </li>
                             {% endfor %}
@@ -181,27 +183,36 @@
                             aria-label="{{ __('Close', 'planner') }}"></button>
                 </div>
 
-                <div class="modal-body">
+                <div class="modal-body planner-res-form">
+                    {# Itens agrupados pelo tipo: numa instalação com muitos
+                       ativos reserváveis, uma lista plana obriga a procurar o
+                       aparelho no meio de tudo. #}
                     <div class="mb-3">
-                        <label class="form-label" for="planner-res-item">
+                        <label class="form-label required" for="planner-res-item">
                             {{ __('Reservable item', 'planner') }}
                         </label>
                         <select class="form-select" id="planner-res-item" name="items[]" required>
-                            <option value="">—</option>
-                            {% for item in items %}
-                                <option value="{{ item.id }}">{{ item.type_name }} - {{ item.name }}</option>
+                            <option value="" selected disabled>{{ __('Choose an item', 'planner') }}</option>
+                            {% for type in types %}
+                                <optgroup label="{{ type.label }}">
+                                    {% for item in items %}
+                                        {% if item.itemtype == type.itemtype %}
+                                            <option value="{{ item.id }}">{{ item.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
                             {% endfor %}
                         </select>
                     </div>
 
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label" for="planner-res-begin">{{ __('Start', 'planner') }}</label>
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label required" for="planner-res-begin">{{ __('Start', 'planner') }}</label>
                             <input type="datetime-local" class="form-control" id="planner-res-begin"
                                    value="{{ default_begin }}" required>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label" for="planner-res-end">{{ __('End', 'planner') }}</label>
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label required" for="planner-res-end">{{ __('End', 'planner') }}</label>
                             <input type="datetime-local" class="form-control" id="planner-res-end"
                                    value="{{ default_end }}" required>
                         </div>
@@ -213,13 +224,18 @@
                     <input type="hidden" name="resa[begin]" id="planner-res-begin-raw">
                     <input type="hidden" name="resa[end]" id="planner-res-end-raw">
 
-                    <div class="mb-1">
+                    <div class="mb-3">
                         <label class="form-label" for="planner-res-comment">{{ __('Comment', 'planner') }}</label>
-                        <textarea class="form-control" id="planner-res-comment" name="comment" rows="2"></textarea>
+                        <textarea class="form-control" id="planner-res-comment" name="comment" rows="2"
+                                  placeholder="{{ __('What is it for? Optional.', 'planner') }}"></textarea>
                     </div>
 
-                    <div class="form-hint mt-2">
-                        {{ __('If the item is already reserved for this period, GLPI refuses the reservation and says so.', 'planner') }}
+                    {# Aviso escrito para quem reserva, não para quem mantém o
+                       sistema: diz o que vai acontecer com ELE, sem citar o
+                       nome do produto nem o mecanismo interno. #}
+                    <div class="planner-res-note">
+                        <i class="ti ti-info-circle"></i>
+                        <span>{{ __('The item is held only for you during this period. If someone has already reserved it, we will tell you and nothing is saved.', 'planner') }}</span>
                     </div>
                 </div>
 
@@ -228,7 +244,7 @@
                         {{ __('Cancel', 'planner') }}
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="ti ti-check"></i> {{ __('Reserve', 'planner') }}
+                        <i class="ti ti-calendar-plus me-1"></i>{{ __('Reserve', 'planner') }}
                     </button>
                 </div>
             </form>
@@ -259,13 +275,13 @@
             me: {{ me }},
             default_mode: {{ default_mode|json_encode|raw }},
             // O eixo desta tela é o item reservável, não a pessoa.
-            actor_param: 'items_ids',
+            actor_param: 'itemtypes',
             resource_prefix: {{ constant('GlpiPlugin\\Planner\\ReservationView::RESOURCE_PREFIX')|json_encode|raw }},
             // Faixas aqui são itens, não pessoas: não existe reatribuir uma
             // reserva arrastando de uma faixa para outra.
             resource_itemtype: null,
             labels: {
-                no_actor: {{ __('Select at least one item in the sidebar.', 'planner')|json_encode|raw }},
+                no_actor: {{ __('Select at least one asset type in the sidebar.', 'planner')|json_encode|raw }},
                 no_event: {{ __('No reservation in this period.', 'planner')|json_encode|raw }},
                 person: {{ __('Item', 'planner')|json_encode|raw }},
                 allday: {{ __('All day', 'planner')|json_encode|raw }},

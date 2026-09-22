@@ -43,11 +43,15 @@ if ($begin === null || $end === null || $begin >= $end) {
     return;
 }
 
-$requested = $_GET['items_ids'] ?? [];
+// A barra lateral marca TIPOS de ativo. Os aparelhos de cada tipo são
+// resolvidos no servidor (ver ReservationView::getItemsForTypes()), que
+// também é onde o recorte por entidade acontece — um itemtype inventado na
+// requisição não casa com nada.
+$requested = $_GET['itemtypes'] ?? [];
 if (!is_array($requested)) {
     $requested = [$requested];
 }
-$requested = array_values(array_unique(array_filter(array_map('intval', $requested))));
+$requested = array_values(array_unique(array_filter(array_map('strval', $requested))));
 
 // "Somente as minhas reservas": filtro da barra lateral, não uma permissão.
 $only_mine = ($_GET['only_mine'] ?? '0') === '1';
@@ -57,4 +61,7 @@ $events = ReservationEventProvider::getEvents($requested, $begin, $end, $only_mi
 echo json_encode([
     'events' => $events,
     'stats'  => ReservationEventProvider::getStats($events),
+    // As faixas acompanham os eventos: a barra lateral não tem como montá-las,
+    // porque nela um item é um TIPO e cada faixa é um APARELHO.
+    'resources' => ReservationEventProvider::getResources($requested),
 ]);

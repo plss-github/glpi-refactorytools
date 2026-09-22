@@ -22,17 +22,52 @@ use User;
 final class ReservationEventProvider
 {
     /**
-     * Reservas dos itens pedidos, no intervalo.
+     * Faixas (uma por aparelho) dos tipos pedidos.
      *
-     * @param array<int, int> $items_ids ids de `glpi_reservationitems`
+     * Vêm do servidor, e não das caixas da barra lateral, porque a barra
+     * lateral lista TIPOS enquanto as faixas são APARELHOS. Mandar as faixas
+     * junto com os eventos também faz aparecer o aparelho que não tem nenhuma
+     * reserva no período — que é justamente o que está livre.
+     *
+     * @param array<int, string> $itemtypes
      * @return array<int, array<string, mixed>>
      */
-    public static function getEvents(array $items_ids, string $begin, string $end, bool $only_mine = false): array
+    public static function getResources(array $itemtypes): array
+    {
+        $out = [];
+
+        foreach (ReservationView::getItemsForTypes($itemtypes) as $item) {
+            $out[] = [
+                'id'    => ReservationView::RESOURCE_PREFIX . $item['id'],
+                'title' => $item['name'],
+                'color' => $item['color'],
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Reservas dos itens dos tipos pedidos, no intervalo.
+     *
+     * @param array<int, string> $itemtypes itemtypes marcados na barra lateral
+     * @return array<int, array<string, mixed>>
+     */
+    public static function getEvents(array $itemtypes, string $begin, string $end, bool $only_mine = false): array
     {
         /** @var \DBmysql $DB */
         global $DB;
 
-        if (!ReservationProvider::canView() || $items_ids === []) {
+        if (!ReservationProvider::canView()) {
+            return [];
+        }
+
+        $items_ids = array_map(
+            static fn(array $item) => (int) $item['id'],
+            ReservationView::getItemsForTypes($itemtypes)
+        );
+
+        if ($items_ids === []) {
             return [];
         }
 
@@ -147,48 +182,21 @@ final class ReservationEventProvider
     }
 
     /**
-     * Indicadores do topo. Diferentes dos da agenda: aqui interessa quantos
-     * itens estão em uso e por quantas pessoas, não quantas tarefas faltam.
+     * Indicador único: quantas reservas o período exibido contém.
+     *
+     * Havia também "em andamento" e "itens em uso". Saíram porque respondiam a
+     * uma pergunta que ninguém faz olhando um calendário: quantas reservas
+     * estão acontecendo NESTE INSTANTE não tem relação com o mês que está na
+     * tela, e "itens em uso" mudava de significado conforme os filtros. A
+     * contagem de reservas acompanha o que está sendo mostrado, que é o único
+     * número que o período justifica.
      *
      * @param array<int, array<string, mixed>> $events
      * @return array<string, mixed>
      */
     public static function getStats(array $events): array
     {
-        $seconds = 0;
-        $items   = [];
-        $people  = [];
-        $ongoing = 0;
-        $mine    = 0;
-
-        foreach ($events as $event) {
-            $duration = strtotime((string) $event['end']) - strtotime((string) $event['start']);
-            if ($duration > 0) {
-                $seconds += $duration;
-            }
-
-            $items[$event['extendedProps']['users_id']] = true;
-            $people[$event['extendedProps']['actorName']] = true;
-
-            if ($event['extendedProps']['state'] === ReservationView::STATE_ONGOING) {
-                $ongoing++;
-            }
-            if (!empty($event['extendedProps']['mine'])) {
-                $mine++;
-            }
-        }
-
-        return [
-            'events_count' => count($events),
-            'total_hours'  => round($seconds / 3600, 1),
-            // As chaves reaproveitam os nomes que o JavaScript já lê para
-            // preencher os quatro indicadores; os rótulos da tela é que dizem
-            // o que cada número significa aqui.
-            'todo'         => $ongoing,
-            'done'         => $mine,
-            'people'       => count($items),
-            'people_count' => count($people),
-        ];
+        return ['events_count' => count($events)];
     }
 
     /**

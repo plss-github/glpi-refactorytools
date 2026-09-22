@@ -88,6 +88,10 @@ final class ReservationView
 
         TemplateRenderer::getInstance()->display('@planner/reservations.html.twig', [
             'root_doc'     => $CFG_GLPI['root_doc'],
+            // Tipos alimentam a barra lateral; a lista completa de itens
+            // alimenta o seletor do formulário de nova reserva, onde a escolha
+            // é de um aparelho específico.
+            'types'        => self::getReservableTypes(),
             'items'        => $items,
             'items_count'  => count($items),
             'can_reserve'  => self::canReserve(),
@@ -137,11 +141,52 @@ final class ReservationView
     }
 
     /**
-     * Itens reserváveis visíveis, em lista única.
+     * TIPOS de ativo que têm ao menos um item reservável nesta entidade.
      *
-     * Ordenados por tipo e depois por nome, então os itens de um mesmo tipo
-     * continuam vizinhos — sem um cabeçalho de tipo repetindo "Computadores"
-     * acima de cada bloco, que só ocupava espaço numa barra lateral estreita.
+     * A barra lateral lista tipos, não aparelhos: marcar "Computador" traz
+     * todos os computadores reserváveis de uma vez. Listar aparelho por
+     * aparelho não escala — uma instalação com cinquenta notebooks
+     * reserváveis vira uma lista de cinquenta linhas que ninguém percorre, e
+     * o que a pessoa quer quase sempre é "ver os computadores", não "ver o
+     * NOTE-014". Cada aparelho continua sendo uma faixa na visão Por item.
+     *
+     * Um tipo só aparece se houver item dele: a lista se adapta ao que a
+     * instalação realmente marcou como reservável.
+     *
+     * @return array<int, array{itemtype: string, label: string, count: int, color: string, icon: string}>
+     */
+    public static function getReservableTypes(): array
+    {
+        $types = [];
+
+        foreach (self::getReservableItems() as $item) {
+            $itemtype = $item['itemtype'];
+
+            if (!isset($types[$itemtype])) {
+                $types[$itemtype] = [
+                    'itemtype' => $itemtype,
+                    'label'    => $item['type_label'],
+                    'count'    => 0,
+                    // A cor identifica o tipo na barra lateral; os eventos
+                    // continuam coloridos por APARELHO, que é o que distingue
+                    // uma faixa da outra na visão Por item.
+                    'color'    => EventProvider::getActorColor(crc32($itemtype)),
+                    'icon'     => is_a($itemtype, \CommonGLPI::class, true)
+                        ? $itemtype::getIcon()
+                        : 'ti ti-package',
+                ];
+            }
+
+            $types[$itemtype]['count']++;
+        }
+
+        uasort($types, static fn(array $a, array $b) => strcasecmp($a['label'], $b['label']));
+
+        return array_values($types);
+    }
+
+    /**
+     * Itens reserváveis visíveis, em lista única.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -180,21 +225,44 @@ final class ReservationView
             $name = $item->getName();
 
             $items[] = [
-                'id'        => $id,
-                'name'      => $name,
-                // O tipo continua disponível como dica ao passar o mouse: some
-                // da lista, mas não da informação.
-                'type_name' => $item::getTypeName(1),
-                'color'     => EventProvider::getActorColor($id),
-                'initials'  => self::getInitials($name),
+                'id'         => $id,
+                'itemtype'   => $itemtype,
+                'name'       => $name,
+                'type_name'  => $item::getTypeName(1),
+                'type_label' => $item::getTypeName(2),
+                'color'      => EventProvider::getActorColor($id),
+                'initials'   => self::getInitials($name),
             ];
         }
 
         usort($items, static function (array $a, array $b): int {
-            return [$a['type_name'], $a['name']] <=> [$b['type_name'], $b['name']];
+            return [$a['type_label'], $a['name']] <=> [$b['type_label'], $b['name']];
         });
 
         return $items;
+    }
+
+    /**
+     * Itens reserváveis dos tipos pedidos, para montar as faixas e restringir
+     * a consulta de reservas.
+     *
+     * A lista de tipos vem do cliente e é filtrada aqui contra o que ele
+     * realmente pode ver: um itemtype inventado na requisição não casa com
+     * nada e simplesmente não devolve item nenhum.
+     *
+     * @param array<int, string> $itemtypes
+     * @return array<int, array<string, mixed>>
+     */
+    public static function getItemsForTypes(array $itemtypes): array
+    {
+        if ($itemtypes === []) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            self::getReservableItems(),
+            static fn(array $item) => in_array($item['itemtype'], $itemtypes, true)
+        ));
     }
 
     /**
