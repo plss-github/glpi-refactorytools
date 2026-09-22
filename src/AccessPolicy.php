@@ -18,15 +18,21 @@
  * estado atual (perfil, supervisor, grupos, compartilhamentos). Nada que o
  * cliente mande — nem a lista de agendas selecionadas — amplia o que ele vê.
  *
- * Quatro origens de acesso, todas cumulativas:
+ * Cinco origens de acesso, todas cumulativas:
  *
- *   self   sempre, para a própria agenda.
- *   all    direito READ_ALL no perfil (papel administrativo).
- *   team   direito READ_TEAM + `glpi_users.users_id_supervisor` apontando
- *          para o observador. Opcionalmente toda a árvore abaixo.
- *   group  direito READ_GROUP + grupo em comum.
- *   share  linha aceita e vigente em Share, independente de direito de
- *          leitura — é o dono da agenda quem autorizou.
+ *   self            sempre, para a própria agenda.
+ *   all             direito READ_ALL no perfil (papel administrativo).
+ *   team            direito READ_TEAM + `glpi_users.users_id_supervisor`
+ *                   apontando para o observador. Opcionalmente toda a árvore
+ *                   abaixo.
+ *   group           direito READ_GROUP + grupo em comum.
+ *   group_manager   direito READ_MANAGED_GROUP + o observador marcado como
+ *                   `is_manager=1` num grupo (`glpi_groups_users`) do qual o
+ *                   dono da agenda também é membro. Sempre nível "details" —
+ *                   é o próprio propósito do modo gerente de grupo em Minha
+ *                   Agenda, não um nível configurável como os demais.
+ *   share           linha aceita e vigente em Share, independente de direito
+ *                   de leitura — é o dono da agenda quem autorizou.
  *
  * Quando mais de uma origem se aplica, vale a mais permissiva (details > busy).
  */
@@ -39,11 +45,12 @@ use User;
 
 final class AccessPolicy
 {
-    public const REASON_SELF  = 'self';
-    public const REASON_ALL   = 'all';
-    public const REASON_TEAM  = 'team';
-    public const REASON_GROUP = 'group';
-    public const REASON_SHARE = 'share';
+    public const REASON_SELF          = 'self';
+    public const REASON_ALL           = 'all';
+    public const REASON_TEAM          = 'team';
+    public const REASON_GROUP         = 'group';
+    public const REASON_GROUP_MANAGER = 'group_manager';
+    public const REASON_SHARE         = 'share';
 
     /**
      * Teto de profundidade ao subir a árvore de liderança com
@@ -95,6 +102,12 @@ final class AccessPolicy
             }
         }
 
+        if (Right::has(Right::READ_MANAGED_GROUP)) {
+            foreach (self::getManagedGroupMembers($viewer_id) as $users_id) {
+                self::keepBest($found, $users_id, Settings::LEVEL_DETAILS, self::REASON_GROUP_MANAGER);
+            }
+        }
+
         foreach (Share::getAccessibleOwners($viewer_id) as $users_id => $level) {
             self::keepBest($found, (int) $users_id, self::normalizeLevel($level), self::REASON_SHARE);
         }
@@ -135,6 +148,36 @@ final class AccessPolicy
     public static function canView(int $target, ?int $viewer_id = null): bool
     {
         return self::getLevelFor($target, $viewer_id) !== null;
+    }
+
+    /**
+     * Se o observador pode escrever a nota de gestor num compromisso de
+     * $owner_id (dono da agenda onde o compromisso aparece).
+     *
+     * Deliberadamente mais estrito que "pode ver a agenda": um colega do
+     * mesmo grupo (REASON_GROUP) ou alguém que recebeu compartilhamento
+     * (REASON_SHARE) não é gestor de ninguém, só tem visão. Só quem realmente
+     * ocupa uma posição de liderança sobre o dono — responsável direto
+     * (REASON_TEAM), gerente do grupo dele (REASON_GROUP_MANAGER), ou acesso
+     * administrativo — pode deixar um recado que o dono vê destacado.
+     */
+    public static function canManageNoteFor(int $owner_id, ?int $viewer_id = null): bool
+    {
+        $viewer_id ??= (int) Session::getLoginUserID();
+
+        if ($owner_id <= 0 || $viewer_id <= 0 || $owner_id === $viewer_id) {
+            return false;
+        }
+        if (!Right::canUse()) {
+            return false;
+        }
+        if (Right::has(Right::READ_ALL)) {
+            return true;
+        }
+
+        $reason = self::getVisibleUsers($viewer_id)[$owner_id]['reason'] ?? null;
+
+        return in_array($reason, [self::REASON_TEAM, self::REASON_GROUP_MANAGER], true);
     }
 
     /**
@@ -314,6 +357,79 @@ final class AccessPolicy
         return $out;
     }
 
+    /**
+     * Membros dos grupos que $manager_id gerencia (`glpi_groups_users.is_manager=1`),
+     * ativos e não excluídos, sem incluir o próprio gerente.
+     *
+     * @return array<int, int>
+     */
+    public static function getManagedGroupMembers(int $manager_id): array
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        $managed_groups = [];
+        foreach ($DB->request([
+            'SELECT' => 'groups_id',
+            'FROM'   => Group_User::getTable(),
+            'WHERE'  => [
+                'users_id'   => $manager_id,
+                'is_manager' => 1,
+            ],
+        ]) as $row) {
+            $managed_groups[] = (int) $row['groups_id'];
+        }
+
+        if ($managed_groups === []) {
+            return [];
+        }
+
+        $rows = $DB->request([
+            'SELECT'     => 'glpi_users.id',
+            'DISTINCT'   => true,
+            'FROM'       => Group_User::getTable(),
+            'INNER JOIN' => [
+                'glpi_users' => [
+                    'ON' => [
+                        'glpi_users'           => 'id',
+                        Group_User::getTable() => 'users_id',
+                    ],
+                ],
+            ],
+            'WHERE' => [
+                Group_User::getTable() . '.groups_id' => $managed_groups,
+                'glpi_users.is_active'                => 1,
+                'glpi_users.is_deleted'               => 0,
+            ],
+        ]);
+
+        $out = [];
+        foreach ($rows as $row) {
+            $id = (int) $row['id'];
+            if ($id !== $manager_id) {
+                $out[] = $id;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Se o observador tem, agora, pelo menos um grupo gerenciado com membros
+     * a mostrar — condição para a tela oferecer o alternador de "modo gerente
+     * de grupo" em Minha Agenda.
+     */
+    public static function canUseGroupManagerMode(?int $viewer_id = null): bool
+    {
+        $viewer_id ??= (int) Session::getLoginUserID();
+
+        if ($viewer_id <= 0 || !Right::has(Right::READ_MANAGED_GROUP)) {
+            return false;
+        }
+
+        return self::getManagedGroupMembers($viewer_id) !== [];
+    }
+
     // -----------------------------------------------------------------------
     // Utilidades
     // -----------------------------------------------------------------------
@@ -370,12 +486,13 @@ final class AccessPolicy
     public static function getReasonLabel(string $reason): string
     {
         return match ($reason) {
-            self::REASON_SELF  => __('My schedule', 'planner'),
-            self::REASON_ALL   => __('Administrative access', 'planner'),
-            self::REASON_TEAM  => __('My team', 'planner'),
-            self::REASON_GROUP => __('My group', 'planner'),
-            self::REASON_SHARE => __('Shared with me', 'planner'),
-            default            => '',
+            self::REASON_SELF          => __('My schedule', 'planner'),
+            self::REASON_ALL           => __('Administrative access', 'planner'),
+            self::REASON_TEAM          => __('My team', 'planner'),
+            self::REASON_GROUP         => __('My group', 'planner'),
+            self::REASON_GROUP_MANAGER => __('Group I manage', 'planner'),
+            self::REASON_SHARE         => __('Shared with me', 'planner'),
+            default                    => '',
         };
     }
 }

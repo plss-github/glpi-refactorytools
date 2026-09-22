@@ -43,6 +43,8 @@ final class View
             'default_mode'   => Settings::get('default_mode'),
             'pending_count'  => self::countPendingForOwner($me),
             'auto_load_team' => Settings::isTrue('auto_load_team'),
+            'can_group_manager_mode' => AccessPolicy::canUseGroupManagerMode($me),
+            'technician_panel' => TechnicianStats::getPanelForUser($me),
             'me'             => $me,
             'today'          => date('Y-m-d'),
             'level_busy'     => Settings::LEVEL_BUSY,
@@ -105,6 +107,7 @@ final class View
             AccessPolicy::REASON_SELF,
             AccessPolicy::REASON_TEAM,
             AccessPolicy::REASON_GROUP,
+            AccessPolicy::REASON_GROUP_MANAGER,
             AccessPolicy::REASON_SHARE,
         ];
 

@@ -3,6 +3,39 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.7.0] - 2026-09-22
+
+Entrega os três itens adiados na 0.6.0.
+
+### Adicionado
+
+- **Modo "gerente de grupo" em Minha Agenda.** Quem é `is_manager=1` de um
+  grupo no GLPI (`glpi_groups_users`) e tem o novo direito "Ver a agenda dos
+  grupos que eu gerencio" enxerga os membros desse grupo como uma quinta
+  origem de acesso (`AccessPolicy::REASON_GROUP_MANAGER`, sempre nível
+  "details"), numa seção própria da barra lateral ("Grupo que eu gerencio").
+  Um alternador na barra de ferramentas troca a apresentação sem nova
+  consulta: com ele ligado, cada evento passa a ser colorido pela PESSOA
+  (`actorColor`) em vez do TIPO, e o tipo vira uma tag de texto — nos três
+  modos (Calendário, Lista, Kanban). Direito novo e isolado
+  (`Right::READ_MANAGED_GROUP`), não concedido automaticamente a ninguém além
+  do Super-Admin na instalação: um gerente de grupo do GLPI só ganha esta
+  visão se o administrador do plugin conceder.
+- **Nota do gestor em qualquer compromisso.** Quem é responsável direto
+  (`users_id_supervisor`) ou gerente do grupo do dono de um compromisso pode
+  anexar uma nota a ele, de qualquer itemtype — Chamado, Reserva, Lembrete,
+  o que for. O dono vê a nota ao passar o mouse no popover do calendário;
+  quem não é gestor dele não vê nada. Tabela própria
+  (`glpi_plugin_planner_notes`, chave única por itemtype+id), endpoint
+  dedicado (`ajax/save_event_note.php`) e uma consulta só por carregamento de
+  agenda (`EventProvider::attachNotes()`), não uma por evento.
+- **Painel "Chamados como técnico"** na barra lateral: lista os chamados em
+  que o usuário logado participa como técnico (`Ticket_User::ASSIGN`), com a
+  duração total de cada um no `title` ao passar o mouse, e três contadores —
+  horas planejadas (janela `begin`/`end` das tarefas), realizadas
+  (`actiontime`) e totais (soma das duas). Sempre sobre a própria
+  participação, sem depender de direito extra do plugin.
+
 ## [0.6.0] - 2026-09-22
 
 ### Corrigido

@@ -141,7 +141,72 @@ final class EventProvider
             }
         }
 
+        self::attachNotes($events, $viewer_id);
+
         return $events;
+    }
+
+    /**
+     * Anexa a nota de gestor de cada compromisso, numa consulta só (ver
+     * `EventNotes::getForPairs()`) em vez de uma consulta por evento. Decide
+     * aqui, e não em `EventNotes`, quem PODE VER a nota: o dono do
+     * compromisso e quem tem `canManageNoteFor()` sobre ele — mais ninguém,
+     * nem quem só enxerga a agenda em nível "livre/ocupado" (que já não tem
+     * itemtype/items_id no evento, então nunca casa com uma nota).
+     *
+     * @param array<int, array<string, mixed>> $events
+     */
+    private static function attachNotes(array &$events, ?int $viewer_id): void
+    {
+        if ($events === []) {
+            return;
+        }
+
+        $viewer_id ??= (int) Session::getLoginUserID();
+
+        $itemtypes = [];
+        $items_ids = [];
+        foreach ($events as $event) {
+            $props = $event['extendedProps'];
+            if ($props['itemtype'] === '' || $props['items_id'] <= 0) {
+                continue;
+            }
+            $itemtypes[$props['itemtype']] = true;
+            $items_ids[$props['items_id']] = true;
+        }
+
+        if ($itemtypes === [] || $items_ids === []) {
+            return;
+        }
+
+        $notes = EventNotes::getForPairs(array_keys($itemtypes), array_keys($items_ids));
+        if ($notes === []) {
+            return;
+        }
+
+        foreach ($events as $key => $event) {
+            $props = $event['extendedProps'];
+            if ($props['itemtype'] === '' || $props['items_id'] <= 0) {
+                continue;
+            }
+
+            $note_key = $props['itemtype'] . '|' . $props['items_id'];
+            $note     = $notes[$note_key] ?? null;
+            if ($note === null) {
+                continue;
+            }
+
+            $owner_id   = (int) $props['users_id'];
+            $can_manage = AccessPolicy::canManageNoteFor($owner_id, $viewer_id);
+            $can_see    = $can_manage || $owner_id === $viewer_id;
+
+            if (!$can_see) {
+                continue;
+            }
+
+            $events[$key]['extendedProps']['note']       = $note['note'];
+            $events[$key]['extendedProps']['noteAuthor'] = $note['author_name'];
+        }
     }
 
     /**
@@ -304,6 +369,16 @@ final class EventProvider
                 'stateLabel'  => $state_label,
                 'priority'    => $priority,
                 'level'       => $level,
+                // Preenchidos depois, em lote, por `attachNotes()` — nunca
+                // aqui, linha a linha, o que seria uma consulta por evento.
+                // `canManageNote` é a exceção: não depende da nota existir,
+                // só de quem observa ser gestor de quem é dono do
+                // compromisso, então já é conhecido aqui.
+                'note'          => '',
+                'noteAuthor'    => '',
+                'canManageNote' => $is_details && $itemtype !== ''
+                                   ? AccessPolicy::canManageNoteFor($users_id, $viewer_id)
+                                   : false,
             ],
         ];
 

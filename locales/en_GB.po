@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GLPI Planner plugin\n"
 "Report-Msgid-Bugs-To: suporte@pellissari.com.br\n"
-"POT-Creation-Date: 2026-09-22 22:42+0000\n"
-"PO-Revision-Date: 2026-09-22 22:42+0000\n"
+"POT-Creation-Date: 2026-09-22 23:22+0000\n"
+"PO-Revision-Date: 2026-09-22 23:22+0000\n"
 "Last-Translator: Pellissari <suporte@pellissari.com.br>\n"
 "Language-Team: Pellissari <suporte@pellissari.com.br>\n"
 "Language: en_GB\n"
@@ -131,11 +131,11 @@ msgstr "Planner"
 msgid "Configuration"
 msgstr "Configuration"
 
-#: hook.php:104
+#: hook.php:123
 msgid "Created by the Planner plugin to tell this event type apart."
 msgstr "Created by the Planner plugin to tell this event type apart."
 
-#: hook.php:121 src/ProfileRights.php:57
+#: hook.php:140 src/ProfileRights.php:57
 msgid "Planning (Planner)"
 msgstr "Planning (Planner)"
 
@@ -143,40 +143,44 @@ msgstr "Planning (Planner)"
 msgid "Planner: GLPI dependencies not found or incompatible:"
 msgstr "Planner: GLPI dependencies not found or incompatible:"
 
-#: src/AccessPolicy.php:373
+#: src/AccessPolicy.php:489
 msgid "My schedule"
 msgstr "My schedule"
 
-#: src/AccessPolicy.php:374
+#: src/AccessPolicy.php:490
 msgid "Administrative access"
 msgstr "Administrative access"
 
-#: src/AccessPolicy.php:375
+#: src/AccessPolicy.php:491
 msgid "My team"
 msgstr "My team"
 
-#: src/AccessPolicy.php:376
+#: src/AccessPolicy.php:492
 msgid "My group"
 msgstr "My group"
 
-#: src/AccessPolicy.php:377
+#: src/AccessPolicy.php:493
+msgid "Group I manage"
+msgstr "Group I manage"
+
+#: src/AccessPolicy.php:494
 msgid "Shared with me"
 msgstr "Shared with me"
 
-#: src/EventProvider.php:258 templates/planner.html.twig:435
+#: src/EventProvider.php:323 templates/planner.html.twig:485
 msgid "Busy"
 msgstr "Busy"
 
-#: src/EventProvider.php:528 .locales-shadow/templates/planner.html.twig:95
-#: templates/planner.html.twig:441
+#: src/EventProvider.php:659 templates/planner.html.twig:108
+#: templates/planner.html.twig:491
 msgid "To do"
 msgstr "To do"
 
-#: src/EventProvider.php:529 templates/planner.html.twig:442
+#: src/EventProvider.php:660 templates/planner.html.twig:492
 msgid "Done"
 msgstr "Done"
 
-#: src/EventProvider.php:530 templates/planner.html.twig:440
+#: src/EventProvider.php:661 templates/planner.html.twig:490
 msgid "Information"
 msgstr "Information"
 
@@ -245,27 +249,31 @@ msgstr "Finished reservation"
 msgid "Upcoming reservation"
 msgstr "Upcoming reservation"
 
-#: src/Right.php:58
+#: src/Right.php:69
 msgid "Use Planner"
 msgstr "Use Planner"
 
-#: src/Right.php:59
+#: src/Right.php:70
 msgid "See my team schedules"
 msgstr "See my team schedules"
 
-#: src/Right.php:60
+#: src/Right.php:71
 msgid "See my group schedules"
 msgstr "See my group schedules"
 
-#: src/Right.php:61
+#: src/Right.php:72
+msgid "See the schedules of groups I manage"
+msgstr "See the schedules of groups I manage"
+
+#: src/Right.php:73
 msgid "See all schedules"
 msgstr "See all schedules"
 
-#: src/Right.php:62
+#: src/Right.php:74
 msgid "Share own schedule"
 msgstr "Share own schedule"
 
-#: src/Right.php:63 .locales-shadow/templates/planner.html.twig:248
+#: src/Right.php:75 .locales-shadow/templates/planner.html.twig:298
 msgid "Request access to a schedule"
 msgstr "Request access to a schedule"
 
@@ -313,12 +321,22 @@ msgstr "Event details"
 msgid "Free/busy only"
 msgstr "Free/busy only"
 
-#: src/View.php:154 src/View.php:182
+#: src/TechnicianStats.php:66
+#, php-format
+msgid "Ticket #%d"
+msgstr "Ticket #%d"
+
+#: src/TechnicianStats.php:171
+#, php-format
+msgid "%1$dh%2$02dmin"
+msgstr "%1$dh%2$02dmin"
+
+#: src/View.php:157 src/View.php:185
 #, php-format
 msgid "User #%d"
 msgstr "User #%d"
 
-#: templates/config.html.twig:14 templates/planner.html.twig:266
+#: templates/config.html.twig:14 templates/planner.html.twig:316
 msgid "Planner configuration"
 msgstr "Planner configuration"
 
@@ -374,7 +392,7 @@ msgstr "Event type colours"
 msgid "The colour identifies the type of appointment on the calendar, in the list and on the Kanban cards. Leave a type untouched to keep the plugin default."
 msgstr "The colour identifies the type of appointment on the calendar, in the list and on the Kanban cards. Leave a type untouched to keep the plugin default."
 
-#: templates/config.html.twig:103 templates/planner.html.twig:199
+#: templates/config.html.twig:103 templates/planner.html.twig:212
 msgid "Back to default"
 msgstr "Back to default"
 
@@ -410,7 +428,7 @@ msgstr "How the screen opens. Users can switch between Calendar, List and Kanban
 msgid "Open the schedule with the team already selected"
 msgstr "Open the schedule with the team already selected"
 
-#: templates/config.html.twig:170
+#: templates/config.html.twig:170 templates/planner.html.twig:505
 msgid "Save"
 msgstr "Save"
 
@@ -426,7 +444,7 @@ msgstr "Today"
 msgid "Next"
 msgstr "Next"
 
-#: templates/planner.html.twig:42 templates/planner.html.twig:317
+#: templates/planner.html.twig:42 templates/planner.html.twig:367
 msgid "New event"
 msgstr "New event"
 
@@ -454,136 +472,173 @@ msgstr "One lane per person, same period"
 msgid "By person"
 msgstr "By person"
 
-#: templates/planner.html.twig:80
+#: templates/planner.html.twig:87
+msgid "Each group member gets a colour; event types become text tags"
+msgstr "Each group member gets a colour; event types become text tags"
+
+#: templates/planner.html.twig:88
+msgid "Group manager view"
+msgstr "Group manager view"
+
+#: templates/planner.html.twig:93
 msgid "Group by"
 msgstr "Group by"
 
-#: templates/planner.html.twig:82 templates/planner.html.twig:447
+#: templates/planner.html.twig:95 templates/planner.html.twig:497
 #: templates/reservations.html.twig:452
 msgid "Status"
 msgstr "Status"
 
-#: templates/planner.html.twig:83 templates/planner.html.twig:438
-#: templates/planner.html.twig:444
+#: templates/planner.html.twig:96 templates/planner.html.twig:488
+#: templates/planner.html.twig:494
 msgid "Person"
 msgstr "Person"
 
-#: templates/planner.html.twig:91
+#: templates/planner.html.twig:104 templates/planner.html.twig:238
 msgid "Planned hours"
 msgstr "Planned hours"
 
-#: templates/planner.html.twig:99
+#: templates/planner.html.twig:112
 msgid "Completed"
 msgstr "Completed"
 
-#: templates/planner.html.twig:116
+#: templates/planner.html.twig:129
 #, php-format
 msgid "%d access request(s) awaiting your decision"
 msgstr "%d access request(s) awaiting your decision"
 
-#: templates/planner.html.twig:142
+#: templates/planner.html.twig:155
 msgid "You only see this person busy times"
 msgstr "You only see this person busy times"
 
-#: templates/planner.html.twig:143
+#: templates/planner.html.twig:156
 msgid "free/busy"
 msgstr "free/busy"
 
-#: templates/planner.html.twig:155
+#: templates/planner.html.twig:168
 msgid "Event types"
 msgstr "Event types"
 
-#: templates/planner.html.twig:161
+#: templates/planner.html.twig:174
 msgid "Customise my colours"
 msgstr "Customise my colours"
 
-#: templates/planner.html.twig:182
+#: templates/planner.html.twig:195
 msgid "Show completed"
 msgstr "Show completed"
 
-#: templates/planner.html.twig:205
+#: templates/planner.html.twig:218
 msgid "Save my colours"
 msgstr "Save my colours"
 
-#: templates/planner.html.twig:221 templates/planner.html.twig:244
+#: templates/planner.html.twig:233
+msgid "My tickets as technician"
+msgstr "My tickets as technician"
+
+#: templates/planner.html.twig:242
+msgid "Realised hours"
+msgstr "Realised hours"
+
+#: templates/planner.html.twig:246
+msgid "Total hours"
+msgstr "Total hours"
+
+#: templates/planner.html.twig:271 templates/planner.html.twig:294
 msgid "Open another schedule"
 msgstr "Open another schedule"
 
-#: templates/planner.html.twig:225
+#: templates/planner.html.twig:275
 msgid "Your profile has \"See all schedules\": you can open any user schedule, without depending on team, group or sharing."
 msgstr "Your profile has \"See all schedules\": you can open any user schedule, without depending on team, group or sharing."
 
-#: templates/planner.html.twig:259
+#: templates/planner.html.twig:309
 msgid "Manage shares"
 msgstr "Manage shares"
 
-#: templates/planner.html.twig:280
+#: templates/planner.html.twig:330
 msgid "Loading schedule…"
 msgstr "Loading schedule…"
 
-#: templates/planner.html.twig:319 templates/reservations.html.twig:189
+#: templates/planner.html.twig:369 templates/reservations.html.twig:189
 msgid "Close"
 msgstr "Close"
 
-#: templates/planner.html.twig:324 templates/planner.html.twig:445
+#: templates/planner.html.twig:374 templates/planner.html.twig:495
 msgid "Type"
 msgstr "Type"
 
-#: templates/planner.html.twig:333
+#: templates/planner.html.twig:383
 msgid "Title"
 msgstr "Title"
 
-#: templates/planner.html.twig:339 templates/reservations.html.twig:195
+#: templates/planner.html.twig:389 templates/reservations.html.twig:195
 msgid "Start"
 msgstr "Start"
 
-#: templates/planner.html.twig:344 templates/reservations.html.twig:200
+#: templates/planner.html.twig:394 templates/reservations.html.twig:200
 msgid "End"
 msgstr "End"
 
-#: templates/planner.html.twig:353
+#: templates/planner.html.twig:403
 msgid "Description"
 msgstr "Description"
 
-#: templates/planner.html.twig:369 templates/reservations.html.twig:289
+#: templates/planner.html.twig:419 templates/planner.html.twig:506
+#: templates/reservations.html.twig:289
 msgid "Cancel"
 msgstr "Cancel"
 
-#: templates/planner.html.twig:372
+#: templates/planner.html.twig:422
 msgid "Create"
 msgstr "Create"
 
-#: templates/planner.html.twig:436
+#: templates/planner.html.twig:486
 msgid "Select at least one schedule in the sidebar."
 msgstr "Select at least one schedule in the sidebar."
 
-#: templates/planner.html.twig:437
+#: templates/planner.html.twig:487
 msgid "No events in this period."
 msgstr "No events in this period."
 
-#: templates/planner.html.twig:439 templates/reservations.html.twig:447
+#: templates/planner.html.twig:489 templates/reservations.html.twig:447
 msgid "All day"
 msgstr "All day"
 
-#: templates/planner.html.twig:443 templates/reservations.html.twig:448
+#: templates/planner.html.twig:493 templates/reservations.html.twig:448
 msgid "When"
 msgstr "When"
 
-#: templates/planner.html.twig:446
+#: templates/planner.html.twig:496
 msgid "Event"
 msgstr "Event"
 
-#: templates/planner.html.twig:448
+#: templates/planner.html.twig:498
 msgid "Schedule updated."
 msgstr "Schedule updated."
 
-#: templates/planner.html.twig:449
+#: templates/planner.html.twig:499
 msgid "You are not allowed to move this event."
 msgstr "You are not allowed to move this event."
 
-#: templates/planner.html.twig:450
+#: templates/planner.html.twig:500
 msgid "Could not save the new time."
 msgstr "Could not save the new time."
+
+#: templates/planner.html.twig:501
+msgid "Manager note"
+msgstr "Manager note"
+
+#: templates/planner.html.twig:502
+msgid "Add a note"
+msgstr "Add a note"
+
+#: templates/planner.html.twig:503
+msgid "Edit note"
+msgstr "Edit note"
+
+#: templates/planner.html.twig:504
+msgid "Note saved."
+msgstr "Note saved."
 
 #: templates/reservations.html.twig:39 templates/reservations.html.twig:187
 msgid "New reservation"

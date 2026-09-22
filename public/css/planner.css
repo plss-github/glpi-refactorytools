@@ -476,6 +476,51 @@
     overflow: auto;
 }
 
+/* Nota do gestor: destacada com uma borda à esquerda para não ser confundida
+   com a descrição do próprio compromisso (`.planner-popover-content`), que
+   vem do item e não de outra pessoa. */
+.planner-popover-note {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.625rem;
+    border-left: 3px solid var(--tblr-warning);
+    background: var(--tblr-warning-lt);
+    border-radius: 0 var(--tblr-border-radius) var(--tblr-border-radius) 0;
+}
+
+.planner-popover-note-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--tblr-warning-fg, var(--tblr-orange));
+    margin-bottom: 0.125rem;
+}
+
+.planner-popover-note-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.planner-popover-note-author {
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+    color: var(--tblr-secondary);
+}
+
+.planner-popover-note-edit {
+    margin-top: 0.5rem;
+}
+
+.planner-popover-note-form {
+    margin-top: 0.5rem;
+}
+
+.planner-popover-note-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.375rem;
+    margin-top: 0.375rem;
+}
+
 /* --------------------------------------------------------------------- */
 /* Modo Lista                                                             */
 /* --------------------------------------------------------------------- */
@@ -727,10 +772,32 @@
     vertical-align: middle;
 }
 
-.planner-team-toggle.active {
+.planner-team-toggle.active,
+#planner-group-manager-toggle.active {
     background: var(--tblr-primary);
     border-color: var(--tblr-primary);
     color: #fff;
+}
+
+/* Tag de tipo do modo gerente de grupo: no evento a cor já é da PESSOA, então
+   o tipo vira um rótulo de texto discreto em vez de uma cor própria. */
+.planner-type-tag {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 0.375rem;
+    padding: 0 0.375rem;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.planner-list-type .planner-type-tag,
+.planner-kanban-type.planner-type-tag {
+    background: var(--tblr-secondary-lt);
+    border-color: transparent;
+    color: var(--tblr-secondary);
 }
 
 /* Ícone de informação ao lado de um título de seção da barra lateral. */
@@ -756,6 +823,64 @@
 .planner-kanban-type {
     flex: 0 0 auto;
     max-width: 45%;
+}
+
+/* --------------------------------------------------------------------- */
+/* Chamados como técnico                                                  */
+/* --------------------------------------------------------------------- */
+
+.planner-tech-kpis {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.planner-tech-kpi {
+    flex: 1 1 0;
+    text-align: center;
+    padding: 0.375rem 0.25rem;
+    border-radius: var(--tblr-border-radius);
+    background: var(--tblr-active-bg, rgba(var(--tblr-secondary-rgb, 110, 117, 130), 0.08));
+}
+
+.planner-tech-kpi-value {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+.planner-tech-kpi-label {
+    display: block;
+    font-size: 0.625rem;
+    color: var(--tblr-secondary);
+    text-transform: uppercase;
+}
+
+.planner-tech-tickets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 12rem;
+    overflow-y: auto;
+}
+
+.planner-tech-ticket {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.25rem 0.375rem;
+    border-radius: var(--tblr-border-radius);
+}
+
+.planner-tech-ticket:hover {
+    background: var(--tblr-active-bg, rgba(var(--tblr-secondary-rgb, 110, 117, 130), 0.08));
+}
+
+.planner-tech-ticket a {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* --------------------------------------------------------------------- */

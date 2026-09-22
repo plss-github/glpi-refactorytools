@@ -6,6 +6,7 @@
  * Rotinas de instalação e desinstalação.
  */
 
+use GlpiPlugin\Planner\EventNotes;
 use GlpiPlugin\Planner\EventTypes;
 use GlpiPlugin\Planner\Right;
 use GlpiPlugin\Planner\Settings;
@@ -24,6 +25,7 @@ function plugin_planner_install(): bool
 
     Share::install($migration);
     UserColors::install($migration);
+    EventNotes::install($migration);
 
     $migration->executeMigration();
 
@@ -80,6 +82,7 @@ function plugin_planner_uninstall(): bool
 {
     Share::uninstall();
     UserColors::uninstall();
+    EventNotes::uninstall();
 
     ProfileRight::deleteProfileRights([Right::NAME]);
 

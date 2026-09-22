@@ -31,7 +31,7 @@ use GlpiPlugin\Planner\ProfileRights;
 use GlpiPlugin\Planner\ReservationMenu;
 use GlpiPlugin\Planner\Share;
 
-define('PLUGIN_PLANNER_VERSION', '0.6.0');
+define('PLUGIN_PLANNER_VERSION', '0.7.0');
 
 // Alvo: GLPI 11.0.x. As assinaturas usadas aqui (Planning::$rightname,
 // CFG_GLPI['planning_types'], populatePlanning(), Html::requireJs('fullcalendar'))

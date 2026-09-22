@@ -37,6 +37,17 @@ var GlpiPlanner = {
     /** Uma raia por pessoa no calendário (visão de equipe). */
     byActor: false,
 
+    /**
+     * Modo gerente de grupo: liga em Minha Agenda quando o observador
+     * gerencia um grupo (ver `can_group_manager_mode` no servidor). Não muda
+     * quais compromissos aparecem — só como são coloridos: uma cor por
+     * PESSOA em vez de uma cor por TIPO, que vira uma tag de texto.
+     */
+    groupManagerMode: false,
+
+    /** Popover travado aberto porque um editor de nota está em uso nele. */
+    notePinned: false,
+
     /** ids das agendas atualmente marcadas na barra lateral */
     actors: {},
 
@@ -63,6 +74,7 @@ var GlpiPlanner = {
         this.bindSidebar();
         this.bindToolbar();
         this.bindUserPicker();
+        this.bindPopoverDismiss();
         this.applyMode();
     },
 
@@ -515,8 +527,17 @@ var GlpiPlanner = {
     decorateEvent: function (info) {
         var props = info.event.extendedProps || {};
         var $el = $(info.el);
+        var group_manager = this.groupManagerMode && props.level !== 'busy';
 
         $el.css('border-left-color', props.actorColor || 'transparent');
+
+        // Modo gerente de grupo: a cor de fundo passa a identificar a PESSOA,
+        // não o TIPO — sobrescreve o `backgroundColor` que o próprio
+        // FullCalendar já aplicou a partir do JSON do servidor.
+        if (group_manager && props.actorColor) {
+            $el.css('background-color', props.actorColor);
+            $el.css('border-color', props.actorColor);
+        }
 
         if (props.level === 'busy') {
             $el.addClass('planner-event-busy');
@@ -531,10 +552,10 @@ var GlpiPlanner = {
 
         if (!is_compact) {
             var meta = [];
-            if (props.actorName && Object.keys(this.actors).length > 1) {
+            if (!group_manager && props.actorName && Object.keys(this.actors).length > 1) {
                 meta.push(props.actorName);
             }
-            if (props.typeLabel) {
+            if (!group_manager && props.typeLabel) {
                 meta.push(props.typeLabel);
             }
             if (meta.length) {
@@ -542,6 +563,12 @@ var GlpiPlanner = {
                     $('<span class="planner-event-meta"></span>').text(meta.join(' · '))
                 );
             }
+        }
+
+        if (group_manager && props.typeLabel) {
+            $el.find('.fc-title').after(
+                $('<span class="planner-type-tag"></span>').text(props.typeLabel)
+            );
         }
 
         this.bindPopover($el, info.event);
@@ -557,44 +584,161 @@ var GlpiPlanner = {
         var props = event.extendedProps || {};
 
         $el.on('mouseenter', function () {
+            // Pinado: um editor de nota está aberto neste ou noutro
+            // compromisso. Passar o mouse por cima de outros cartões não
+            // deve fechá-lo à revelia — só um clique fora, ou Salvar/Cancelar,
+            // fecham (ver o handler de documento em bindPopoverDismiss()).
+            if (self.notePinned) {
+                return;
+            }
             self.hidePopover();
-
-            var $pop = $('<div class="planner-popover"></div>');
-            $('<div class="planner-popover-title"></div>').text(event.title).appendTo($pop);
-
-            var meta = [];
-            if (props.actorName) {
-                meta.push(props.actorName);
-            }
-            if (props.typeLabel) {
-                meta.push(props.typeLabel);
-            }
-            if (props.stateLabel) {
-                meta.push(props.stateLabel);
-            }
-            if (meta.length) {
-                $('<div class="planner-popover-meta"></div>').text(meta.join(' · ')).appendTo($pop);
-            }
-
-            if (props.content) {
-                $('<div class="planner-popover-content"></div>').html(props.content).appendTo($pop);
-            }
-
-            $pop.appendTo('body');
-
-            var rect = this.getBoundingClientRect();
-            var top = rect.bottom + window.scrollY + 6;
-            var left = Math.min(
-                rect.left + window.scrollX,
-                window.innerWidth + window.scrollX - $pop.outerWidth() - 12
-            );
-            $pop.css({ top: top + 'px', left: Math.max(8, left) + 'px' });
+            self.renderPopover(this, event, props);
         }).on('mouseleave', function () {
+            if (self.notePinned) {
+                return;
+            }
             self.hidePopover();
         });
     },
 
+    renderPopover: function (anchorEl, event, props) {
+        var self = this;
+        var $pop = $('<div class="planner-popover"></div>');
+        $('<div class="planner-popover-title"></div>').text(event.title).appendTo($pop);
+
+        var meta = [];
+        if (props.actorName) {
+            meta.push(props.actorName);
+        }
+        if (props.typeLabel) {
+            meta.push(props.typeLabel);
+        }
+        if (props.stateLabel) {
+            meta.push(props.stateLabel);
+        }
+        if (meta.length) {
+            $('<div class="planner-popover-meta"></div>').text(meta.join(' · ')).appendTo($pop);
+        }
+
+        if (props.content) {
+            $('<div class="planner-popover-content"></div>').html(props.content).appendTo($pop);
+        }
+
+        // Nota do gestor: visível para o dono do compromisso e para quem
+        // tem `canManageNote` (ver `AccessPolicy::canManageNoteFor()`) — o
+        // servidor já decidiu isso antes de mandar `props.note`, aqui só se
+        // desenha o que chegou.
+        if (props.note) {
+            var $note = $('<div class="planner-popover-note"></div>');
+            $('<div class="planner-popover-note-label"></div>')
+                .html('<i class="ti ti-message-2"></i> ' + (self.label('manager_note') || 'Manager note'))
+                .appendTo($note);
+            $('<div class="planner-popover-note-text"></div>').text(props.note).appendTo($note);
+            if (props.noteAuthor) {
+                $('<div class="planner-popover-note-author"></div>').text(props.noteAuthor).appendTo($note);
+            }
+            $note.appendTo($pop);
+        }
+
+        if (props.canManageNote) {
+            $('<button type="button" class="btn btn-sm btn-ghost-secondary planner-popover-note-edit"></button>')
+                .html('<i class="ti ti-note"></i> ' + (props.note
+                    ? (self.label('edit_note') || 'Edit note')
+                    : (self.label('add_note') || 'Add a note')))
+                .on('click', function (e) {
+                    e.stopPropagation();
+                    self.showNoteEditor($pop, event, props);
+                })
+                .appendTo($pop);
+        }
+
+        $pop.appendTo('body');
+
+        var rect = anchorEl.getBoundingClientRect();
+        var top = rect.bottom + window.scrollY + 6;
+        var left = Math.min(
+            rect.left + window.scrollX,
+            window.innerWidth + window.scrollX - $pop.outerWidth() - 12
+        );
+        $pop.css({ top: top + 'px', left: Math.max(8, left) + 'px' });
+
+        return $pop;
+    },
+
+    /**
+     * Substitui o conteúdo do popover por um formulário de uma nota só.
+     * Pina o popover (`notePinned`) enquanto o formulário está aberto, para
+     * que passar o mouse do cartão até a área de texto não o feche antes de
+     * a pessoa conseguir digitar.
+     */
+    showNoteEditor: function ($pop, event, props) {
+        var self = this;
+        self.notePinned = true;
+
+        $pop.find('.planner-popover-note, .planner-popover-note-edit').remove();
+
+        var $form = $('<div class="planner-popover-note-form"></div>');
+        var $textarea = $('<textarea class="form-control form-control-sm" rows="3"></textarea>')
+            .val(props.note || '')
+            .appendTo($form);
+
+        var $actions = $('<div class="planner-popover-note-actions"></div>');
+        var $save = $('<button type="button" class="btn btn-sm btn-primary"></button>')
+            .text(self.label('save') || 'Save')
+            .appendTo($actions);
+        var $cancel = $('<button type="button" class="btn btn-sm btn-ghost-secondary"></button>')
+            .text(self.label('cancel') || 'Cancel')
+            .appendTo($actions);
+        $form.append($actions);
+        $form.appendTo($pop);
+
+        $textarea.trigger('focus');
+
+        $cancel.on('click', function () {
+            self.hidePopover();
+        });
+
+        $save.on('click', function () {
+            $.post(
+                (self.config.root_doc || '') + '/plugins/planner/ajax/save_event_note.php',
+                {
+                    itemtype: props.itemtype,
+                    items_id: props.items_id,
+                    users_id: props.users_id,
+                    note: $textarea.val()
+                }
+            ).done(function (response) {
+                if (response && response.ok) {
+                    self.notify('info', self.label('note_saved') || self.label('saved') || '');
+                    if (self.calendar) {
+                        self.calendar.refetchEvents();
+                    }
+                } else {
+                    self.notify('error', self.label('save_failed') || '');
+                }
+            }).fail(function () {
+                self.notify('error', self.label('save_failed') || '');
+            }).always(function () {
+                self.hidePopover();
+            });
+        });
+    },
+
+    /**
+     * Um clique fora fecha o popover pinado — é o único jeito de sair do
+     * editor de nota sem usar Salvar/Cancelar. Ligado uma única vez.
+     */
+    bindPopoverDismiss: function () {
+        var self = this;
+        $(document).on('mousedown', function (e) {
+            if (self.notePinned && !$(e.target).closest('.planner-popover').length) {
+                self.hidePopover();
+            }
+        });
+    },
+
     hidePopover: function () {
+        this.notePinned = false;
         $('.planner-popover').remove();
     },
 
@@ -726,10 +870,14 @@ var GlpiPlanner = {
 
         var $type = $('<td class="planner-list-type"></td>');
         if (props.typeLabel) {
-            $('<span class="planner-type-dot"></span>')
-                .css('background', props.typeColor || '')
-                .appendTo($type);
-            $('<span></span>').text(props.typeLabel).appendTo($type);
+            if (this.groupManagerMode && props.level !== 'busy') {
+                $('<span class="planner-type-tag"></span>').text(props.typeLabel).appendTo($type);
+            } else {
+                $('<span class="planner-type-dot"></span>')
+                    .css('background', props.typeColor || '')
+                    .appendTo($type);
+                $('<span></span>').text(props.typeLabel).appendTo($type);
+            }
         }
         $type.appendTo($tr);
 
@@ -935,8 +1083,9 @@ var GlpiPlanner = {
 
     buildKanbanCard: function (ev, draggable) {
         var props = ev.extendedProps || {};
+        var group_manager = this.groupManagerMode && props.level !== 'busy';
         var $card = $('<div class="planner-kanban-card"></div>')
-            .css('border-left-color', props.typeColor || 'transparent');
+            .css('border-left-color', (group_manager ? props.actorColor : props.typeColor) || 'transparent');
 
         if (props.level === 'busy') {
             $card.addClass('planner-event-busy');
@@ -981,7 +1130,8 @@ var GlpiPlanner = {
             .appendTo($foot);
         $('<span class="planner-kanban-actor"></span>').text(props.actorName || '').appendTo($foot);
         if (props.typeLabel) {
-            $('<span class="planner-kanban-type"></span>').text(props.typeLabel).appendTo($foot);
+            $('<span class="planner-kanban-type' + (group_manager ? ' planner-type-tag' : '') + '"></span>')
+                .text(props.typeLabel).appendTo($foot);
         }
         $foot.appendTo($card);
 
@@ -1157,6 +1307,18 @@ var GlpiPlanner = {
             self.byActor = !self.byActor;
             $(this).toggleClass('active', self.byActor);
             self.applyCalendarView();
+        });
+
+        // Alterna a apresentação (cor por pessoa + tag de tipo) sem refazer
+        // a busca: os campos de que precisa (actorColor, typeLabel) já vêm em
+        // todo evento, então basta redesenhar o que já está carregado.
+        $(document).on('click', '#planner-group-manager-toggle', function () {
+            self.groupManagerMode = !self.groupManagerMode;
+            $(this).toggleClass('active', self.groupManagerMode);
+            if (self.calendar) {
+                self.calendar.rerenderEvents();
+            }
+            self.renderPanes();
         });
 
         $(document).on('click', '.planner-kanban-opts [data-group]', function () {

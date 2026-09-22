@@ -76,6 +76,19 @@
                 <i class="ti ti-users-group"></i> {{ __('By person', 'planner') }}
             </button>
 
+            {% if can_group_manager_mode %}
+                {# Só aparece para quem é `is_manager=1` de pelo menos um
+                   grupo com membros visíveis (ver `AccessPolicy::canUseGroupManagerMode`).
+                   Ligar isto não muda QUEM aparece na agenda — isso já
+                   depende de marcar o grupo na barra lateral — só COMO os
+                   compromissos são coloridos: uma cor por pessoa em vez de
+                   uma cor por tipo, que passa a virar uma tag de texto. #}
+                <button type="button" class="btn btn-sm" id="planner-group-manager-toggle"
+                        title="{{ __('Each group member gets a colour; event types become text tags', 'planner') }}">
+                    <i class="ti ti-users"></i> {{ __('Group manager view', 'planner') }}
+                </button>
+            {% endif %}
+
             <div class="planner-kanban-opts" hidden>
                 <span class="planner-subbar-label">{{ __('Group by', 'planner') }}</span>
                 <div class="btn-group" role="group">
@@ -206,6 +219,43 @@
                         </button>
                     </form>
                 </div>
+
+                {% if technician_panel and technician_panel.tickets|length > 0 %}
+                    {# Chamados em que o usuário logado participa como TÉCNICO
+                       (`Ticket_User.type = ASSIGN`) — sempre sobre a PRÓPRIA
+                       participação, por isso não depende de nenhum direito
+                       extra do plugin: é o mesmo recorte que a pessoa já vê em
+                       "Meus chamados" na Central. A duração de cada chamado
+                       aparece ao passar o mouse (atributo `title` nativo, sem
+                       JavaScript). #}
+                    <div class="planner-section">
+                        <div class="planner-section-title">
+                            {{ __('My tickets as technician', 'planner') }}
+                        </div>
+                        <div class="planner-tech-kpis">
+                            <div class="planner-tech-kpi">
+                                <span class="planner-tech-kpi-value">{{ technician_panel.planned_hours }}h</span>
+                                <span class="planner-tech-kpi-label">{{ __('Planned hours', 'planner') }}</span>
+                            </div>
+                            <div class="planner-tech-kpi">
+                                <span class="planner-tech-kpi-value">{{ technician_panel.realized_hours }}h</span>
+                                <span class="planner-tech-kpi-label">{{ __('Realised hours', 'planner') }}</span>
+                            </div>
+                            <div class="planner-tech-kpi">
+                                <span class="planner-tech-kpi-value">{{ technician_panel.total_hours }}h</span>
+                                <span class="planner-tech-kpi-label">{{ __('Total hours', 'planner') }}</span>
+                            </div>
+                        </div>
+                        <ul class="planner-tech-tickets">
+                            {% for t in technician_panel.tickets %}
+                                <li class="planner-tech-ticket" title="{{ t.duration_label }}">
+                                    <a href="{{ t.url }}">{{ t.name }}</a>
+                                    <span class="badge bg-secondary-lt">{{ t.status_label }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
 
                 {# Acesso a agendas de terceiros: as duas ações ficam juntas, no
                    fim da barra, porque são sobre a mesma coisa — abrir uma
@@ -447,7 +497,13 @@
                 col_state: {{ __('Status', 'planner')|json_encode|raw }},
                 saved: {{ __('Schedule updated.', 'planner')|json_encode|raw }},
                 save_denied: {{ __('You are not allowed to move this event.', 'planner')|json_encode|raw }},
-                save_failed: {{ __('Could not save the new time.', 'planner')|json_encode|raw }}
+                save_failed: {{ __('Could not save the new time.', 'planner')|json_encode|raw }},
+                manager_note: {{ __('Manager note', 'planner')|json_encode|raw }},
+                add_note: {{ __('Add a note', 'planner')|json_encode|raw }},
+                edit_note: {{ __('Edit note', 'planner')|json_encode|raw }},
+                note_saved: {{ __('Note saved.', 'planner')|json_encode|raw }},
+                save: {{ __('Save', 'planner')|json_encode|raw }},
+                cancel: {{ __('Cancel', 'planner')|json_encode|raw }}
             }
         });
     });

@@ -48,6 +48,17 @@ final class Right
     public const REQUEST_ACCESS = 16384;
 
     /**
+     * Ativar o "modo gerente de grupo" em Minha Agenda quando o usuário é
+     * `is_manager=1` de pelo menos um grupo (ver `glpi_groups_users`).
+     *
+     * Bit próprio em vez de automático: mesmo quem é gerente de grupo no
+     * GLPI pode não dever enxergar a agenda do grupo pelo Planner — quem
+     * administra o plugin decide isso na matriz de perfis, como qualquer
+     * outro nível de visibilidade aqui.
+     */
+    public const READ_MANAGED_GROUP = 32768;
+
+    /**
      * Rótulos exibidos na matriz de direitos do perfil.
      *
      * @return array<int, string>
@@ -55,12 +66,13 @@ final class Right
     public static function getAll(): array
     {
         return [
-            self::USE_PLANNER    => __('Use Planner', 'planner'),
-            self::READ_TEAM      => __('See my team schedules', 'planner'),
-            self::READ_GROUP     => __('See my group schedules', 'planner'),
-            self::READ_ALL       => __('See all schedules', 'planner'),
-            self::SHARE_OWN      => __('Share own schedule', 'planner'),
-            self::REQUEST_ACCESS => __('Request access to a schedule', 'planner'),
+            self::USE_PLANNER       => __('Use Planner', 'planner'),
+            self::READ_TEAM         => __('See my team schedules', 'planner'),
+            self::READ_GROUP        => __('See my group schedules', 'planner'),
+            self::READ_MANAGED_GROUP => __('See the schedules of groups I manage', 'planner'),
+            self::READ_ALL          => __('See all schedules', 'planner'),
+            self::SHARE_OWN         => __('Share own schedule', 'planner'),
+            self::REQUEST_ACCESS    => __('Request access to a schedule', 'planner'),
         ];
     }
 
@@ -74,6 +86,7 @@ final class Right
         return self::USE_PLANNER
             | self::READ_TEAM
             | self::READ_GROUP
+            | self::READ_MANAGED_GROUP
             | self::READ_ALL
             | self::SHARE_OWN
             | self::REQUEST_ACCESS;
