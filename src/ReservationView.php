@@ -26,6 +26,7 @@
 namespace GlpiPlugin\Planner;
 
 use Glpi\Application\View\TemplateRenderer;
+use Profile;
 use Reservation;
 use ReservationItem;
 use Session;
@@ -50,6 +51,34 @@ final class ReservationView
         return ReservationProvider::canView();
     }
 
+    /**
+     * Quem pode gerenciar quais ativos são reserváveis.
+     *
+     * Restrito ao(s) perfil(is) Super-Admin por escolha explícita: marcar um
+     * ativo como reservável muda o que a organização inteira enxerga nesta
+     * tela, e não é uma tarefa de quem apenas usa as reservas. Não basta ter o
+     * direito `reservation` — o técnico que reserva uma sala não deveria poder
+     * transformar qualquer ativo em recurso compartilhado.
+     */
+    public static function canManageItems(): bool
+    {
+        $profile_id = (int) ($_SESSION['glpiactiveprofile']['id'] ?? 0);
+
+        return $profile_id > 0
+            && in_array($profile_id, Profile::getSuperAdminProfilesId(), true);
+    }
+
+    /**
+     * Pode criar reserva? É o direito do core, não do plugin.
+     */
+    public static function canReserve(): bool
+    {
+        return Session::haveRightsOr(
+            Reservation::$rightname,
+            [CREATE, ReservationItem::RESERVEANITEM]
+        );
+    }
+
     public static function show(): void
     {
         /** @var array $CFG_GLPI */
@@ -59,36 +88,30 @@ final class ReservationView
 
         TemplateRenderer::getInstance()->display('@planner/reservations.html.twig', [
             'root_doc'     => $CFG_GLPI['root_doc'],
-            'item_groups'  => $items,
-            'items_count'  => array_sum(array_map(static fn(array $g) => count($g['items']), $items)),
-            'can_reserve'  => Session::haveRight(Reservation::$rightname, ReservationItem::RESERVEANITEM),
+            'items'        => $items,
+            'items_count'  => count($items),
+            'can_reserve'  => self::canReserve(),
+            'can_manage'   => self::canManageItems(),
             'me'           => (int) Session::getLoginUserID(),
             'today'        => date('Y-m-d'),
-            'default_mode' => Settings::get('default_mode'),
-            'state_columns' => self::getStateColumns(),
+            // O Kanban não é oferecido aqui: ele agrupa em colunas, e uma
+            // reserva só tem duas perguntas — qual item e quando. Calendário e
+            // Lista respondem as duas; uma terceira forma só dividiria a
+            // atenção.
+            'default_mode' => in_array(
+                Settings::get('default_mode'),
+                [Settings::MODE_CALENDAR, Settings::MODE_LIST],
+                true
+            ) ? Settings::get('default_mode') : Settings::MODE_CALENDAR,
+            'default_begin' => date('Y-m-d\TH:00', strtotime('+1 hour')),
+            'default_end'   => date('Y-m-d\TH:00', strtotime('+2 hours')),
+            'csrf'          => Session::getNewCSRFToken(),
         ]);
     }
 
     /**
-     * Colunas do Kanban desta tela.
-     *
-     * @return array<int, array{state: int, title: string, color: string}>
-     */
-    public static function getStateColumns(): array
-    {
-        return [
-            ['state' => self::STATE_ONGOING,  'title' => __('In progress', 'planner'), 'color' => '#12a594'],
-            ['state' => self::STATE_UPCOMING, 'title' => __('Upcoming', 'planner'),    'color' => '#2f6df6'],
-            ['state' => self::STATE_FINISHED, 'title' => __('Finished', 'planner'),    'color' => '#6b7a90'],
-        ];
-    }
-
-    /**
-     * Rótulo da situação de UMA reserva.
-     *
-     * Deliberadamente no singular, ao contrário dos títulos das colunas do
-     * Kanban: a coluna agrupa várias ("Encerradas"), a linha da lista fala de
-     * uma só ("Encerrada").
+     * Rótulo da situação de UMA reserva, exibido na coluna Situação da lista
+     * e no resumo do evento.
      */
     public static function getStateLabel(int $state): string
     {
@@ -114,13 +137,13 @@ final class ReservationView
     }
 
     /**
-     * Itens reserváveis visíveis, agrupados pelo tipo de ativo.
+     * Itens reserváveis visíveis, em lista única.
      *
-     * Agrupar por tipo é o que torna a lista navegável: uma instalação com
-     * trinta itens reserváveis misturaria sala, veículo e notebook numa lista
-     * plana sem nenhuma pista de onde procurar.
+     * Ordenados por tipo e depois por nome, então os itens de um mesmo tipo
+     * continuam vizinhos — sem um cabeçalho de tipo repetindo "Computadores"
+     * acima de cada bloco, que só ocupava espaço numa barra lateral estreita.
      *
-     * @return array<int, array{itemtype: string, label: string, items: array<int, array<string, mixed>>}>
+     * @return array<int, array<string, mixed>>
      */
     public static function getReservableItems(): array
     {
@@ -141,7 +164,7 @@ final class ReservationView
             ] + getEntitiesRestrictCriteria($table, '', '', true),
         ]);
 
-        $groups = [];
+        $items = [];
 
         foreach ($rows as $row) {
             $itemtype = (string) $row['itemtype'];
@@ -153,34 +176,25 @@ final class ReservationView
                 continue;
             }
 
-            if (!isset($groups[$itemtype])) {
-                $groups[$itemtype] = [
-                    'itemtype' => $itemtype,
-                    'label'    => $item::getTypeName(2),
-                    'items'    => [],
-                ];
-            }
+            $id   = (int) $row['id'];
+            $name = $item->getName();
 
-            $id = (int) $row['id'];
-            $groups[$itemtype]['items'][] = [
-                'id'       => $id,
-                'name'     => $item->getName(),
-                'color'    => EventProvider::getActorColor($id),
-                'initials' => self::getInitials($item->getName()),
+            $items[] = [
+                'id'        => $id,
+                'name'      => $name,
+                // O tipo continua disponível como dica ao passar o mouse: some
+                // da lista, mas não da informação.
+                'type_name' => $item::getTypeName(1),
+                'color'     => EventProvider::getActorColor($id),
+                'initials'  => self::getInitials($name),
             ];
         }
 
-        foreach ($groups as &$group) {
-            usort(
-                $group['items'],
-                static fn(array $a, array $b) => strcasecmp((string) $a['name'], (string) $b['name'])
-            );
-        }
-        unset($group);
+        usort($items, static function (array $a, array $b): int {
+            return [$a['type_name'], $a['name']] <=> [$b['type_name'], $b['name']];
+        });
 
-        uasort($groups, static fn(array $a, array $b) => strcasecmp($a['label'], $b['label']));
-
-        return array_values($groups);
+        return $items;
     }
 
     /**

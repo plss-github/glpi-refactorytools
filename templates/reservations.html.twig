@@ -5,6 +5,9 @@
  # diferente: cada faixa é um ITEM RESERVÁVEL, não uma pessoa. Reaproveitar as
  # classes `planner-*` não é economia de digitação — é o que garante que as
  # duas telas continuem parecidas quando uma delas mudar.
+ #
+ # Sem Kanban aqui: uma reserva responde a duas perguntas, qual item e quando,
+ # e Calendário e Lista já cobrem as duas.
  #}
 
 <div class="planner-page" id="planner-app"
@@ -27,10 +30,11 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            {% if can_reserve %}
-                <a href="{{ root_doc }}/front/reservation.php" class="btn btn-sm btn-primary">
+            {% if can_reserve and items_count > 0 %}
+                <button type="button" class="btn btn-sm btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#planner-new-reservation">
                     <i class="ti ti-plus"></i> {{ __('New reservation', 'planner') }}
-                </a>
+                </button>
             {% endif %}
             <div class="planner-modes btn-group" role="group" aria-label="{{ __('View mode', 'planner') }}">
                 <button type="button" class="btn btn-sm" data-mode="calendar">
@@ -38,9 +42,6 @@
                 </button>
                 <button type="button" class="btn btn-sm" data-mode="list">
                     <i class="ti ti-list-details"></i> {{ __('List', 'planner') }}
-                </button>
-                <button type="button" class="btn btn-sm" data-mode="kanban">
-                    <i class="ti ti-layout-kanban"></i> {{ __('Kanban', 'planner') }}
                 </button>
             </div>
         </div>
@@ -58,28 +59,16 @@
                     title="{{ __('One lane per item, same period', 'planner') }}">
                 <i class="ti ti-layout-rows"></i> {{ __('By item', 'planner') }}
             </button>
-
-            <div class="planner-kanban-opts" hidden>
-                <span class="planner-subbar-label">{{ __('Group by', 'planner') }}</span>
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-sm" data-group="state">{{ __('Status', 'planner') }}</button>
-                    <button type="button" class="btn btn-sm" data-group="actor">{{ __('Item', 'planner') }}</button>
-                </div>
-            </div>
         </div>
 
         <div class="planner-kpis">
             <div class="planner-kpi">
-                <span class="planner-kpi-value" data-kpi="hours">—</span>
-                <span class="planner-kpi-label">{{ __('Reserved hours', 'planner') }}</span>
+                <span class="planner-kpi-value" data-kpi="count">—</span>
+                <span class="planner-kpi-label">{{ __('Reservations', 'planner') }}</span>
             </div>
             <div class="planner-kpi">
                 <span class="planner-kpi-value" data-kpi="todo">—</span>
                 <span class="planner-kpi-label">{{ __('In progress', 'planner') }}</span>
-            </div>
-            <div class="planner-kpi">
-                <span class="planner-kpi-value" data-kpi="done">—</span>
-                <span class="planner-kpi-label">{{ __('Mine', 'planner') }}</span>
             </div>
             <div class="planner-kpi">
                 <span class="planner-kpi-value" data-kpi="people">—</span>
@@ -98,15 +87,14 @@
                         <i class="ti ti-info-circle"></i>
                         {{ __('No reservable item is available in this entity. An item becomes reservable from its own form, under the Reservations tab.', 'planner') }}
                     </div>
-                {% endif %}
-
-                {% for group in item_groups %}
+                {% else %}
+                    {# Lista única, sem cabeçalho por tipo: o tipo vira dica ao
+                       passar o mouse e a barra lateral fica com menos ruído. #}
                     <div class="planner-section">
-                        <div class="planner-section-title">{{ group.label }}</div>
                         <ul class="planner-actors">
-                            {% for item in group.items %}
+                            {% for item in items %}
                                 <li class="planner-actor" data-actor="{{ item.id }}">
-                                    <label class="planner-actor-label">
+                                    <label class="planner-actor-label" title="{{ item.type_name }}">
                                         <input type="checkbox" class="form-check-input planner-actor-toggle"
                                                value="{{ item.id }}"
                                                data-color="{{ item.color }}"
@@ -119,17 +107,17 @@
                             {% endfor %}
                         </ul>
                     </div>
-                {% endfor %}
 
-                {% if items_count > 0 %}
                     <div class="planner-section">
                         <div class="planner-section-title">{{ __('Filters', 'planner') }}</div>
                         <label class="planner-type-label">
                             {# `data-planner-flag` faz o JavaScript mandar esta
                                caixa como parâmetro na busca de eventos, sem
-                               precisar de código específico desta tela. #}
+                               precisar de código específico desta tela.
+                               Marcada por padrão: o uso mais comum da tela é
+                               conferir as próprias reservas. #}
                             <input type="checkbox" class="form-check-input planner-type-toggle"
-                                   id="planner-only-mine" data-planner-flag="only_mine">
+                                   id="planner-only-mine" data-planner-flag="only_mine" checked>
                             <span>{{ __('Only my reservations', 'planner') }}</span>
                         </label>
                         <label class="planner-type-label">
@@ -139,13 +127,15 @@
                     </div>
                 {% endif %}
 
-                <div class="planner-section planner-section-footer">
-                    <a href="{{ root_doc }}/front/reservationitem.php"
-                       class="btn btn-sm btn-ghost-secondary w-100">
-                        <i class="ti ti-settings"></i>
-                        {{ __('Manage reservable items', 'planner') }}
-                    </a>
-                </div>
+                {% if can_manage %}
+                    <div class="planner-section planner-section-footer">
+                        <a href="{{ root_doc }}/front/reservationitem.php"
+                           class="btn btn-sm btn-ghost-secondary w-100">
+                            <i class="ti ti-settings"></i>
+                            {{ __('Manage reservable items', 'planner') }}
+                        </a>
+                    </div>
+                {% endif %}
             </div>
         </aside>
 
@@ -162,13 +152,104 @@
             <div class="planner-pane" data-pane="list" hidden>
                 <div class="planner-list"></div>
             </div>
-
-            <div class="planner-pane" data-pane="kanban" hidden>
-                <div class="planner-kanban"></div>
-            </div>
         </main>
     </div>
 </div>
+
+{# ------------------------------------------------------------------------ #}
+{# Nova reserva                                                              #}
+{#                                                                           #}
+{# O formulário posta para `front/reservation.form.php` do PRÓPRIO GLPI, que #}
+{# chama `Reservation::handleAddForm()`. É esse método que confere se o item #}
+{# já está reservado no período, aplica o direito de criar para outra pessoa #}
+{# e dispara a notificação. Um endpoint próprio teria que reimplementar a    #}
+{# checagem de conflito — e uma reserva dupla é exatamente o erro que esta   #}
+{# tela existe para evitar.                                                  #}
+{# ------------------------------------------------------------------------ #}
+{% if can_reserve and items_count > 0 %}
+    <div class="modal fade" id="planner-new-reservation" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" method="post"
+                  action="{{ root_doc }}/front/reservation.form.php"
+                  id="planner-new-reservation-form">
+                <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
+                <input type="hidden" name="add" value="1">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('New reservation', 'planner') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="{{ __('Close', 'planner') }}"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="planner-res-item">
+                            {{ __('Reservable item', 'planner') }}
+                        </label>
+                        <select class="form-select" id="planner-res-item" name="items[]" required>
+                            <option value="">—</option>
+                            {% for item in items %}
+                                <option value="{{ item.id }}">{{ item.type_name }} - {{ item.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label" for="planner-res-begin">{{ __('Start', 'planner') }}</label>
+                            <input type="datetime-local" class="form-control" id="planner-res-begin"
+                                   value="{{ default_begin }}" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" for="planner-res-end">{{ __('End', 'planner') }}</label>
+                            <input type="datetime-local" class="form-control" id="planner-res-end"
+                                   value="{{ default_end }}" required>
+                        </div>
+                    </div>
+
+                    {# O core espera 'Y-m-d H:i:s'; o input datetime-local
+                       entrega 'Y-m-dTH:i'. A conversão acontece no envio e vai
+                       nestes campos ocultos. #}
+                    <input type="hidden" name="resa[begin]" id="planner-res-begin-raw">
+                    <input type="hidden" name="resa[end]" id="planner-res-end-raw">
+
+                    <div class="mb-1">
+                        <label class="form-label" for="planner-res-comment">{{ __('Comment', 'planner') }}</label>
+                        <textarea class="form-control" id="planner-res-comment" name="comment" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-hint mt-2">
+                        {{ __('If the item is already reserved for this period, GLPI refuses the reservation and says so.', 'planner') }}
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">
+                        {{ __('Cancel', 'planner') }}
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-check"></i> {{ __('Reserve', 'planner') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            $('#planner-new-reservation-form').on('submit', function () {
+                // 'Y-m-dTH:i' -> 'Y-m-d H:i:s'. Sem os segundos o MySQL até
+                // aceita, mas o valor gravado fica diferente do que o resto do
+                // GLPI escreve nessas colunas.
+                var toSql = function (value) {
+                    return value ? value.replace('T', ' ') + ':00' : '';
+                };
+                $('#planner-res-begin-raw').val(toSql($('#planner-res-begin').val()));
+                $('#planner-res-end-raw').val(toSql($('#planner-res-end').val()));
+            });
+        });
+    </script>
+{% endif %}
 
 <script>
     $(function () {
@@ -183,7 +264,6 @@
             // Faixas aqui são itens, não pessoas: não existe reatribuir uma
             // reserva arrastando de uma faixa para outra.
             resource_itemtype: null,
-            state_columns: {{ state_columns|json_encode|raw }},
             labels: {
                 no_actor: {{ __('Select at least one item in the sidebar.', 'planner')|json_encode|raw }},
                 no_event: {{ __('No reservation in this period.', 'planner')|json_encode|raw }},

@@ -947,11 +947,26 @@ var GlpiPlanner = {
     // Indicadores e estados
     // -----------------------------------------------------------------
 
+    /**
+     * Cada tela escolhe quais indicadores mostra; os seletores ausentes
+     * simplesmente não recebem nada. Por isso não há lista fixa de KPIs aqui.
+     */
+    /**
+     * Cada tela escolhe quais indicadores mostra; os seletores ausentes
+     * simplesmente não recebem nada. Por isso não há lista fixa de KPIs aqui.
+     *
+     * `selected` e `people` são coisas diferentes de propósito: o primeiro é
+     * quantas linhas estão MARCADAS na barra lateral, o segundo é quantas
+     * realmente têm compromisso no período — na tela de reservas, "itens em
+     * uso" só faz sentido como o segundo.
+     */
     updateKpis: function (stats) {
+        $('[data-kpi="count"]').text(stats.events_count !== undefined ? stats.events_count : '—');
         $('[data-kpi="hours"]').text(stats.total_hours !== undefined ? stats.total_hours : '—');
         $('[data-kpi="todo"]').text(stats.todo !== undefined ? stats.todo : '—');
         $('[data-kpi="done"]').text(stats.done !== undefined ? stats.done : '—');
-        $('[data-kpi="people"]').text(Object.keys(this.actors).length);
+        $('[data-kpi="people"]').text(stats.people !== undefined ? stats.people : '—');
+        $('[data-kpi="selected"]').text(Object.keys(this.actors).length);
     },
 
     setLoading: function (on) {
