@@ -32,7 +32,7 @@ final class View
         TemplateRenderer::getInstance()->display('@planner/planner.html.twig', [
             'root_doc'       => $CFG_GLPI['root_doc'],
             'actor_groups'   => self::getActorGroups($me),
-            'types'          => EventProvider::getAvailableTypes(),
+            'types'          => EventProvider::getAvailableTypes($me),
             'can_pick_any'   => Right::has(Right::READ_ALL),
             // Exibido como aviso na barra lateral: sem isso, quem tem
             // READ_ALL vê "todas as agendas" e não entende de onde vem o
@@ -46,6 +46,10 @@ final class View
             'me'             => $me,
             'today'          => date('Y-m-d'),
             'level_busy'     => Settings::LEVEL_BUSY,
+            'creatable_kinds'    => self::getCreatableKinds(),
+            'default_event_begin' => date('Y-m-d\TH:00', strtotime('+1 hour')),
+            'default_event_end'   => date('Y-m-d\TH:00', strtotime('+2 hours')),
+            'csrf'           => Session::getNewCSRFToken(),
         ]);
     }
 
@@ -177,6 +181,36 @@ final class View
             $row['other_name'] = EventProvider::getUserName($other_id)
                 ?: sprintf(__('User #%d', 'planner'), $other_id);
             $out[] = $row;
+        }
+
+        return $out;
+    }
+
+    /**
+     * Tipos que o "+ Novo compromisso" oferece de verdade, para ESTE
+     * usuário: nem todo mundo tem o direito de criar as cinco variantes
+     * (Lembrete usa `Reminder::canCreate()`, que aceita o direito PESSOAL, tão
+     * comum quanto o de qualquer usuário mexer na própria agenda; os quatro
+     * eventos usam `PlanningExternalEvent::canCreate()`, um direito à parte).
+     * Uma lista vazia significa "não pode criar nada por aqui" — o botão
+     * inteiro desaparece nesse caso (ver `can_create_event` no template).
+     *
+     * @return array<int, array{key: string, label: string, icon: string}>
+     */
+    private static function getCreatableKinds(): array
+    {
+        $out = [];
+
+        foreach (EventTypes::CREATABLE as $key) {
+            $itemtype = EventTypes::realItemtype($key);
+
+            if ($itemtype::canCreate()) {
+                $out[] = [
+                    'key'   => $key,
+                    'label' => EventTypes::getLabel($key),
+                    'icon'  => EventTypes::getIcon($key),
+                ];
+            }
         }
 
         return $out;

@@ -35,16 +35,24 @@
             <span class="planner-period" data-period>&nbsp;</span>
         </div>
 
-        <div class="planner-modes btn-group" role="group" aria-label="{{ __('View mode', 'planner') }}">
-            <button type="button" class="btn btn-sm" data-mode="calendar">
-                <i class="ti ti-calendar-month"></i> {{ __('Calendar', 'planner') }}
-            </button>
-            <button type="button" class="btn btn-sm" data-mode="list">
-                <i class="ti ti-list-details"></i> {{ __('List', 'planner') }}
-            </button>
-            <button type="button" class="btn btn-sm" data-mode="kanban">
-                <i class="ti ti-layout-kanban"></i> {{ __('Kanban', 'planner') }}
-            </button>
+        <div class="d-flex align-items-center gap-2">
+            {% if creatable_kinds is not empty %}
+                <button type="button" class="btn btn-sm btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#planner-new-event">
+                    <i class="ti ti-plus"></i> {{ __('New event', 'planner') }}
+                </button>
+            {% endif %}
+            <div class="planner-modes btn-group" role="group" aria-label="{{ __('View mode', 'planner') }}">
+                <button type="button" class="btn btn-sm" data-mode="calendar">
+                    <i class="ti ti-calendar-month"></i> {{ __('Calendar', 'planner') }}
+                </button>
+                <button type="button" class="btn btn-sm" data-mode="list">
+                    <i class="ti ti-list-details"></i> {{ __('List', 'planner') }}
+                </button>
+                <button type="button" class="btn btn-sm" data-mode="kanban">
+                    <i class="ti ti-layout-kanban"></i> {{ __('Kanban', 'planner') }}
+                </button>
+            </div>
         </div>
     </div>
 
@@ -89,10 +97,6 @@
             <div class="planner-kpi">
                 <span class="planner-kpi-value" data-kpi="done">—</span>
                 <span class="planner-kpi-label">{{ __('Completed', 'planner') }}</span>
-            </div>
-            <div class="planner-kpi">
-                <span class="planner-kpi-value" data-kpi="selected">—</span>
-                <span class="planner-kpi-label">{{ __('Schedules shown', 'planner') }}</span>
             </div>
         </div>
     </div>
@@ -147,14 +151,27 @@
                 {% endfor %}
 
                 <div class="planner-section">
-                    <div class="planner-section-title">{{ __('Event types', 'planner') }}</div>
-                    <ul class="planner-types">
+                    <div class="planner-section-title">
+                        {{ __('Event types', 'planner') }}
+                        {# Cada pessoa pode preferir suas próprias cores, sem
+                           depender do administrador nem afetar a tela de
+                           ninguém mais (ver `UserColors`). O lápis abre o
+                           formulário embutido logo abaixo. #}
+                        <button type="button" class="planner-color-edit-toggle" id="planner-color-edit-toggle"
+                                title="{{ __('Customise my colours', 'planner') }}">
+                            <i class="ti ti-palette"></i>
+                        </button>
+                    </div>
+                    <ul class="planner-types" id="planner-type-list">
                         {% for type in types %}
                             <li>
                                 <label class="planner-type-label">
                                     <input type="checkbox" class="form-check-input planner-type-toggle"
                                            value="{{ type.itemtype }}" checked>
-                                    <span class="planner-type-dot" style="background: {{ type.color }}"></span>
+                                    <span class="planner-avatar planner-avatar-square planner-avatar-xs planner-type-swatch"
+                                          style="--planner-actor-color: {{ type.color }}" data-type-key="{{ type.itemtype }}">
+                                        <i class="{{ type.icon }}"></i>
+                                    </span>
                                     <span>{{ type.label }}</span>
                                 </label>
                             </li>
@@ -164,6 +181,30 @@
                         <input type="checkbox" class="form-check-input" id="planner-show-done" checked>
                         <span>{{ __('Show completed', 'planner') }}</span>
                     </label>
+
+                    {# Formulário de cores pessoais: escondido por padrão,
+                       abre com o botão do lápis acima. Um input color por
+                       tipo, exatamente como a tela de configuração do
+                       administrador — só que grava em `UserColors`, não em
+                       `Settings`. #}
+                    <form id="planner-color-form" class="planner-color-grid mt-2" hidden
+                          method="post" action="{{ root_doc }}/plugins/planner/ajax/save_user_colors.php">
+                        <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
+                        {% for type in types %}
+                            <label class="planner-color-row">
+                                <input type="color" name="colors[{{ type.itemtype }}]" value="{{ type.color }}"
+                                       data-planner-default="{{ type.default }}">
+                                <span class="planner-color-name">{{ type.label }}</span>
+                                <button type="button" class="btn btn-sm btn-ghost-secondary planner-color-reset"
+                                        title="{{ __('Back to default', 'planner') }}">
+                                    <i class="ti ti-rotate"></i>
+                                </button>
+                            </label>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-sm btn-primary w-100 mt-1">
+                            {{ __('Save my colours', 'planner') }}
+                        </button>
+                    </form>
                 </div>
 
                 {# Acesso a agendas de terceiros: as duas ações ficam juntas, no
@@ -254,8 +295,137 @@
     </div>
 </div>
 
+{# ------------------------------------------------------------------------ #}
+{# Novo compromisso                                                          #}
+{#                                                                           #}
+{# Cobre exatamente o que o planejamento NATIVO também deixa criar direto do #}
+{# calendário — Lembrete e as quatro variantes de Evento — porque uma tarefa #}
+{# de chamado/mudança/problema/projeto só existe presa a um item já aberto,  #}
+{# em nenhuma das duas telas. Posta para `ajax/create_event.php`, endpoint   #}
+{# próprio do plugin: o formulário nativo do evento externo tem um gate de   #}
+{# direito incondicional que bloquearia quem só tem o direito do plugin.     #}
+{# ------------------------------------------------------------------------ #}
+{% if creatable_kinds is not empty %}
+    <div class="modal fade" id="planner-new-event" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" method="post"
+                  action="{{ root_doc }}/plugins/planner/ajax/create_event.php"
+                  id="planner-new-event-form">
+                <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('New event', 'planner') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="{{ __('Close', 'planner') }}"></button>
+                </div>
+
+                <div class="modal-body planner-res-form">
+                    <div class="mb-3">
+                        <label class="form-label required" for="planner-event-kind">{{ __('Type', 'planner') }}</label>
+                        <select class="form-select" id="planner-event-kind" name="kind" required>
+                            {% for kind in creatable_kinds %}
+                                <option value="{{ kind.key }}">{{ kind.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label required" for="planner-event-name">{{ __('Title', 'planner') }}</label>
+                        <input type="text" class="form-control" id="planner-event-name" name="name" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label required" for="planner-event-begin">{{ __('Start', 'planner') }}</label>
+                            <input type="datetime-local" class="form-control" id="planner-event-begin"
+                                   value="{{ default_event_begin }}" required>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label required" for="planner-event-end">{{ __('End', 'planner') }}</label>
+                            <input type="datetime-local" class="form-control" id="planner-event-end"
+                                   value="{{ default_event_end }}" required>
+                        </div>
+                    </div>
+                    <input type="hidden" name="begin" id="planner-event-begin-raw">
+                    <input type="hidden" name="end" id="planner-event-end-raw">
+
+                    <div class="mb-3">
+                        <label class="form-label" for="planner-event-text">{{ __('Description', 'planner') }}</label>
+                        <textarea class="form-control" id="planner-event-text" name="text" rows="2"></textarea>
+                    </div>
+
+                    {# Recorrência: só se aplica às 4 variantes de Evento — o
+                       widget nativo (`showRepetitionForm`) escreve os campos
+                       `rrule[...]`, que `PlanningExternalEvent::add()` já
+                       sabe converter. Lembrete não tem coluna de recorrência
+                       no banco, então o bloco fica escondido nesse caso. #}
+                    <div id="planner-event-rrule">
+                        {{ call('PlanningExternalEvent::showRepetitionForm', ['', {rand: random()}])|raw }}
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">
+                        {{ __('Cancel', 'planner') }}
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-calendar-plus me-1"></i>{{ __('Create', 'planner') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            var $kindSelect = $('#planner-event-kind');
+            var $rrule = $('#planner-event-rrule');
+
+            function toSql(value) {
+                return value ? value.replace('T', ' ') + ':00' : '';
+            }
+
+            function toggleRrule() {
+                // "Lembrete" é a única opção sem coluna de recorrência no
+                // banco — some com o bloco nesse caso, em vez de deixá-lo
+                // visível prometendo algo que o envio ignoraria.
+                $rrule.prop('hidden', $kindSelect.val() === {{ constant('GlpiPlugin\\Planner\\EventTypes::REMINDER')|json_encode|raw }});
+            }
+
+            $kindSelect.on('change', toggleRrule);
+            toggleRrule();
+
+            $('#planner-new-event-form').on('submit', function () {
+                $('#planner-event-begin-raw').val(toSql($('#planner-event-begin').val()));
+                $('#planner-event-end-raw').val(toSql($('#planner-event-end').val()));
+            });
+        });
+    </script>
+{% endif %}
+
 <script>
     $(function () {
+        // Cores pessoais: abrir/fechar o formulário, pré-visualizar no
+        // marcador enquanto a pessoa escolhe, e "voltar ao padrão" por tipo.
+        // A gravação em si é um POST normal (ver ajax/save_user_colors.php);
+        // a página recarrega depois e os eventos já vêm coloridos do servidor.
+        $('#planner-color-edit-toggle').on('click', function () {
+            $(this).toggleClass('is-active');
+            $('#planner-color-form').prop('hidden', function (_, hidden) { return !hidden; });
+        });
+
+        $('#planner-color-form').on('input', 'input[type=color]', function () {
+            var key = $(this).closest('.planner-color-row').find('input').attr('name')
+                .replace('colors[', '').replace(']', '');
+            $('#planner-type-list .planner-type-swatch[data-type-key="' + key + '"]')
+                .css('--planner-actor-color', $(this).val());
+        });
+
+        $('#planner-color-form').on('click', '.planner-color-reset', function () {
+            $(this).closest('.planner-color-row').find('input[type=color]')
+                .each(function () { $(this).val($(this).data('planner-default')).trigger('input'); });
+        });
+
         GlpiPlanner.init({
             root_doc: {{ root_doc|json_encode|raw }},
             events_url: {{ (root_doc ~ '/plugins/planner/ajax/events.php')|json_encode|raw }},

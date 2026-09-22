@@ -243,6 +243,79 @@ final class ReservationView
     }
 
     /**
+     * Itens reserváveis LIVRES num intervalo — é o que alimenta o formulário
+     * de nova reserva, onde só faz sentido oferecer o que ainda pode ser
+     * escolhido sem esbarrar numa reserva existente.
+     *
+     * Uma única consulta identifica os itens OCUPADOS (que têm alguma reserva
+     * sobreposta ao intervalo); o resto é filtrar `getReservableItems()`
+     * removendo esses ids, em memória. Mais barato que checar item a item.
+     *
+     * Este é o ponto de verdade da disponibilidade: o formulário de criação
+     * reconfere aqui no servidor antes de gravar, então a lista mostrada no
+     * cliente é só uma conveniência — nunca a autorização.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function getAvailableItems(string $begin, string $end): array
+    {
+        if ($begin === '' || $end === '' || $begin >= $end) {
+            return [];
+        }
+
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        $busy_ids = [];
+        foreach ($DB->request([
+            'SELECT'   => 'reservationitems_id',
+            'DISTINCT' => true,
+            'FROM'     => Reservation::getTable(),
+            'WHERE'    => [
+                'begin' => ['<', $end],
+                'end'   => ['>', $begin],
+            ],
+        ]) as $row) {
+            $busy_ids[] = (int) $row['reservationitems_id'];
+        }
+
+        return array_values(array_filter(
+            self::getReservableItems(),
+            static fn(array $item) => !in_array($item['id'], $busy_ids, true)
+        ));
+    }
+
+    /**
+     * Mesma ideia de `getReservableTypes()`, mas só com os tipos que têm ao
+     * menos um item LIVRE no intervalo — é o que o segundo passo do
+     * formulário de nova reserva oferece.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function getAvailableTypes(string $begin, string $end): array
+    {
+        $types = [];
+
+        foreach (self::getAvailableItems($begin, $end) as $item) {
+            $itemtype = $item['itemtype'];
+
+            if (!isset($types[$itemtype])) {
+                $types[$itemtype] = [
+                    'itemtype' => $itemtype,
+                    'label'    => $item['type_label'],
+                    'count'    => 0,
+                ];
+            }
+
+            $types[$itemtype]['count']++;
+        }
+
+        uasort($types, static fn(array $a, array $b) => strcasecmp($a['label'], $b['label']));
+
+        return array_values($types);
+    }
+
+    /**
      * Itens reserváveis dos tipos pedidos, para montar as faixas e restringir
      * a consulta de reservas.
      *

@@ -55,12 +55,45 @@ final class Settings
             'override_native_planning' => '1',
             'override_native_reservation' => '1',
             'default_mode'       => self::MODE_CALENDAR,
-            // Mapa itemtype => cor, em JSON. Vazio = usar a paleta embutida
-            // (ver EventProvider::TYPE_COLORS). Guardar só o que foi alterado
-            // deixa os tipos não customizados acompanharem uma eventual
-            // mudança de paleta numa versão futura do plugin.
+            // Mapa tipo virtual => cor, em JSON. Vazio = usar a paleta
+            // embutida (ver EventTypes::getDefaultColor()). Guardar só o que
+            // foi alterado deixa os tipos não customizados acompanharem uma
+            // eventual mudança de paleta numa versão futura do plugin.
             'type_colors'        => '',
+            // IDs das 3 categorias (PlanningEventCategory) semeadas na
+            // instalação, que distinguem Evento Interno / Viagem / Reunião de
+            // um Evento Externo genérico. Guardados por ID, nunca pelo nome —
+            // o administrador pode renomear a categoria livremente sem
+            // quebrar o filtro, porque nada aqui compara nomes.
+            'category_internal_id' => '',
+            'category_travel_id'   => '',
+            'category_meeting_id'  => '',
         ];
+    }
+
+    /**
+     * ID da categoria (`PlanningEventCategory`) associada a uma variante de
+     * evento externo, ou 0 se a instalação não a semeou (ou ela foi apagada
+     * manualmente depois).
+     */
+    public static function getCategoryId(string $virtual_key): int
+    {
+        $config_key = EventTypes::categorySettingKey($virtual_key);
+        if ($config_key === null) {
+            return 0;
+        }
+
+        return (int) self::get($config_key);
+    }
+
+    public static function setCategoryId(string $virtual_key, int $category_id): void
+    {
+        $config_key = EventTypes::categorySettingKey($virtual_key);
+        if ($config_key === null) {
+            return;
+        }
+
+        Config::setConfigurationValues(self::CONTEXT, [$config_key => (string) $category_id]);
     }
 
     /**

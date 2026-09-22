@@ -3,6 +3,64 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.6.0] - 2026-09-22
+
+### Corrigido
+
+- **Não era possível criar nenhum compromisso pela tela de Planejamento.** A
+  tela tinha arrastar, redimensionar e visualizar, mas nenhum botão ou clique
+  abria "novo". Corrigido com "+ Novo compromisso": Lembrete e as quatro
+  variantes de Evento (Externo/Interno/Viagem/Reunião), com recorrência.
+  Postar direto para o formulário nativo do GLPI não era opção: ele tem um
+  `Session::checkRight("planning", READ)` incondicional que bloqueia quem só
+  tem o direito do plugin — testado e confirmado (403 no formulário nativo,
+  200 no endpoint do plugin, para o mesmo usuário sem o direito nativo).
+- **Arrastar entre colunas do Kanban não fazia nada.** O Kanban é HTML próprio
+  do plugin, não uma visão do FullCalendar — faltava a instrumentação de
+  arrastar e soltar por completo. Implementado com Drag and Drop nativo do
+  navegador, só na visão agrupada por Situação.
+- **Evento criado como "Reunião" era salvo, filtrado e colorido como "Evento
+  Externo".** `populatePlanning()` do core devolve uma lista fixa de colunas
+  que não inclui `planningeventcategories_id`, mesmo com a categoria gravada
+  certinha no banco — a variante nunca chegava a ser lida. Uma consulta
+  complementar, pelos IDs já retornados, resolve sem tocar no core.
+- A ordem de instalação gravava os 3 IDs de categoria e, na linha seguinte,
+  apagava os mesmos 3 campos ao salvar os valores padrão — toda atualização
+  do plugin criaria "Evento Interno"/"Viagem"/"Reunião" DE NOVO, duplicando.
+
+### Adicionado
+
+- **Nova taxonomia de tipos**: Chamado, Mudança, Problema, Projeto, Reserva,
+  Evento Externo, Evento Interno, Viagem, Reunião, Lembrete — substitui os
+  nomes técnicos anteriores ("Alterar tarefa" etc.). As quatro variantes de
+  Evento são a MESMA tabela (`PlanningExternalEvent`), diferenciadas pela
+  categoria (`PlanningEventCategory`), semeada na instalação.
+- **Cores de tipo de compromisso personalizáveis por USUÁRIO**, não só pelo
+  administrador. Um ícone de pincel na barra lateral abre um seletor de cor
+  por tipo; a precedência é usuário > administrador > paleta de fábrica.
+  Isolamento testado: mudar a cor numa sessão não afeta outra.
+- **Reserva**: o formulário agora pede a DATA primeiro — tipo de ativo e item
+  só aparecem depois, e só os itens LIVRES naquele período. A justificativa
+  virou obrigatória (renomeada de "Comentário" para "Justificativa da
+  reserva"). Recorrência (diária/semanal com dias específicos/mensal), via
+  `Reservation::computePeriodicities()` do próprio core.
+- Indicador "Agendas abertas" removido do Planejamento (não tinha uso
+  reportado); "Em andamento"/"Itens em uso" removidos das Reservas — sobrou só
+  a contagem de reservas do período exibido.
+- Limite de 31 dias reforçado no SERVIDOR (`EventProvider`,
+  `ReservationEventProvider`), independente do que a interface peça.
+
+### Adiado
+
+Ficaram fora desta rodada por serem subsistemas novos e extensos demais para
+entrar com qualidade junto do resto:
+
+- Painel "chamados em que participei como técnico", com horas planejadas,
+  realizadas e totais.
+- Notas do gestor em popover, visíveis ao subordinado passando o mouse.
+- Modo "gerente de grupo" na Minha Agenda, com troca de esquema de cores
+  (por pessoa + etiqueta de tipo) quando ativado.
+
 ## [0.5.0] - 2026-09-22
 
 ### Adicionado

@@ -62,6 +62,17 @@ final class ReservationEventProvider
             return [];
         }
 
+        // Mesma rede de segurança do EventProvider: a consulta nunca varre
+        // mais que 31 dias, mesmo que o cliente peça mais.
+        $begin_ts = strtotime($begin);
+        $end_ts   = strtotime($end);
+        if ($begin_ts !== false && $end_ts !== false) {
+            $max_ts = $begin_ts + (31 * 86400);
+            if ($end_ts > $max_ts) {
+                $end = date('Y-m-d H:i:s', $max_ts);
+            }
+        }
+
         $items_ids = array_map(
             static fn(array $item) => (int) $item['id'],
             ReservationView::getItemsForTypes($itemtypes)

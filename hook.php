@@ -6,9 +6,11 @@
  * Rotinas de instalação e desinstalação.
  */
 
+use GlpiPlugin\Planner\EventTypes;
 use GlpiPlugin\Planner\Right;
 use GlpiPlugin\Planner\Settings;
 use GlpiPlugin\Planner\Share;
+use GlpiPlugin\Planner\UserColors;
 
 /**
  * Instalação.
@@ -21,6 +23,7 @@ function plugin_planner_install(): bool
     $migration = new Migration(PLUGIN_PLANNER_VERSION);
 
     Share::install($migration);
+    UserColors::install($migration);
 
     $migration->executeMigration();
 
@@ -43,7 +46,25 @@ function plugin_planner_install(): bool
     // Grava os defaults de configuração explicitamente, para que a tela de
     // configuração mostre o estado real desde a primeira abertura em vez de
     // valores que só existem em memória.
-    Settings::save(Settings::getDefaults());
+    //
+    // Os 3 IDs de categoria ficam de FORA deste save: `plugin_planner_install()`
+    // roda de novo em toda ATUALIZAÇÃO de versão (não só na instalação), e um
+    // `getDefaults()` sempre traz esses 3 campos como string vazia. Se
+    // entrassem aqui, cada atualização apagaria o ID guardado ANTES de
+    // `plugin_planner_seed_event_categories()` rodar — e como essa função só
+    // recria a categoria quando não encontra um ID válido, o resultado seria
+    // uma categoria NOVA a cada atualização, duplicando "Evento Interno" /
+    // "Viagem" / "Reunião" indefinidamente.
+    $defaults = Settings::getDefaults();
+    foreach (['category_internal_id', 'category_travel_id', 'category_meeting_id'] as $key) {
+        unset($defaults[$key]);
+    }
+    Settings::save($defaults);
+
+    // Só depois de os defaults estarem gravados (e os 3 campos de categoria
+    // preservados, por não terem sido tocados acima) é que a semeadura roda —
+    // ela lê o ID atual antes de decidir se precisa criar a categoria.
+    plugin_planner_seed_event_categories();
 
     return true;
 }
@@ -58,12 +79,51 @@ function plugin_planner_install(): bool
 function plugin_planner_uninstall(): bool
 {
     Share::uninstall();
+    UserColors::uninstall();
 
     ProfileRight::deleteProfileRights([Right::NAME]);
 
     Settings::purge();
 
     return true;
+}
+
+/**
+ * Cria as 3 categorias de evento (`PlanningEventCategory`) que distinguem
+ * Evento Interno, Viagem e Reunião de um Evento Externo genérico — ver
+ * `EventTypes`. Rodado a cada instalação/atualização (`plugin_planner_install`
+ * roda nos dois casos), por isso é preciso não duplicar numa reinstalação:
+ * cada categoria só é criada se a configuração ainda não guarda um ID válido
+ * para ela.
+ *
+ * "Válido" aqui checa se a linha ainda EXISTE, não só se o ID está gravado —
+ * um administrador pode ter apagado a categoria manualmente, e nesse caso
+ * o plugin recria em vez de continuar apontando para um ID morto.
+ */
+function plugin_planner_seed_event_categories(): void
+{
+    $variants = [EventTypes::EVENT_INTERNAL, EventTypes::EVENT_TRAVEL, EventTypes::EVENT_MEETING];
+
+    foreach ($variants as $variant) {
+        $existing_id = Settings::getCategoryId($variant);
+
+        if ($existing_id > 0) {
+            $category = new PlanningEventCategory();
+            if ($category->getFromDB($existing_id)) {
+                continue;
+            }
+        }
+
+        $category = new PlanningEventCategory();
+        $new_id   = $category->add([
+            'name'    => EventTypes::seedCategoryName($variant),
+            'comment' => __('Created by the Planner plugin to tell this event type apart.', 'planner'),
+        ]);
+
+        if ($new_id) {
+            Settings::setCategoryId($variant, (int) $new_id);
+        }
+    }
 }
 
 /**

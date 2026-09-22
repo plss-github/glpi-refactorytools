@@ -161,21 +161,27 @@
 {# ------------------------------------------------------------------------ #}
 {# Nova reserva                                                              #}
 {#                                                                           #}
-{# O formulário posta para `front/reservation.form.php` do PRÓPRIO GLPI, que #}
-{# chama `Reservation::handleAddForm()`. É esse método que confere se o item #}
-{# já está reservado no período, aplica o direito de criar para outra pessoa #}
-{# e dispara a notificação. Um endpoint próprio teria que reimplementar a    #}
-{# checagem de conflito — e uma reserva dupla é exatamente o erro que esta   #}
-{# tela existe para evitar.                                                  #}
+{# A ordem dos campos é deliberada: DATA primeiro, item por último. Só depois#}
+{# de saber o período dá para saber o que está livre — mostrar a lista       #}
+{# completa (livre ou não) e só avisar do conflito depois de preencher tudo  #}
+{# é exatamente o problema que esta tela substitui (reservas combinadas num  #}
+{# chat, sem checar disponibilidade de verdade). O tipo de ativo e o item só #}
+{# ficam habilitados depois que a data é preenchida, e as opções vêm de      #}
+{# `ajax/reservation_availability.php` — só o que está de fato livre aparece.#}
+{#                                                                           #}
+{# Posta para `ajax/create_reservation.php`, endpoint do PRÓPRIO plugin, não #}
+{# para o formulário nativo do GLPI: ele reconfere a disponibilidade no      #}
+{# servidor (a lista do cliente é só conveniência) e exige a justificativa   #}
+{# antes de delegar a gravação para `Reservation::handleAddForm()` do core — #}
+{# a mesma rotina que confere conflito e expande a recorrência.              #}
 {# ------------------------------------------------------------------------ #}
 {% if can_reserve and items_count > 0 %}
     <div class="modal fade" id="planner-new-reservation" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <form class="modal-content" method="post"
-                  action="{{ root_doc }}/front/reservation.form.php"
+                  action="{{ root_doc }}/plugins/planner/ajax/create_reservation.php"
                   id="planner-new-reservation-form">
                 <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
-                <input type="hidden" name="add" value="1">
 
                 <div class="modal-header">
                     <h5 class="modal-title">{{ __('New reservation', 'planner') }}</h5>
@@ -184,27 +190,6 @@
                 </div>
 
                 <div class="modal-body planner-res-form">
-                    {# Itens agrupados pelo tipo: numa instalação com muitos
-                       ativos reserváveis, uma lista plana obriga a procurar o
-                       aparelho no meio de tudo. #}
-                    <div class="mb-3">
-                        <label class="form-label required" for="planner-res-item">
-                            {{ __('Reservable item', 'planner') }}
-                        </label>
-                        <select class="form-select" id="planner-res-item" name="items[]" required>
-                            <option value="" selected disabled>{{ __('Choose an item', 'planner') }}</option>
-                            {% for type in types %}
-                                <optgroup label="{{ type.label }}">
-                                    {% for item in items %}
-                                        {% if item.itemtype == type.itemtype %}
-                                            <option value="{{ item.id }}">{{ item.name }}</option>
-                                        {% endif %}
-                                    {% endfor %}
-                                </optgroup>
-                            {% endfor %}
-                        </select>
-                    </div>
-
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-sm-6">
                             <label class="form-label required" for="planner-res-begin">{{ __('Start', 'planner') }}</label>
@@ -225,15 +210,75 @@
                     <input type="hidden" name="resa[end]" id="planner-res-end-raw">
 
                     <div class="mb-3">
-                        <label class="form-label" for="planner-res-comment">{{ __('Comment', 'planner') }}</label>
+                        <label class="form-label required" for="planner-res-type">{{ __('Asset type', 'planner') }}</label>
+                        <select class="form-select" id="planner-res-type" required disabled>
+                            <option value="">{{ __('Fill in the dates above first', 'planner') }}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label required" for="planner-res-item">
+                            {{ __('Reservable item', 'planner') }}
+                        </label>
+                        <select class="form-select" id="planner-res-item" name="items[]" required disabled>
+                            <option value="">—</option>
+                        </select>
+                        <div class="form-hint" id="planner-res-availability-hint"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label required" for="planner-res-comment">
+                            {{ __('Reservation justification', 'planner') }}
+                        </label>
                         <textarea class="form-control" id="planner-res-comment" name="comment" rows="2"
-                                  placeholder="{{ __('What is it for? Optional.', 'planner') }}"></textarea>
+                                  placeholder="{{ __('What is it for?', 'planner') }}" required></textarea>
+                    </div>
+
+                    {# Recorrência: mesmos nomes de campo (`periodicity[...]`)
+                       que o formulário nativo de reserva usa, então
+                       `Reservation::handleAddForm()` entende sem tradução. #}
+                    <div class="mb-1">
+                        <label class="form-label" for="planner-res-periodicity">{{ __('Repeat', 'planner') }}</label>
+                        <select class="form-select" id="planner-res-periodicity" name="periodicity[type]">
+                            <option value="">{{ __('Does not repeat', 'planner') }}</option>
+                            <option value="day">{{ __('Every day', 'planner') }}</option>
+                            <option value="week">{{ __('Every week', 'planner') }}</option>
+                            <option value="month">{{ __('Every month', 'planner') }}</option>
+                        </select>
+                    </div>
+
+                    <div class="planner-res-periodicity-detail" hidden>
+                        <div class="row g-2 mt-1">
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label" for="planner-res-periodicity-end">{{ __('Repeat until', 'planner') }}</label>
+                                <input type="date" class="form-control" id="planner-res-periodicity-end"
+                                       name="periodicity[end]">
+                            </div>
+                            <div class="col-12 col-sm-6 planner-res-periodicity-month" hidden>
+                                <label class="form-label" for="planner-res-periodicity-subtype">{{ __('Monthly pattern', 'planner') }}</label>
+                                <select class="form-select" id="planner-res-periodicity-subtype" name="periodicity[subtype]">
+                                    <option value="date">{{ __('Same date every month', 'planner') }}</option>
+                                    <option value="day">{{ __('Same weekday every month', 'planner') }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="planner-res-periodicity-week" hidden>
+                            <div class="form-label mt-2 mb-1">{{ __('On these days', 'planner') }}</div>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for day, label in {'Monday': __('Mon', 'planner'), 'Tuesday': __('Tue', 'planner'), 'Wednesday': __('Wed', 'planner'), 'Thursday': __('Thu', 'planner'), 'Friday': __('Fri', 'planner'), 'Saturday': __('Sat', 'planner'), 'Sunday': __('Sun', 'planner')} %}
+                                    <label class="planner-res-day-toggle">
+                                        <input type="checkbox" name="periodicity[days][{{ day }}]" value="1">
+                                        <span>{{ label }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
 
                     {# Aviso escrito para quem reserva, não para quem mantém o
                        sistema: diz o que vai acontecer com ELE, sem citar o
                        nome do produto nem o mecanismo interno. #}
-                    <div class="planner-res-note">
+                    <div class="planner-res-note mt-3">
                         <i class="ti ti-info-circle"></i>
                         <span>{{ __('The item is held only for you during this period. If someone has already reserved it, we will tell you and nothing is saved.', 'planner') }}</span>
                     </div>
@@ -252,16 +297,131 @@
     </div>
 
     <script>
+        // Comportamento do modal de nova reserva. Fica aqui, e não no
+        // planner.js compartilhado, porque é específico desta tela: o
+        // planner.js carrega em TODA página do GLPI (hook `add_javascript`),
+        // e este código só existe onde o formulário existe.
         $(function () {
+            var $modal   = $('#planner-new-reservation');
+            var $begin   = $('#planner-res-begin');
+            var $end     = $('#planner-res-end');
+            var $type    = $('#planner-res-type');
+            var $item    = $('#planner-res-item');
+            var $hint    = $('#planner-res-availability-hint');
+            var labels = {
+                choose_type: {{ __('Choose an asset type', 'planner')|json_encode|raw }},
+                choose_item: {{ __('Choose an item', 'planner')|json_encode|raw }},
+                fill_dates:  {{ __('Fill in the dates above first', 'planner')|json_encode|raw }},
+                no_items:    {{ __('Nothing is free for this period.', 'planner')|json_encode|raw }}
+            };
+            var availableItems = [];
+            var fetchToken = 0;
+
+            function toSql(value) {
+                return value ? value.replace('T', ' ') + ':00' : '';
+            }
+
+            // Select2 dentro de um modal Bootstrap precisa de `dropdownParent`
+            // apontando para o próprio modal — sem isso, o painel da lista
+            // renderiza atrás do fundo escurecido ou fora de posição, porque
+            // o modal move o foco e recorta o overflow do body.
+            function initSelect2($el, placeholder) {
+                if ($.fn.select2) {
+                    $el.select2({ dropdownParent: $modal, width: '100%', placeholder: placeholder });
+                }
+            }
+
+            function setOptions($select, options, placeholder) {
+                var current = $select.val();
+                $select.empty().append($('<option></option>').val('').text(placeholder));
+                options.forEach(function (opt) {
+                    $select.append($('<option></option>').val(opt.value).text(opt.text));
+                });
+                // Select2 precisa ser reconstruído depois de trocar as opções
+                // à mão; só chamar `.trigger('change')` não refaz a lista.
+                if ($.fn.select2 && $select.data('select2')) {
+                    $select.select2('destroy');
+                }
+                initSelect2($select, placeholder);
+                if (current && options.some(function (o) { return String(o.value) === String(current); })) {
+                    $select.val(current).trigger('change.select2');
+                }
+            }
+
+            function applyTypeFilter() {
+                var type = $type.val();
+                var opts = availableItems
+                    .filter(function (it) { return !type || it.itemtype === type; })
+                    .map(function (it) { return { value: it.id, text: it.type_name + ' — ' + it.name }; });
+                setOptions($item, opts, opts.length ? labels.choose_item : labels.no_items);
+                $item.prop('disabled', opts.length === 0);
+            }
+
+            function refreshAvailability() {
+                var begin = $begin.val();
+                var end = $end.val();
+
+                if (!begin || !end || begin >= end) {
+                    return;
+                }
+
+                var token = ++fetchToken;
+
+                $.getJSON({{ (root_doc ~ '/plugins/planner/ajax/reservation_availability.php')|json_encode|raw }}, {
+                    begin: toSql(begin),
+                    end: toSql(end)
+                }).done(function (data) {
+                    // Uma resposta antiga (a pessoa mudou a data de novo antes
+                    // desta voltar) não deve sobrescrever um resultado mais
+                    // novo que talvez já tenha chegado.
+                    if (token !== fetchToken) {
+                        return;
+                    }
+
+                    availableItems = data.items || [];
+
+                    var typeOpts = (data.types || []).map(function (t) {
+                        return { value: t.itemtype, text: t.label + ' (' + t.count + ')' };
+                    });
+                    setOptions($type, typeOpts, typeOpts.length ? labels.choose_type : labels.no_items);
+                    $type.prop('disabled', typeOpts.length === 0);
+
+                    applyTypeFilter();
+
+                    $hint.text(typeOpts.length === 0 ? labels.no_items : '');
+                });
+            }
+
+            $begin.on('change', refreshAvailability);
+            $end.on('change', refreshAvailability);
+            $type.on('change', applyTypeFilter);
+
+            $modal.on('shown.bs.modal', function () {
+                initSelect2($type, labels.fill_dates);
+                initSelect2($item, labels.fill_dates);
+                refreshAvailability();
+            });
+
+            // Recorrência: mostra só os campos que fazem sentido para o tipo
+            // escolhido (dias da semana só para "toda semana", padrão mensal
+            // só para "todo mês").
+            $(document).on('change', '.planner-res-day-toggle input', function () {
+                $(this).closest('.planner-res-day-toggle').toggleClass('is-checked', this.checked);
+            });
+
+            $('#planner-res-periodicity').on('change', function () {
+                var type = $(this).val();
+                $('.planner-res-periodicity-detail').prop('hidden', !type);
+                $('.planner-res-periodicity-week').prop('hidden', type !== 'week');
+                $('.planner-res-periodicity-month').prop('hidden', type !== 'month');
+            });
+
             $('#planner-new-reservation-form').on('submit', function () {
                 // 'Y-m-dTH:i' -> 'Y-m-d H:i:s'. Sem os segundos o MySQL até
                 // aceita, mas o valor gravado fica diferente do que o resto do
                 // GLPI escreve nessas colunas.
-                var toSql = function (value) {
-                    return value ? value.replace('T', ' ') + ':00' : '';
-                };
-                $('#planner-res-begin-raw').val(toSql($('#planner-res-begin').val()));
-                $('#planner-res-end-raw').val(toSql($('#planner-res-end').val()));
+                $('#planner-res-begin-raw').val(toSql($begin.val()));
+                $('#planner-res-end-raw').val(toSql($end.val()));
             });
         });
     </script>

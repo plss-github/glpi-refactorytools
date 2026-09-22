@@ -634,6 +634,21 @@
     border-radius: var(--tblr-border-radius);
 }
 
+.planner-kanban-card[draggable="true"] {
+    cursor: grab;
+}
+
+.planner-kanban-card.is-dragging {
+    opacity: 0.4;
+}
+
+.planner-kanban-col.is-drop-target .planner-kanban-body {
+    background: rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.08);
+    outline: 2px dashed var(--tblr-primary);
+    outline-offset: -2px;
+    border-radius: var(--tblr-border-radius);
+}
+
 .planner-kanban-card {
     padding: 0.5rem 0.625rem;
     border: 1px solid var(--tblr-border-color);
@@ -848,4 +863,59 @@
 .planner-avatar .ti {
     font-size: 0.9375rem;
     line-height: 1;
+}
+
+/* Versão pequena do marcador quadrado, usada na lista de tipos de
+   compromisso — ali o marcador é só um selo de cor, não precisa do tamanho
+   do avatar de pessoa/item. */
+.planner-avatar-xs {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.6875rem;
+}
+
+.planner-color-edit-toggle {
+    border: none;
+    background: none;
+    padding: 0;
+    margin-left: 0.25rem;
+    color: var(--tblr-secondary);
+    cursor: pointer;
+    vertical-align: -0.1em;
+}
+
+.planner-color-edit-toggle:hover,
+.planner-color-edit-toggle.is-active {
+    color: var(--tblr-primary);
+}
+
+/* Dias da semana da recorrência de reserva: pílulas clicáveis, não uma
+   tabela de checkboxes soltos — mais fácil de escanear numa fileira curta
+   de sete opções. */
+.planner-res-day-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--tblr-border-color);
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* `:has()` cobre a maioria dos navegadores atuais; `.is-checked` (alternada
+   via JS) é o reforço para quem ainda não tem suporte. */
+.planner-res-day-toggle:has(input:checked),
+.planner-res-day-toggle.is-checked {
+    background: var(--tblr-primary);
+    border-color: var(--tblr-primary);
+    color: #fff;
+}
+
+.planner-res-day-toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }

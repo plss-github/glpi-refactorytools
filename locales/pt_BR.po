@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GLPI Planner plugin\n"
 "Report-Msgid-Bugs-To: suporte@pellissari.com.br\n"
-"POT-Creation-Date: 2026-09-22 17:50+0000\n"
+"POT-Creation-Date: 2026-09-22 22:42+0000\n"
 "PO-Revision-Date: 2026-09-22 14:00+0000\n"
 "Last-Translator: Pellissari <suporte@pellissari.com.br>\n"
 "Language-Team: Pellissari <suporte@pellissari.com.br>\n"
@@ -11,6 +11,51 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ajax/create_event.php:34
+msgid "Unknown event type."
+msgstr "Tipo de compromisso desconhecido."
+
+#: ajax/create_event.php:45
+msgid "Error in entering dates. The starting date is later than the ending date"
+msgstr "Erro nas datas informadas. A data de início é posterior à data de fim."
+
+#: ajax/create_event.php:57
+msgid "You are not allowed to create this type of event."
+msgstr "Você não tem permissão para criar este tipo de compromisso."
+
+#: ajax/create_event.php:94
+#, php-format
+msgid "\"%s\" was added to the schedule."
+msgstr "\"%s\" foi adicionado à agenda."
+
+#: ajax/create_event.php:94
+msgid "Without title"
+msgstr "Sem título"
+
+#: ajax/create_event.php:99
+msgid "Could not create the event."
+msgstr "Não foi possível criar o compromisso."
+
+#: ajax/create_reservation.php:32
+msgid "You are not allowed to create reservations."
+msgstr "Você não tem permissão para criar reservas."
+
+#: ajax/create_reservation.php:43
+msgid "The reservation justification is required."
+msgstr "A justificativa da reserva é obrigatória."
+
+#: ajax/create_reservation.php:61
+msgid "Fill in the item and the period before reserving."
+msgstr "Preencha o item e o período antes de reservar."
+
+#: ajax/create_reservation.php:79
+msgid "The selected item is no longer available for this period."
+msgstr "O item selecionado não está mais disponível para este período."
+
+#: ajax/save_user_colors.php:24
+msgid "Your colours were saved."
+msgstr "Suas cores foram salvas."
 
 #: ajax/share.php:50
 msgid "Access granted."
@@ -80,7 +125,11 @@ msgstr "Planner"
 msgid "Configuration"
 msgstr "Configuração"
 
-#: hook.php:77 src/ProfileRights.php:57
+#: hook.php:104
+msgid "Created by the Planner plugin to tell this event type apart."
+msgstr "Criada pelo plugin Planner para diferenciar este tipo de compromisso."
+
+#: hook.php:121 src/ProfileRights.php:57
 msgid "Planning (Planner)"
 msgstr "Planejamento (Planner)"
 
@@ -108,22 +157,62 @@ msgstr "Meu grupo"
 msgid "Shared with me"
 msgstr "Compartilhada comigo"
 
-#: src/EventProvider.php:181 templates/planner.html.twig:265
+#: src/EventProvider.php:258 templates/planner.html.twig:435
 msgid "Busy"
 msgstr "Ocupado"
 
-#: src/EventProvider.php:428 .locales-shadow/templates/planner.html.twig:87
-#: templates/planner.html.twig:271
+#: src/EventProvider.php:528 .locales-shadow/templates/planner.html.twig:95
+#: templates/planner.html.twig:441
 msgid "To do"
 msgstr "A fazer"
 
-#: src/EventProvider.php:429 templates/planner.html.twig:272
+#: src/EventProvider.php:529 templates/planner.html.twig:442
 msgid "Done"
 msgstr "Concluído"
 
-#: src/EventProvider.php:430 templates/planner.html.twig:270
+#: src/EventProvider.php:530 templates/planner.html.twig:440
 msgid "Information"
 msgstr "Informação"
+
+#: src/EventTypes.php:85
+msgid "Ticket"
+msgstr "Chamado"
+
+#: src/EventTypes.php:86
+msgid "Change"
+msgstr "Mudança"
+
+#: src/EventTypes.php:87
+msgid "Problem"
+msgstr "Problema"
+
+#: src/EventTypes.php:88
+msgid "Project"
+msgstr "Projeto"
+
+#: src/EventTypes.php:89
+msgid "Reservation"
+msgstr "Reserva"
+
+#: src/EventTypes.php:90
+msgid "Reminder"
+msgstr "Lembrete"
+
+#: src/EventTypes.php:91
+msgid "External event"
+msgstr "Evento externo"
+
+#: src/EventTypes.php:92 src/EventTypes.php:180
+msgid "Internal event"
+msgstr "Evento interno"
+
+#: src/EventTypes.php:93 src/EventTypes.php:181
+msgid "Travel"
+msgstr "Viagem"
+
+#: src/EventTypes.php:94 src/EventTypes.php:182
+msgid "Meeting"
+msgstr "Reunião"
 
 #: src/Menu.php:151
 msgid "Schedule"
@@ -133,7 +222,7 @@ msgstr "Agenda"
 msgid "Someone else schedule can also be granted individually, with the owner approval, under Planner > Shares. That path does not depend on the rights above, except for \"Use Planner\"."
 msgstr "A agenda de terceiros também pode ser liberada individualmente, com aceite do dono, na tela Planner > Compartilhamentos — isso independe dos direitos acima, exceto por \"Usar o Planner\"."
 
-#: src/ReservationEventProvider.php:226 src/ReservationProvider.php:163
+#: src/ReservationEventProvider.php:237 src/ReservationProvider.php:163
 #, php-format
 msgid "Reserved item #%d"
 msgstr "Item reservado #%d"
@@ -170,21 +259,21 @@ msgstr "Ver todas as agendas"
 msgid "Share own schedule"
 msgstr "Compartilhar a própria agenda"
 
-#: src/Right.php:63 .locales-shadow/templates/planner.html.twig:207
+#: src/Right.php:63 .locales-shadow/templates/planner.html.twig:248
 msgid "Request access to a schedule"
 msgstr "Solicitar acesso a uma agenda"
 
-#: src/Settings.php:132 .locales-shadow/templates/planner.html.twig:40
-#: templates/reservations.html.twig:41
+#: src/Settings.php:165 .locales-shadow/templates/planner.html.twig:47
+#: templates/reservations.html.twig:44
 msgid "Calendar"
 msgstr "Calendário"
 
-#: src/Settings.php:133 .locales-shadow/templates/planner.html.twig:43
-#: templates/reservations.html.twig:44
+#: src/Settings.php:166 .locales-shadow/templates/planner.html.twig:50
+#: templates/reservations.html.twig:47
 msgid "List"
 msgstr "Lista"
 
-#: src/Settings.php:134 .locales-shadow/templates/planner.html.twig:46
+#: src/Settings.php:167 .locales-shadow/templates/planner.html.twig:53
 msgid "Kanban"
 msgstr "Kanban"
 
@@ -218,12 +307,12 @@ msgstr "Detalhes dos compromissos"
 msgid "Free/busy only"
 msgstr "Apenas livre/ocupado"
 
-#: src/View.php:150 src/View.php:178
+#: src/View.php:154 src/View.php:182
 #, php-format
 msgid "User #%d"
 msgstr "Usuário #%d"
 
-#: templates/config.html.twig:14 templates/planner.html.twig:225
+#: templates/config.html.twig:14 templates/planner.html.twig:266
 msgid "Planner configuration"
 msgstr "Configuração do Planner"
 
@@ -279,7 +368,7 @@ msgstr "Cores dos tipos de compromisso"
 msgid "The colour identifies the type of appointment on the calendar, in the list and on the Kanban cards. Leave a type untouched to keep the plugin default."
 msgstr "A cor identifica o tipo de compromisso no calendário, na lista e nos cartões do Kanban. Deixe um tipo intocado para manter o padrão do plugin."
 
-#: templates/config.html.twig:103
+#: templates/config.html.twig:103 templates/planner.html.twig:199
 msgid "Back to default"
 msgstr "Voltar ao padrão"
 
@@ -319,242 +408,346 @@ msgstr "Abrir a agenda já com a equipe marcada"
 msgid "Save"
 msgstr "Salvar"
 
-#: templates/planner.html.twig:27 templates/reservations.html.twig:21
+#: templates/planner.html.twig:27 templates/reservations.html.twig:24
 msgid "Previous"
 msgstr "Anterior"
 
-#: templates/planner.html.twig:30 templates/reservations.html.twig:24
+#: templates/planner.html.twig:30 templates/reservations.html.twig:27
 msgid "Today"
 msgstr "Hoje"
 
-#: templates/planner.html.twig:31 templates/reservations.html.twig:25
+#: templates/planner.html.twig:31 templates/reservations.html.twig:28
 msgid "Next"
 msgstr "Próximo"
 
-#: templates/planner.html.twig:38 templates/reservations.html.twig:39
+#: templates/planner.html.twig:42 templates/planner.html.twig:317
+msgid "New event"
+msgstr "Novo compromisso"
+
+#: templates/planner.html.twig:45 templates/reservations.html.twig:42
 msgid "View mode"
 msgstr "Modo de visualização"
 
-#: templates/planner.html.twig:57 templates/reservations.html.twig:53
+#: templates/planner.html.twig:65 templates/reservations.html.twig:56
 msgid "Day"
 msgstr "Dia"
 
-#: templates/planner.html.twig:58 templates/reservations.html.twig:54
+#: templates/planner.html.twig:66 templates/reservations.html.twig:57
 msgid "Week"
 msgstr "Semana"
 
-#: templates/planner.html.twig:59 templates/reservations.html.twig:55
+#: templates/planner.html.twig:67 templates/reservations.html.twig:58
 msgid "Month"
 msgstr "Mês"
 
-#: templates/planner.html.twig:67
+#: templates/planner.html.twig:75
 msgid "One lane per person, same period"
 msgstr "Uma faixa por pessoa, no mesmo período"
 
-#: templates/planner.html.twig:68
+#: templates/planner.html.twig:76
 msgid "By person"
 msgstr "Por pessoa"
 
-#: templates/planner.html.twig:72
+#: templates/planner.html.twig:80
 msgid "Group by"
 msgstr "Agrupar por"
 
-#: templates/planner.html.twig:74 templates/planner.html.twig:277
-#: templates/reservations.html.twig:289
+#: templates/planner.html.twig:82 templates/planner.html.twig:447
+#: templates/reservations.html.twig:452
 msgid "Status"
 msgstr "Situação"
 
-#: templates/planner.html.twig:75 templates/planner.html.twig:268
-#: templates/planner.html.twig:274
+#: templates/planner.html.twig:83 templates/planner.html.twig:438
+#: templates/planner.html.twig:444
 msgid "Person"
 msgstr "Pessoa"
 
-#: templates/planner.html.twig:83
+#: templates/planner.html.twig:91
 msgid "Planned hours"
 msgstr "Horas planejadas"
 
-#: templates/planner.html.twig:91
+#: templates/planner.html.twig:99
 msgid "Completed"
 msgstr "Concluídos"
 
-#: templates/planner.html.twig:95
-msgid "Schedules shown"
-msgstr "Agendas abertas"
-
-#: templates/planner.html.twig:112
+#: templates/planner.html.twig:116
 #, php-format
 msgid "%d access request(s) awaiting your decision"
 msgstr "%d pedido(s) de acesso aguardando sua decisão"
 
-#: templates/planner.html.twig:138
+#: templates/planner.html.twig:142
 msgid "You only see this person busy times"
 msgstr "Você vê apenas os horários ocupados desta pessoa"
 
-#: templates/planner.html.twig:139
+#: templates/planner.html.twig:143
 msgid "free/busy"
 msgstr "livre/ocupado"
 
-#: templates/planner.html.twig:150
+#: templates/planner.html.twig:155
 msgid "Event types"
 msgstr "Tipos de compromisso"
 
-#: templates/planner.html.twig:165
+#: templates/planner.html.twig:161
+msgid "Customise my colours"
+msgstr "Personalizar minhas cores"
+
+#: templates/planner.html.twig:182
 msgid "Show completed"
 msgstr "Mostrar concluídos"
 
-#: templates/planner.html.twig:180 templates/planner.html.twig:203
+#: templates/planner.html.twig:205
+msgid "Save my colours"
+msgstr "Salvar minhas cores"
+
+#: templates/planner.html.twig:221 templates/planner.html.twig:244
 msgid "Open another schedule"
 msgstr "Abrir outra agenda"
 
-#: templates/planner.html.twig:184
+#: templates/planner.html.twig:225
 msgid "Your profile has \"See all schedules\": you can open any user schedule, without depending on team, group or sharing."
 msgstr "Seu perfil tem \"Ver todas as agendas\": você pode abrir a agenda de qualquer usuário, sem depender de equipe, grupo ou compartilhamento."
 
-#: templates/planner.html.twig:218
+#: templates/planner.html.twig:259
 msgid "Manage shares"
 msgstr "Gerenciar compartilhamentos"
 
-#: templates/planner.html.twig:239
+#: templates/planner.html.twig:280
 msgid "Loading schedule…"
 msgstr "Carregando agenda…"
 
-#: templates/planner.html.twig:266
-msgid "Select at least one schedule in the sidebar."
-msgstr "Selecione ao menos uma agenda na barra lateral."
-
-#: templates/planner.html.twig:267
-msgid "No events in this period."
-msgstr "Nenhum compromisso neste período."
-
-#: templates/planner.html.twig:269 templates/reservations.html.twig:284
-msgid "All day"
-msgstr "Dia inteiro"
-
-#: templates/planner.html.twig:273 templates/reservations.html.twig:285
-msgid "When"
-msgstr "Quando"
-
-#: templates/planner.html.twig:275
-msgid "Type"
-msgstr "Tipo"
-
-#: templates/planner.html.twig:276
-msgid "Event"
-msgstr "Compromisso"
-
-#: templates/planner.html.twig:278
-msgid "Schedule updated."
-msgstr "Agenda atualizada."
-
-#: templates/planner.html.twig:279
-msgid "You are not allowed to move this event."
-msgstr "Você não tem permissão para mover este compromisso."
-
-#: templates/planner.html.twig:280
-msgid "Could not save the new time."
-msgstr "Não foi possível salvar o novo horário."
-
-#: templates/reservations.html.twig:36 templates/reservations.html.twig:178
-msgid "New reservation"
-msgstr "Nova reserva"
-
-#: templates/reservations.html.twig:59
-msgid "One lane per item, same period"
-msgstr "Uma faixa por item, no mesmo período"
-
-#: templates/reservations.html.twig:60
-msgid "By item"
-msgstr "Por item"
-
-#: templates/reservations.html.twig:67
-msgid "Reservations"
-msgstr "Reservas"
-
-#: templates/reservations.html.twig:80
-msgid "No reservable item is available in this entity. An item becomes reservable from its own form, under the Reservations tab."
-msgstr "Nenhum item reservável está disponível nesta entidade. Um item passa a ser reservável no formulário dele, na aba Reservas."
-
-#: templates/reservations.html.twig:89
-msgid "Asset types"
-msgstr "Tipos de ativo"
-
-#: templates/reservations.html.twig:111
-msgid "Filters"
-msgstr "Filtros"
-
-#: templates/reservations.html.twig:120
-msgid "Only my reservations"
-msgstr "Somente as minhas reservas"
-
-#: templates/reservations.html.twig:124
-msgid "Show finished"
-msgstr "Mostrar encerradas"
-
-#: templates/reservations.html.twig:134
-msgid "Manage reservable items"
-msgstr "Gerenciar itens reserváveis"
-
-#: templates/reservations.html.twig:144
-msgid "Loading reservations…"
-msgstr "Carregando reservas…"
-
-#: templates/reservations.html.twig:180
+#: templates/planner.html.twig:319 templates/reservations.html.twig:189
 msgid "Close"
 msgstr "Fechar"
 
-#: templates/reservations.html.twig:189
-msgid "Reservable item"
-msgstr "Item reservável"
+#: templates/planner.html.twig:324 templates/planner.html.twig:445
+msgid "Type"
+msgstr "Tipo"
 
-#: templates/reservations.html.twig:192
-msgid "Choose an item"
-msgstr "Escolha um item"
+#: templates/planner.html.twig:333
+msgid "Title"
+msgstr "Título"
 
-#: templates/reservations.html.twig:207
+#: templates/planner.html.twig:339 templates/reservations.html.twig:195
 msgid "Start"
 msgstr "Início"
 
-#: templates/reservations.html.twig:212
+#: templates/planner.html.twig:344 templates/reservations.html.twig:200
 msgid "End"
 msgstr "Fim"
 
-#: templates/reservations.html.twig:225
-msgid "Comment"
-msgstr "Observação"
+#: templates/planner.html.twig:353
+msgid "Description"
+msgstr "Descrição"
 
-#: templates/reservations.html.twig:227
-msgid "What is it for? Optional."
-msgstr "Para que será usado? Opcional."
-
-#: templates/reservations.html.twig:235
-msgid "The item is held only for you during this period. If someone has already reserved it, we will tell you and nothing is saved."
-msgstr "O item fica reservado só para você neste período. Se alguém já tiver reservado, avisamos e nada é salvo."
-
-#: templates/reservations.html.twig:241
+#: templates/planner.html.twig:369 templates/reservations.html.twig:289
 msgid "Cancel"
 msgstr "Cancelar"
 
+#: templates/planner.html.twig:372
+msgid "Create"
+msgstr "Criar"
+
+#: templates/planner.html.twig:436
+msgid "Select at least one schedule in the sidebar."
+msgstr "Selecione ao menos uma agenda na barra lateral."
+
+#: templates/planner.html.twig:437
+msgid "No events in this period."
+msgstr "Nenhum compromisso neste período."
+
+#: templates/planner.html.twig:439 templates/reservations.html.twig:447
+msgid "All day"
+msgstr "Dia inteiro"
+
+#: templates/planner.html.twig:443 templates/reservations.html.twig:448
+msgid "When"
+msgstr "Quando"
+
+#: templates/planner.html.twig:446
+msgid "Event"
+msgstr "Compromisso"
+
+#: templates/planner.html.twig:448
+msgid "Schedule updated."
+msgstr "Agenda atualizada."
+
+#: templates/planner.html.twig:449
+msgid "You are not allowed to move this event."
+msgstr "Você não tem permissão para mover este compromisso."
+
+#: templates/planner.html.twig:450
+msgid "Could not save the new time."
+msgstr "Não foi possível salvar o novo horário."
+
+#: templates/reservations.html.twig:39 templates/reservations.html.twig:187
+msgid "New reservation"
+msgstr "Nova reserva"
+
+#: templates/reservations.html.twig:62
+msgid "One lane per item, same period"
+msgstr "Uma faixa por item, no mesmo período"
+
+#: templates/reservations.html.twig:63
+msgid "By item"
+msgstr "Por item"
+
+#: templates/reservations.html.twig:70
+msgid "Reservations"
+msgstr "Reservas"
+
+#: templates/reservations.html.twig:83
+msgid "No reservable item is available in this entity. An item becomes reservable from its own form, under the Reservations tab."
+msgstr "Nenhum item reservável está disponível nesta entidade. Um item passa a ser reservável no formulário dele, na aba Reservas."
+
+#: templates/reservations.html.twig:92
+msgid "Asset types"
+msgstr "Tipos de ativo"
+
+#: templates/reservations.html.twig:114
+msgid "Filters"
+msgstr "Filtros"
+
+#: templates/reservations.html.twig:123
+msgid "Only my reservations"
+msgstr "Somente as minhas reservas"
+
+#: templates/reservations.html.twig:127
+msgid "Show finished"
+msgstr "Mostrar encerradas"
+
+#: templates/reservations.html.twig:137
+msgid "Manage reservable items"
+msgstr "Gerenciar itens reserváveis"
+
+#: templates/reservations.html.twig:147
+msgid "Loading reservations…"
+msgstr "Carregando reservas…"
+
+#: templates/reservations.html.twig:213
+msgid "Asset type"
+msgstr "Tipo de ativo"
+
+#: templates/reservations.html.twig:215 templates/reservations.html.twig:314
+msgid "Fill in the dates above first"
+msgstr "Preencha as datas acima primeiro"
+
+#: templates/reservations.html.twig:221
+msgid "Reservable item"
+msgstr "Item reservável"
+
+#: templates/reservations.html.twig:231
+msgid "Reservation justification"
+msgstr "Justificativa da reserva"
+
+#: templates/reservations.html.twig:234
+msgid "What is it for?"
+msgstr "Para que será usado?"
+
+#: templates/reservations.html.twig:241
+msgid "Repeat"
+msgstr "Repetir"
+
+#: templates/reservations.html.twig:243
+msgid "Does not repeat"
+msgstr "Não repete"
+
 #: templates/reservations.html.twig:244
+msgid "Every day"
+msgstr "Todo dia"
+
+#: templates/reservations.html.twig:245
+msgid "Every week"
+msgstr "Toda semana"
+
+#: templates/reservations.html.twig:246
+msgid "Every month"
+msgstr "Todo mês"
+
+#: templates/reservations.html.twig:253
+msgid "Repeat until"
+msgstr "Repetir até"
+
+#: templates/reservations.html.twig:258
+msgid "Monthly pattern"
+msgstr "Padrão mensal"
+
+#: templates/reservations.html.twig:260
+msgid "Same date every month"
+msgstr "Mesma data todo mês"
+
+#: templates/reservations.html.twig:261
+msgid "Same weekday every month"
+msgstr "Mesmo dia da semana todo mês"
+
+#: templates/reservations.html.twig:266
+msgid "On these days"
+msgstr "Nestes dias"
+
+#: templates/reservations.html.twig:268
+msgid "Mon"
+msgstr "Seg"
+
+#: templates/reservations.html.twig:268
+msgid "Tue"
+msgstr "Ter"
+
+#: templates/reservations.html.twig:268
+msgid "Wed"
+msgstr "Qua"
+
+#: templates/reservations.html.twig:268
+msgid "Thu"
+msgstr "Qui"
+
+#: templates/reservations.html.twig:268
+msgid "Fri"
+msgstr "Sex"
+
+#: templates/reservations.html.twig:268
+msgid "Sat"
+msgstr "Sáb"
+
+#: templates/reservations.html.twig:268
+msgid "Sun"
+msgstr "Dom"
+
+#: templates/reservations.html.twig:283
+msgid "The item is held only for you during this period. If someone has already reserved it, we will tell you and nothing is saved."
+msgstr "O item fica reservado só para você neste período. Se alguém já tiver reservado, avisamos e nada é salvo."
+
+#: templates/reservations.html.twig:292
 msgid "Reserve"
 msgstr "Reservar"
 
-#: templates/reservations.html.twig:281
+#: templates/reservations.html.twig:312
+msgid "Choose an asset type"
+msgstr "Escolha um tipo de ativo"
+
+#: templates/reservations.html.twig:313
+msgid "Choose an item"
+msgstr "Escolha um item"
+
+#: templates/reservations.html.twig:315
+msgid "Nothing is free for this period."
+msgstr "Nada está livre para este período."
+
+#: templates/reservations.html.twig:444
 msgid "Select at least one asset type in the sidebar."
 msgstr "Selecione ao menos um tipo de ativo na barra lateral."
 
-#: templates/reservations.html.twig:282
+#: templates/reservations.html.twig:445
 msgid "No reservation in this period."
 msgstr "Nenhuma reserva neste período."
 
-#: templates/reservations.html.twig:283 templates/reservations.html.twig:286
+#: templates/reservations.html.twig:446 templates/reservations.html.twig:449
 msgid "Item"
 msgstr "Item"
 
-#: templates/reservations.html.twig:287
+#: templates/reservations.html.twig:450
 msgid "Note"
 msgstr "Observação"
 
-#: templates/reservations.html.twig:288
+#: templates/reservations.html.twig:451
 msgid "Reserved by"
 msgstr "Reservado por"
 
@@ -625,6 +818,12 @@ msgstr "Nenhuma agenda foi compartilhada com você."
 #: templates/shares.html.twig:227
 msgid "Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > Planner."
 msgstr "Compartilhamento é só uma das formas de acesso. Sua equipe (pelo campo Supervisor do usuário), seus grupos e o acesso administrativo são liberados pelo perfil, em Administração > Perfis > Planner."
+
+#~ msgid "Schedules shown"
+#~ msgstr "Agendas abertas"
+
+#~ msgid "Comment"
+#~ msgstr "Observação"
 
 #~ msgid "Items in use"
 #~ msgstr "Itens em uso"

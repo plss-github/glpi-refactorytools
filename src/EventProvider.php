@@ -28,34 +28,24 @@
  * planejamento nativo com `Planning::READALL`, e está documentado no README.
  * O nível "livre/ocupado" NÃO contorna isso: ele apaga o conteúdo de eventos
  * que o observador já podia ver, em vez de revelar eventos que ele não podia.
+ *
+ * TIPOS VIRTUAIS: `PlanningExternalEvent` sozinho vira quatro entradas na
+ * interface (Evento Externo/Interno/Viagem/Reunião), diferenciadas pela
+ * categoria do evento. `EventTypes` define essas chaves; esta classe resolve,
+ * linha a linha, qual chave uma linha do banco tem (`getVirtualKey()`) — a
+ * consulta ao core continua sendo UMA por itemtype real, nunca uma por
+ * variante, e o filtro por variante é aplicado depois, em memória.
  */
 
 namespace GlpiPlugin\Planner;
 
 use Planning;
+use PlanningExternalEvent;
+use Session;
 use User;
 
 final class EventProvider
 {
-    /**
-     * Cor por tipo de compromisso. Fixa e legendada na tela — cor por tipo
-     * informa mais que cor por pessoa, porque na visão de equipe a pessoa já
-     * é a raia. O tom de cada pessoa entra como barra lateral do evento.
-     *
-     * @var array<string, string>
-     */
-    private const TYPE_COLORS = [
-        'TicketTask'            => '#2f6df6',
-        'ProblemTask'           => '#e8833a',
-        'ChangeTask'            => '#8b5cf6',
-        'ProjectTask'           => '#12a594',
-        'Reminder'              => '#6b7a90',
-        'Reservation'           => '#0891b2',
-        'PlanningExternalEvent' => '#d6336c',
-    ];
-
-    private const DEFAULT_TYPE_COLOR = '#6b7a90';
-
     /**
      * Tons de pessoa. Escolhidos com luminosidade próxima entre si para que
      * nenhuma raia pareça mais importante que outra, e distinguíveis nas
@@ -72,14 +62,20 @@ final class EventProvider
     /**
      * Compromissos das agendas pedidas, no intervalo pedido.
      *
+     * O intervalo é limitado a 31 dias como rede de segurança: mesmo que uma
+     * versão futura da tela permita escolher um período maior, a consulta
+     * nunca varre mais que um mês de cada vez. Sem isso, um `end` manipulado
+     * na requisição (ou um bug de UI) poderia pedir um ano inteiro de tarefas
+     * de todo mundo de uma vez.
+     *
      * @param array<int, string>      $users_levels users_id => nível, já filtrado
      *                                              por AccessPolicy::filterRequested()
-     * @param array<int, string>|null $only_types   itemtypes a incluir.
-     *        `null` = sem filtro (todos os tipos). Array VAZIO = nenhum tipo,
-     *        e o resultado é vazio. A distinção existe porque a tela permite
-     *        desmarcar todos os tipos na barra lateral: tratar vazio como
-     *        "todos" fazia desmarcar tudo devolver a agenda inteira, o oposto
-     *        do que o usuário pediu.
+     * @param array<int, string>|null $only_types   chaves virtuais a incluir
+     *        (ver `EventTypes`). `null` = sem filtro (todos os tipos). Array
+     *        VAZIO = nenhum tipo, e o resultado é vazio. A distinção existe
+     *        porque a tela permite desmarcar todos os tipos na barra lateral:
+     *        tratar vazio como "todos" fazia desmarcar tudo devolver a agenda
+     *        inteira, o oposto do que o usuário pediu.
      * @return array<int, array<string, mixed>> eventos no formato FullCalendar
      */
     public static function getEvents(
@@ -87,11 +83,14 @@ final class EventProvider
         string $begin,
         string $end,
         ?array $only_types = null,
-        bool $include_done = true
+        bool $include_done = true,
+        ?int $viewer_id = null
     ): array {
         if ($only_types === []) {
             return [];
         }
+
+        $end = self::clampRange($begin, $end);
 
         $events = [];
 
@@ -99,7 +98,15 @@ final class EventProvider
             $actor_color = self::getActorColor((int) $users_id);
 
             foreach (self::getProviderTypes() as $itemtype) {
-                if ($only_types !== null && !in_array($itemtype, $only_types, true)) {
+                // PlanningExternalEvent nunca é pulado aqui pelo filtro de
+                // tipo: ele guarda 4 variantes virtuais, e só depois de ler
+                // a categoria de cada linha dá para saber qual delas é. Pular
+                // a consulta inteira só quando NENHUMA das 4 foi pedida.
+                if ($itemtype === PlanningExternalEvent::class) {
+                    if ($only_types !== null && array_intersect($only_types, self::externalEventKeys()) === []) {
+                        continue;
+                    }
+                } elseif ($only_types !== null && !in_array($itemtype, $only_types, true)) {
                     continue;
                 }
 
@@ -109,7 +116,7 @@ final class EventProvider
                     'begin'            => $begin,
                     'end'              => $end,
                     'color'            => $actor_color,
-                    'event_type_color' => self::getTypeColor($itemtype),
+                    'event_type_color' => '',
                     'state_done'       => $include_done,
                     'display'          => true,
                     'genical'          => false,
@@ -120,7 +127,13 @@ final class EventProvider
                 }
 
                 foreach ($raw as $row) {
-                    $event = self::normalize($row, (int) $users_id, $level, $actor_color);
+                    $virtual_key = self::getVirtualKey($itemtype, $row);
+
+                    if ($only_types !== null && !in_array($virtual_key, $only_types, true)) {
+                        continue;
+                    }
+
+                    $event = self::normalize($row, $virtual_key, (int) $users_id, $level, $actor_color, $viewer_id);
                     if ($event !== null) {
                         $events[] = $event;
                     }
@@ -129,6 +142,62 @@ final class EventProvider
         }
 
         return $events;
+    }
+
+    /**
+     * Nunca deixa a consulta varrer mais que 31 dias, mesmo que o cliente
+     * peça mais. Uma margem de 3 dias sobre 4 semanas cobre a visão de mês
+     * (que pode mostrar até 6 semanas na grade) sem abrir espaço para um
+     * intervalo de ano.
+     */
+    private static function clampRange(string $begin, string $end): string
+    {
+        $begin_ts = strtotime($begin);
+        $end_ts   = strtotime($end);
+
+        if ($begin_ts === false || $end_ts === false) {
+            return $end;
+        }
+
+        $max_ts = $begin_ts + (31 * 86400);
+
+        return $end_ts > $max_ts ? date('Y-m-d H:i:s', $max_ts) : $end;
+    }
+
+    /**
+     * Qual chave virtual (ver `EventTypes`) uma linha do banco representa.
+     * Só `PlanningExternalEvent` tem mais de uma possibilidade — as outras
+     * linhas usam o próprio itemtype como chave.
+     */
+    private static function getVirtualKey(string $itemtype, array $row): string
+    {
+        if ($itemtype !== PlanningExternalEvent::class) {
+            return $itemtype;
+        }
+
+        $category_id = (int) ($row['planningeventcategories_id'] ?? 0);
+        if ($category_id <= 0) {
+            return EventTypes::EVENT_EXTERNAL;
+        }
+
+        foreach ([EventTypes::EVENT_INTERNAL, EventTypes::EVENT_TRAVEL, EventTypes::EVENT_MEETING] as $variant) {
+            if (Settings::getCategoryId($variant) === $category_id) {
+                return $variant;
+            }
+        }
+
+        return EventTypes::EVENT_EXTERNAL;
+    }
+
+    /** @return array<int, string> */
+    private static function externalEventKeys(): array
+    {
+        return [
+            EventTypes::EVENT_EXTERNAL,
+            EventTypes::EVENT_INTERNAL,
+            EventTypes::EVENT_TRAVEL,
+            EventTypes::EVENT_MEETING,
+        ];
     }
 
     /**
@@ -143,27 +212,35 @@ final class EventProvider
      * @param array<string, mixed> $row
      * @return array<string, mixed>|null
      */
-    private static function normalize(array $row, int $users_id, string $level, string $actor_color): ?array
-    {
+    private static function normalize(
+        array $row,
+        string $virtual_key,
+        int $users_id,
+        string $level,
+        string $actor_color,
+        ?int $viewer_id
+    ): ?array {
         $begin = (string) ($row['begin'] ?? '');
         $end   = (string) ($row['end'] ?? '');
         if ($begin === '' || $end === '') {
             return null;
         }
 
-        $itemtype   = (string) ($row['itemtype'] ?? '');
-        $items_id   = (int) ($row['id'] ?? 0);
-        $is_details = $level === Settings::LEVEL_DETAILS;
+        $real_itemtype = EventTypes::realItemtype($virtual_key);
+        $items_id      = (int) ($row['id'] ?? 0);
+        $is_details    = $level === Settings::LEVEL_DETAILS;
 
         $title   = (string) ($row['name'] ?? '');
         $content = (string) ($row['content'] ?? $row['text'] ?? '');
 
-        $type_color = self::getTypeColor((string) ($row['itemtype'] ?? ''));
-        $type_label = self::getTypeLabel((string) ($row['itemtype'] ?? ''));
-        $state      = isset($row['state']) ? (int) $row['state'] : null;
+        $type_color  = self::getTypeColor($virtual_key, $viewer_id);
+        $type_label  = EventTypes::getLabel($virtual_key);
+        $type_icon   = EventTypes::getIcon($virtual_key);
+        $state       = isset($row['state']) ? (int) $row['state'] : null;
         $state_label = $state !== null ? self::getStateLabel($state) : '';
-        $priority   = $row['priority'] ?? null;
-        $url        = $row['url'] ?? null;
+        $priority    = $row['priority'] ?? null;
+        $url         = $row['url'] ?? null;
+        $itemtype    = $real_itemtype;
 
         if (!$is_details) {
             // Livre/ocupado: some TUDO que diz algo sobre o compromisso, não só
@@ -182,8 +259,9 @@ final class EventProvider
             $content     = '';
             $itemtype    = '';
             $items_id    = 0;
-            $type_color  = self::DEFAULT_TYPE_COLOR;
+            $type_color  = EventTypes::getDefaultColor('');
             $type_label  = '';
+            $type_icon   = '';
             $state       = null;
             $state_label = '';
             $priority    = null;
@@ -212,10 +290,12 @@ final class EventProvider
                                  && empty($row['rrule']),
             'extendedProps'   => [
                 'itemtype'    => $itemtype,
+                'virtualType' => $is_details ? $virtual_key : '',
                 'items_id'    => $items_id,
                 'users_id'    => $users_id,
                 'typeLabel'   => $type_label,
                 'typeColor'   => $type_color,
+                'typeIcon'    => $type_icon,
                 'actorColor'  => $actor_color,
                 'actorName'   => self::getUserName($users_id),
                 'content'     => $content,
@@ -296,7 +376,9 @@ final class EventProvider
     // -----------------------------------------------------------------------
 
     /**
-     * Tipos que alimentam a agenda: os do core mais as reservas.
+     * Itemtypes REAIS que alimentam a agenda: os do core mais as reservas.
+     * `PlanningExternalEvent` aparece uma vez só aqui, mesmo representando 4
+     * chaves virtuais — a consulta ao banco é por itemtype real.
      *
      * A checagem de visibilidade fica aqui, num lugar só, para a lista de
      * filtros da barra lateral e a busca de eventos nunca discordarem sobre
@@ -338,84 +420,158 @@ final class EventProvider
             ? ReservationProvider::populatePlanning($params)
             : $itemtype::populatePlanning($params);
 
-        return is_array($raw) ? $raw : [];
+        $raw = is_array($raw) ? $raw : [];
+
+        if ($itemtype === PlanningExternalEvent::class && $raw !== []) {
+            $raw = self::attachCategoryIds($raw);
+        }
+
+        return $raw;
     }
 
     /**
-     * Cor de um tipo de compromisso.
+     * `PlanningExternalEvent::populatePlanning()` (na verdade a implementação
+     * compartilhada em `Glpi\Features\PlanningEvent`) monta o array de
+     * retorno com uma lista FIXA de chaves — 'id', 'name', 'begin'... —
+     * mesmo a consulta interna selecionando `$table.*`, a coluna
+     * `planningeventcategories_id` nunca chega até aqui. Sem essa coluna,
+     * `getVirtualKey()` não tem como saber se uma linha é Evento
+     * Interno/Viagem/Reunião ou o Externo genérico — TUDO caía na variante
+     * genérica, silenciosamente (confirmado testando contra a instância: um
+     * evento criado como "Reunião" aparecia colorido e filtrado como "Evento
+     * Externo").
      *
-     * A cor definida pelo administrador em Configuração tem prioridade; a
-     * paleta embutida é só o ponto de partida. Guardar apenas o que foi
-     * customizado deixa os demais tipos acompanharem a paleta do plugin.
+     * Uma única consulta complementar, pelos IDs que já vieram na resposta,
+     * resolve isso sem precisar tocar no `populatePlanning()` do core.
+     *
+     * @param array<string, array<string, mixed>> $raw
+     * @return array<string, array<string, mixed>>
      */
-    public static function getTypeColor(string $itemtype): string
+    private static function attachCategoryIds(array $raw): array
     {
-        $custom = Settings::getTypeColors();
-        $short  = self::shortName($itemtype);
+        /** @var \DBmysql $DB */
+        global $DB;
 
-        return $custom[$itemtype]
-            ?? $custom[$short]
-            ?? self::TYPE_COLORS[$short]
-            ?? self::DEFAULT_TYPE_COLOR;
+        $ids = [];
+        foreach ($raw as $row) {
+            if (isset($row['id'])) {
+                $ids[(int) $row['id']] = true;
+            }
+        }
+
+        if ($ids === []) {
+            return $raw;
+        }
+
+        $categories = [];
+        foreach ($DB->request([
+            'SELECT' => ['id', 'planningeventcategories_id'],
+            'FROM'   => PlanningExternalEvent::getTable(),
+            'WHERE'  => ['id' => array_keys($ids)],
+        ]) as $db_row) {
+            $categories[(int) $db_row['id']] = (int) $db_row['planningeventcategories_id'];
+        }
+
+        foreach ($raw as $key => $row) {
+            $raw[$key]['planningeventcategories_id'] = $categories[(int) ($row['id'] ?? 0)] ?? 0;
+        }
+
+        return $raw;
     }
 
     /**
-     * Cor de fábrica de um tipo, ignorando a customização. A tela de
-     * configuração usa isto para o botão "voltar ao padrão".
+     * Cor de um tipo de compromisso, na tela DESTE observador.
+     *
+     * Três camadas, da mais para a menos específica: a cor que a PRÓPRIA
+     * PESSOA escolheu (`UserColors`), a que o administrador definiu para a
+     * instância inteira (`Settings`), e a paleta de fábrica do plugin
+     * (`EventTypes`). Cada camada só precisa guardar o que difere da de
+     * baixo — é por isso que ligar/desligar uma preferência pessoal não exige
+     * "lembrar" a cor administrativa em lugar nenhum.
      */
-    public static function getDefaultTypeColor(string $itemtype): string
+    public static function getTypeColor(string $key, ?int $viewer_id = null): string
     {
-        return self::TYPE_COLORS[self::shortName($itemtype)] ?? self::DEFAULT_TYPE_COLOR;
+        $viewer_id ??= (int) Session::getLoginUserID();
+
+        $mine  = UserColors::getForUser($viewer_id);
+        $admin = Settings::getTypeColors();
+
+        return $mine[$key] ?? $admin[$key] ?? EventTypes::getDefaultColor($key);
     }
 
-    /**
-     * Cor de uma pessoa, derivada do ID DELA — nunca da posição na lista.
-     *
-     * A versão anterior indexava a paleta pela ordem de iteração, e cada lado
-     * iterava numa ordem diferente: a barra lateral pela ordem de
-     * `AccessPolicy::getVisibleUsers()`, os eventos pela ordem em que os ids
-     * chegaram na requisição (que o navegador ordena por id, por serem chaves
-     * numéricas de objeto). O resultado é que o avatar na lateral e a borda do
-     * evento quase nunca combinavam, e desmarcar uma pessoa trocava a cor das
-     * outras no calendário mas não na lateral.
-     *
-     * Derivar do id torna a cor estável: a mesma pessoa tem o mesmo tom em
-     * toda a tela, em qualquer ordem, e entre recarregamentos. Duas pessoas
-     * podem cair no mesmo tom quando os ids são congruentes módulo o tamanho
-     * da paleta; é um empate visual ocasional, muito melhor que uma
-     * divergência sistemática. O JS repete esta conta em `pickColor()`.
-     */
     public static function getActorColor(int $users_id): string
     {
         return self::ACTOR_COLORS[abs($users_id) % count(self::ACTOR_COLORS)];
     }
 
-    public static function getTypeLabel(string $itemtype): string
+    /**
+     * Tipos disponíveis para a legenda e para os filtros da barra lateral,
+     * já com a cor deste observador.
+     *
+     * @return array<int, array{itemtype: string, label: string, icon: string, color: string, default: string}>
+     */
+    public static function getAvailableTypes(?int $viewer_id = null): array
     {
-        if ($itemtype === '' || !is_a($itemtype, \CommonGLPI::class, true)) {
-            return '';
+        $provider_types = self::getProviderTypes();
+        $has_external    = in_array(PlanningExternalEvent::class, $provider_types, true);
+
+        $out = [];
+        foreach (EventTypes::getAll() as $key) {
+            $real = EventTypes::realItemtype($key);
+
+            if ($real === PlanningExternalEvent::class) {
+                if (!$has_external) {
+                    continue;
+                }
+            } elseif (!in_array($real, $provider_types, true)) {
+                continue;
+            }
+
+            $out[] = [
+                'itemtype' => $key,
+                'label'    => EventTypes::getLabel($key),
+                'icon'     => EventTypes::getIcon($key),
+                'color'    => self::getTypeColor($key, $viewer_id),
+                'default'  => EventTypes::getDefaultColor($key),
+            ];
         }
 
-        return $itemtype::getTypeName(1);
+        return $out;
     }
 
     /**
-     * Tipos disponíveis para a legenda e para os filtros da barra lateral.
+     * Tipos para a tela de CONFIGURAÇÃO do administrador — mostra a cor
+     * padrão da instância, nunca a preferência pessoal de quem está olhando.
+     * Misturar as duas faria um administrador que também personalizou a
+     * própria tela editar, sem perceber, um valor que não é o que os outros
+     * usuários realmente veem.
      *
-     * @return array<int, array{itemtype: string, label: string, color: string}>
+     * @return array<int, array{itemtype: string, label: string, icon: string, color: string, default: string}>
      */
-    public static function getAvailableTypes(): array
+    public static function getAvailableTypesForAdmin(): array
     {
-        /** @var array $CFG_GLPI */
-        global $CFG_GLPI;
+        $admin_colors = Settings::getTypeColors();
+        $provider_types = self::getProviderTypes();
+        $has_external   = in_array(PlanningExternalEvent::class, $provider_types, true);
 
         $out = [];
-        foreach (self::getProviderTypes() as $itemtype) {
+        foreach (EventTypes::getAll() as $key) {
+            $real = EventTypes::realItemtype($key);
+
+            if ($real === PlanningExternalEvent::class) {
+                if (!$has_external) {
+                    continue;
+                }
+            } elseif (!in_array($real, $provider_types, true)) {
+                continue;
+            }
+
             $out[] = [
-                'itemtype' => $itemtype,
-                'label'    => $itemtype::getTypeName(1),
-                'color'    => self::getTypeColor($itemtype),
-                'default'  => self::getDefaultTypeColor($itemtype),
+                'itemtype' => $key,
+                'label'    => EventTypes::getLabel($key),
+                'icon'     => EventTypes::getIcon($key),
+                'color'    => $admin_colors[$key] ?? EventTypes::getDefaultColor($key),
+                'default'  => EventTypes::getDefaultColor($key),
             ];
         }
 
@@ -429,13 +585,6 @@ final class EventProvider
             Planning::DONE => __('Done', 'planner'),
             default        => __('Information', 'planner'),
         };
-    }
-
-    private static function shortName(string $itemtype): string
-    {
-        $pos = strrpos($itemtype, '\\');
-
-        return $pos === false ? $itemtype : substr($itemtype, $pos + 1);
     }
 
     /**

@@ -784,9 +784,21 @@ var GlpiPlanner = {
             return;
         }
 
+        // Arrastar entre colunas só existe agrupado por SITUAÇÃO: é aí que
+        // a coluna representa um valor que dá para gravar (o estado do
+        // compromisso). Agrupado por pessoa, arrastar significaria
+        // reatribuir — um gesto que precisa das mesmas validações do arrasto
+        // no calendário, que este Kanban não reproduz.
+        var draggable = self.kanbanGroup === 'state';
+
         keys.forEach(function (key) {
             var col = columns[key];
             var $col = $('<div class="planner-kanban-col"></div>');
+            if (draggable) {
+                // O número puro (sem o prefixo 's' usado só para preservar a
+                // ordem das chaves do objeto — ver comentário acima).
+                $col.attr('data-state', key.slice(1));
+            }
 
             var $head = $('<div class="planner-kanban-head"></div>');
             $('<span class="planner-kanban-dot"></span>').css('background', col.color).appendTo($head);
@@ -799,11 +811,81 @@ var GlpiPlanner = {
                 $('<div class="planner-kanban-empty"></div>').appendTo($body);
             }
             col.events.forEach(function (ev) {
-                $body.append(self.buildKanbanCard(ev));
+                $body.append(self.buildKanbanCard(ev, draggable));
             });
             $body.appendTo($col);
 
             $box.append($col);
+        });
+
+        if (draggable) {
+            self.bindKanbanDragDrop();
+        }
+    },
+
+    /** Itemtypes cujo estado este Kanban sabe gravar (ver ajax/update_event_state.php). */
+    KANBAN_STATE_ITEMTYPES: ['TicketTask', 'ChangeTask', 'ProblemTask', 'ProjectTask', 'Reminder', 'PlanningExternalEvent'],
+
+    /**
+     * Arrastar e soltar nativo do navegador (HTML5 Drag and Drop), sem
+     * biblioteca extra: um cartão solto vira uma chamada a
+     * `ajax/update_event_state.php`, e o Kanban inteiro é redesenhado a
+     * partir da resposta do calendário — mesma fonte única de dados que os
+     * outros dois modos usam.
+     */
+    bindKanbanDragDrop: function () {
+        var self = this;
+        var $kanban = $('.planner-kanban');
+
+        $kanban.find('.planner-kanban-card[draggable="true"]').on('dragstart', function (e) {
+            var $card = $(this);
+            $card.addClass('is-dragging');
+            e.originalEvent.dataTransfer.effectAllowed = 'move';
+            e.originalEvent.dataTransfer.setData('text/plain', JSON.stringify({
+                itemtype: $card.data('itemtype'),
+                items_id: $card.data('items-id')
+            }));
+        }).on('dragend', function () {
+            $(this).removeClass('is-dragging');
+        });
+
+        $kanban.find('.planner-kanban-col').on('dragover', function (e) {
+            e.preventDefault();
+            e.originalEvent.dataTransfer.dropEffect = 'move';
+            $(this).addClass('is-drop-target');
+        }).on('dragleave', function () {
+            $(this).removeClass('is-drop-target');
+        }).on('drop', function (e) {
+            e.preventDefault();
+            var $col = $(this).removeClass('is-drop-target');
+            var newState = parseInt($col.data('state'), 10);
+
+            var raw;
+            try {
+                raw = JSON.parse(e.originalEvent.dataTransfer.getData('text/plain'));
+            } catch (err) {
+                return;
+            }
+            if (!raw || !raw.itemtype || !raw.items_id) {
+                return;
+            }
+
+            $.post(self.config.update_state_url || (self.config.root_doc + '/plugins/planner/ajax/update_event_state.php'), {
+                itemtype: raw.itemtype,
+                items_id: raw.items_id,
+                state: newState
+            }).done(function (response) {
+                if (response && response.ok) {
+                    self.notify('info', self.label('saved'));
+                    if (self.calendar) {
+                        self.calendar.refetchEvents();
+                    }
+                } else {
+                    self.notify('error', self.label('save_denied'));
+                }
+            }).fail(function () {
+                self.notify('error', self.label('save_failed'));
+            });
         });
     },
 
@@ -851,13 +933,29 @@ var GlpiPlanner = {
         return columns;
     },
 
-    buildKanbanCard: function (ev) {
+    buildKanbanCard: function (ev, draggable) {
         var props = ev.extendedProps || {};
         var $card = $('<div class="planner-kanban-card"></div>')
             .css('border-left-color', props.typeColor || 'transparent');
 
         if (props.level === 'busy') {
             $card.addClass('planner-event-busy');
+        }
+
+        // Só é arrastável se: o Kanban está agrupado por situação, o item
+        // tem um itemtype que sabe gravar estado (ver KANBAN_STATE_ITEMTYPES
+        // — Reserva fica de fora, sua "situação" é calculada do relógio, não
+        // gravada), e o nível é "details" (livre/ocupado não tem itemtype
+        // real para identificar o que arrastar).
+        var can_drag = draggable
+            && props.level !== 'busy'
+            && props.itemtype
+            && this.KANBAN_STATE_ITEMTYPES.indexOf(props.itemtype) !== -1;
+
+        if (can_drag) {
+            $card.attr('draggable', 'true')
+                .data('itemtype', props.itemtype)
+                .data('items-id', props.items_id);
         }
 
         $('<div class="planner-kanban-when"></div>')

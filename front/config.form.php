@@ -56,7 +56,7 @@ TemplateRenderer::getInstance()->display('@planner/config.html.twig', [
     'settings'     => Settings::getAll(),
     'level_labels' => Share::getLevelLabels(),
     'mode_labels'  => Settings::getModeLabels(),
-    'types'        => EventProvider::getAvailableTypes(),
+    'types'        => EventProvider::getAvailableTypesForAdmin(),
     'csrf'         => Session::getNewCSRFToken(),
 ]);
 
