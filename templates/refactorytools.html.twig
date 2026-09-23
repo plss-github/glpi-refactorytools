@@ -1,0 +1,483 @@
+{#
+ # RefactoryTools — tela principal do planejamento.
+ #
+ # Três modos sobre os MESMOS dados: Calendário, Lista e Kanban. O FullCalendar
+ # continua sendo o motor de datas nos três — ele decide o período exibido, e
+ # Lista e Kanban desenham o que ele carregou. Assim os três nunca discordam
+ # sobre o que está no período, e não há uma segunda consulta ao servidor ao
+ # trocar de modo.
+ #
+ # A marcação usa as classes do Tabler que o GLPI 11 já carrega (card, btn,
+ # badge, form-check), e o CSS do plugin cuida só do que é específico do
+ # planejamento. Assim a tela acompanha o tema claro/escuro e a paleta da
+ # instância sem duplicar um sistema de design.
+ #}
+
+<div class="refactorytools-page" id="refactorytools-app"
+     data-root="{{ root_doc }}"
+     data-me="{{ me }}"
+     data-today="{{ today }}">
+
+    {# ------------------------------------------------------------------ #}
+    {# Barra superior: navegação do período + seletor de modo              #}
+    {# ------------------------------------------------------------------ #}
+    <div class="refactorytools-topbar">
+        <div class="refactorytools-nav">
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm refactorytools-prev" title="{{ __('Previous', 'refactorytools') }}">
+                    <i class="ti ti-chevron-left"></i>
+                </button>
+                <button type="button" class="btn btn-sm refactorytools-today">{{ __('Today', 'refactorytools') }}</button>
+                <button type="button" class="btn btn-sm refactorytools-next" title="{{ __('Next', 'refactorytools') }}">
+                    <i class="ti ti-chevron-right"></i>
+                </button>
+            </div>
+            <span class="refactorytools-period" data-period>&nbsp;</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            {% if creatable_kinds is not empty %}
+                <button type="button" class="btn btn-sm btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#refactorytools-new-event">
+                    <i class="ti ti-plus"></i> {{ __('New event', 'refactorytools') }}
+                </button>
+            {% endif %}
+            <div class="refactorytools-modes btn-group" role="group" aria-label="{{ __('View mode', 'refactorytools') }}">
+                <button type="button" class="btn btn-sm" data-mode="calendar">
+                    <i class="ti ti-calendar-month"></i> {{ __('Calendar', 'refactorytools') }}
+                </button>
+                <button type="button" class="btn btn-sm" data-mode="list">
+                    <i class="ti ti-list-details"></i> {{ __('List', 'refactorytools') }}
+                </button>
+                <button type="button" class="btn btn-sm" data-mode="kanban">
+                    <i class="ti ti-layout-kanban"></i> {{ __('Kanban', 'refactorytools') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# ------------------------------------------------------------------ #}
+    {# Barra secundária: opções do modo ativo + indicadores                #}
+    {# ------------------------------------------------------------------ #}
+    <div class="refactorytools-subbar">
+        <div class="refactorytools-subopts">
+            <div class="btn-group refactorytools-ranges" role="group">
+                <button type="button" class="btn btn-sm" data-range="day">{{ __('Day', 'refactorytools') }}</button>
+                <button type="button" class="btn btn-sm" data-range="week">{{ __('Week', 'refactorytools') }}</button>
+                <button type="button" class="btn btn-sm" data-range="month">{{ __('Month', 'refactorytools') }}</button>
+            </div>
+
+            {# Alternador, não um quarto período: liga uma raia por pessoa
+               mantendo o período escolhido acima. Só faz sentido no
+               calendário — Lista e Kanban já identificam a pessoa em cada
+               linha ou card. #}
+            <button type="button" class="btn btn-sm refactorytools-team-toggle"
+                    title="{{ __('One lane per person, same period', 'refactorytools') }}">
+                <i class="ti ti-users-group"></i> {{ __('By person', 'refactorytools') }}
+            </button>
+
+            {% if can_group_manager_mode %}
+                {# Só aparece para quem é `is_manager=1` de pelo menos um
+                   grupo com membros visíveis (ver `AccessPolicy::canUseGroupManagerMode`).
+                   Ligar isto não muda QUEM aparece na agenda — isso já
+                   depende de marcar o grupo na barra lateral — só COMO os
+                   compromissos são coloridos: uma cor por pessoa em vez de
+                   uma cor por tipo, que passa a virar uma tag de texto. #}
+                <button type="button" class="btn btn-sm" id="refactorytools-group-manager-toggle"
+                        title="{{ __('Each group member gets a colour; event types become text tags', 'refactorytools') }}">
+                    <i class="ti ti-users"></i> {{ __('Group manager view', 'refactorytools') }}
+                </button>
+            {% endif %}
+
+            <div class="refactorytools-kanban-opts" hidden>
+                <span class="refactorytools-subbar-label">{{ __('Group by', 'refactorytools') }}</span>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm" data-group="state">{{ __('Status', 'refactorytools') }}</button>
+                    <button type="button" class="btn btn-sm" data-group="actor">{{ __('Person', 'refactorytools') }}</button>
+                </div>
+            </div>
+        </div>
+
+        {# Dois conjuntos de indicadores, um visível de cada vez (ver
+           `GlpiRefactoryTools.isEverythingSelected()`): com TUDO marcado na barra
+           lateral (nenhum filtro de fato em uso), horas fazem mais sentido
+           que contagem — é a visão "quanto tempo" da equipe inteira. Assim
+           que a pessoa filtra por alguém ou algum tipo específico, a
+           pergunta vira "quantos, e em que situação", que contagem responde
+           melhor que horas. #}
+        <div class="refactorytools-kpis">
+            <div class="refactorytools-kpi" data-kpi-group="all">
+                <span class="refactorytools-kpi-value" data-kpi="planned_hours">—</span>
+                <span class="refactorytools-kpi-label">{{ __('Planned hours', 'refactorytools') }}</span>
+            </div>
+            <div class="refactorytools-kpi" data-kpi-group="all">
+                <span class="refactorytools-kpi-value" data-kpi="realised_hours">—</span>
+                <span class="refactorytools-kpi-label">{{ __('Realised hours', 'refactorytools') }}</span>
+            </div>
+            <div class="refactorytools-kpi" data-kpi-group="all">
+                <span class="refactorytools-kpi-value" data-kpi="hours">—</span>
+                <span class="refactorytools-kpi-label">{{ __('Total hours', 'refactorytools') }}</span>
+            </div>
+            <div class="refactorytools-kpi" data-kpi-group="filtered" hidden>
+                <span class="refactorytools-kpi-value" data-kpi="count">—</span>
+                <span class="refactorytools-kpi-label">{{ __('Appointments', 'refactorytools') }}</span>
+            </div>
+            <div class="refactorytools-kpi" data-kpi-group="filtered" hidden>
+                <span class="refactorytools-kpi-value" data-kpi="todo">—</span>
+                <span class="refactorytools-kpi-label">{{ __('To do', 'refactorytools') }}</span>
+            </div>
+            <div class="refactorytools-kpi" data-kpi-group="filtered" hidden>
+                <span class="refactorytools-kpi-value" data-kpi="done">—</span>
+                <span class="refactorytools-kpi-label">{{ __('Completed', 'refactorytools') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="refactorytools-body">
+
+        {# -------------------------------------------------------------- #}
+        {# Barra lateral                                                   #}
+        {# -------------------------------------------------------------- #}
+        <aside class="refactorytools-sidebar card">
+            <div class="refactorytools-sidebar-scroll">
+
+                {% if pending_count > 0 %}
+                    <a href="{{ root_doc }}/plugins/refactorytools/front/share.php"
+                       class="refactorytools-pending alert alert-warning d-block mb-3 py-2 px-3">
+                        <i class="ti ti-bell"></i>
+                        {{ __('%d access request(s) awaiting your decision', 'refactorytools')|format(pending_count) }}
+                    </a>
+                {% endif %}
+
+                {% for group in actor_groups %}
+                    <div class="refactorytools-section">
+                        <div class="refactorytools-section-title">{{ group.label }}</div>
+                        <ul class="refactorytools-actors">
+                            {% for actor in group.actors %}
+                                <li class="refactorytools-actor" data-actor="{{ actor.id }}">
+                                    <label class="refactorytools-actor-label">
+                                        <input type="checkbox" class="form-check-input refactorytools-actor-toggle"
+                                               value="{{ actor.id }}"
+                                               data-color="{{ actor.color }}"
+                                               data-name="{{ actor.name }}"
+                                               {{ (actor.reason == 'self' or (auto_load_team and group.reason == 'team')) ? 'checked' : '' }}>
+                                        <span class="refactorytools-avatar" style="--refactorytools-actor-color: {{ actor.color }}">
+                                            {% if actor.picture %}
+                                                <img src="{{ actor.picture }}" alt="">
+                                            {% else %}
+                                                {{ actor.initials }}
+                                            {% endif %}
+                                        </span>
+                                        <span class="refactorytools-actor-name">{{ actor.name }}</span>
+                                        {% if actor.level == level_busy %}
+                                            <span class="badge bg-secondary-lt refactorytools-actor-badge"
+                                                  title="{{ __('You only see this person busy times', 'refactorytools') }}">
+                                                {{ __('free/busy', 'refactorytools') }}
+                                            </span>
+                                        {% endif %}
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+
+                <div class="refactorytools-section">
+                    <div class="refactorytools-section-title">
+                        {{ __('Event types', 'refactorytools') }}
+                        {# A cor de cada tipo agora é sempre a do administrador
+                           (ver "Configuração do Plugin"), a mesma para todo
+                           mundo — é o que faz "vermelho" continuar querendo
+                           dizer a mesma coisa para quem está vendo a agenda
+                           de outra pessoa. A personalização por usuário
+                           (`UserColors`) existiu numa versão anterior e foi
+                           desligada por esse motivo. #}
+                    </div>
+                    <ul class="refactorytools-types" id="refactorytools-type-list">
+                        {% for type in types %}
+                            <li>
+                                <label class="refactorytools-type-label">
+                                    <input type="checkbox" class="form-check-input refactorytools-type-toggle"
+                                           value="{{ type.itemtype }}" checked>
+                                    <span class="refactorytools-avatar refactorytools-avatar-square refactorytools-avatar-xs refactorytools-type-swatch"
+                                          style="--refactorytools-actor-color: {{ type.color }}" data-type-key="{{ type.itemtype }}">
+                                        <i class="{{ type.icon }}"></i>
+                                    </span>
+                                    <span>{{ type.label }}</span>
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <label class="refactorytools-type-label">
+                        <input type="checkbox" class="form-check-input" id="refactorytools-show-done" checked>
+                        <span>{{ __('Show completed', 'refactorytools') }}</span>
+                    </label>
+                </div>
+
+                {% if technician_panel %}
+                    {# KPIs de horas dos chamados em que o usuário logado
+                       participa como TÉCNICO (`Ticket_User.type = ASSIGN`) —
+                       sempre sobre a PRÓPRIA participação, por isso não
+                       depende de nenhum direito extra do plugin. Sem lista de
+                       chamados individual: só os totais e um link para a
+                       busca nativa, já filtrada. #}
+                    <div class="refactorytools-section">
+                        <div class="refactorytools-section-title">
+                            {{ __('My tickets as technician', 'refactorytools') }}
+                        </div>
+                        <div class="refactorytools-tech-kpis">
+                            <div class="refactorytools-tech-kpi">
+                                <span class="refactorytools-tech-kpi-value" data-tech-kpi="planned_hours">{{ technician_panel.planned_hours }}h</span>
+                                <span class="refactorytools-tech-kpi-label">{{ __('Planned hours', 'refactorytools') }}</span>
+                            </div>
+                            <div class="refactorytools-tech-kpi">
+                                <span class="refactorytools-tech-kpi-value" data-tech-kpi="realized_hours">{{ technician_panel.realized_hours }}h</span>
+                                <span class="refactorytools-tech-kpi-label">{{ __('Realised hours', 'refactorytools') }}</span>
+                            </div>
+                            <div class="refactorytools-tech-kpi">
+                                <span class="refactorytools-tech-kpi-value" data-tech-kpi="total_hours">{{ technician_panel.total_hours }}h</span>
+                                <span class="refactorytools-tech-kpi-label">{{ __('Total hours', 'refactorytools') }}</span>
+                            </div>
+                        </div>
+                        <a href="{{ technician_panel.search_url }}" class="refactorytools-tech-seeall">
+                            {{ __('See all my tickets', 'refactorytools') }}
+                            <i class="ti ti-arrow-right"></i>
+                        </a>
+                    </div>
+                {% endif %}
+
+                {# Acesso a agendas de terceiros: as duas ações ficam juntas, no
+                   fim da barra, porque são sobre a mesma coisa — abrir uma
+                   agenda que não é minha. #}
+                {% if can_pick_any %}
+                    <div class="refactorytools-section">
+                        {# O aviso de "Ver todas as agendas" é uma explicação,
+                           não uma instrução: ocupava quatro linhas fixas da
+                           barra lateral para algo que se lê uma vez. Virou
+                           ícone com dica ao passar o mouse, usando o tooltip do
+                           Bootstrap que o GLPI já inicializa nas páginas. #}
+                        <div class="refactorytools-section-title">
+                            {{ __('Open another schedule', 'refactorytools') }}
+                            {% if reads_all %}
+                                <i class="ti ti-info-circle refactorytools-info"
+                                   data-bs-toggle="tooltip" data-bs-placement="top"
+                                   title="{{ __('Your profile has "See all schedules": you can open any user schedule, without depending on team, group or sharing.', 'refactorytools') }}"></i>
+                            {% endif %}
+                        </div>
+                        {# Dropdown nativo (select2 com busca via ajax) em vez do
+                           wrapper `fields.dropdownField`, que traria rótulo e
+                           grade de formulário desnecessários na barra lateral. #}
+                        <div class="refactorytools-picker">
+                            {{ 'User'|itemtype_dropdown({
+                                name: 'refactorytools_add_user',
+                                value: 0,
+                                entity: session('glpiactive_entity'),
+                                entity_sons: session('glpiactive_entity_recursive'),
+                                right: 'all',
+                                width: '100%'
+                            }) }}
+                        </div>
+                    </div>
+                {% elseif can_request %}
+                    <div class="refactorytools-section">
+                        <div class="refactorytools-section-title">{{ __('Open another schedule', 'refactorytools') }}</div>
+                        <a href="{{ root_doc }}/plugins/refactorytools/front/share.php"
+                           class="btn btn-sm btn-outline-primary w-100">
+                            <i class="ti ti-lock-open"></i>
+                            {{ __('Request access to a schedule', 'refactorytools') }}
+                        </a>
+                    </div>
+                {% endif %}
+
+                {% if can_share or reads_all %}
+                    <div class="refactorytools-section refactorytools-section-footer">
+                        {% if can_share %}
+                            <a href="{{ root_doc }}/plugins/refactorytools/front/share.php"
+                               class="btn btn-sm btn-ghost-secondary w-100">
+                                <i class="ti ti-calendar-share"></i>
+                                {{ __('Manage shares', 'refactorytools') }}
+                            </a>
+                        {% endif %}
+                        {% if reads_all %}
+                            <a href="{{ root_doc }}/plugins/refactorytools/front/config.form.php"
+                               class="btn btn-sm btn-ghost-secondary w-100 mt-1">
+                                <i class="ti ti-settings"></i>
+                                {{ __('Plugin configuration', 'refactorytools') }}
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </aside>
+
+        {# -------------------------------------------------------------- #}
+        {# Área principal: um painel por modo                              #}
+        {# -------------------------------------------------------------- #}
+        <main class="refactorytools-main card">
+            <div class="refactorytools-loading" hidden>
+                <div class="spinner-border spinner-border-sm"></div>
+                {{ __('Loading schedule…', 'refactorytools') }}
+            </div>
+
+            <div class="refactorytools-pane" data-pane="calendar">
+                <div id="refactorytools-calendar"></div>
+            </div>
+
+            <div class="refactorytools-pane" data-pane="list" hidden>
+                <div class="refactorytools-list"></div>
+            </div>
+
+            <div class="refactorytools-pane" data-pane="kanban" hidden>
+                <div class="refactorytools-kanban"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+{# ------------------------------------------------------------------------ #}
+{# Novo compromisso                                                          #}
+{#                                                                           #}
+{# Cobre exatamente o que o planejamento NATIVO também deixa criar direto do #}
+{# calendário — Lembrete e as quatro variantes de Evento — porque uma tarefa #}
+{# de chamado/mudança/problema/projeto só existe presa a um item já aberto,  #}
+{# em nenhuma das duas telas. Posta para `ajax/create_event.php`, endpoint   #}
+{# próprio do plugin: o formulário nativo do evento externo tem um gate de   #}
+{# direito incondicional que bloquearia quem só tem o direito do plugin.     #}
+{# ------------------------------------------------------------------------ #}
+{% if creatable_kinds is not empty %}
+    <div class="modal fade" id="refactorytools-new-event" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" method="post"
+                  action="{{ root_doc }}/plugins/refactorytools/ajax/create_event.php"
+                  id="refactorytools-new-event-form">
+                <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('New event', 'refactorytools') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="{{ __('Close', 'refactorytools') }}"></button>
+                </div>
+
+                <div class="modal-body refactorytools-res-form">
+                    <div class="mb-3">
+                        <label class="form-label required" for="refactorytools-event-kind">{{ __('Type', 'refactorytools') }}</label>
+                        <select class="form-select" id="refactorytools-event-kind" name="kind" required>
+                            {% for kind in creatable_kinds %}
+                                <option value="{{ kind.key }}">{{ kind.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label required" for="refactorytools-event-name">{{ __('Title', 'refactorytools') }}</label>
+                        <input type="text" class="form-control" id="refactorytools-event-name" name="name" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label required" for="refactorytools-event-begin">{{ __('Start', 'refactorytools') }}</label>
+                            {# flatpickr, não `type="datetime-local"`: ver o
+                               mesmo comentário no modal de nova reserva
+                               (templates/reservations.html.twig). #}
+                            <input type="text" class="form-control" id="refactorytools-event-begin"
+                                   name="begin" value="{{ default_event_begin }}" required autocomplete="off">
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label required" for="refactorytools-event-end">{{ __('End', 'refactorytools') }}</label>
+                            <input type="text" class="form-control" id="refactorytools-event-end"
+                                   name="end" value="{{ default_event_end }}" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="refactorytools-event-text">{{ __('Description', 'refactorytools') }}</label>
+                        <textarea class="form-control" id="refactorytools-event-text" name="text" rows="2"></textarea>
+                    </div>
+
+                    {# Recorrência: só se aplica às 4 variantes de Evento — o
+                       widget nativo (`showRepetitionForm`) escreve os campos
+                       `rrule[...]`, que `PlanningExternalEvent::add()` já
+                       sabe converter. Lembrete não tem coluna de recorrência
+                       no banco, então o bloco fica escondido nesse caso. #}
+                    <div id="refactorytools-event-rrule">
+                        {{ call('PlanningExternalEvent::showRepetitionForm', ['', {rand: random()}])|raw }}
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">
+                        {{ __('Cancel', 'refactorytools') }}
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-calendar-plus"></i>{{ __('Create', 'refactorytools') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            var $kindSelect = $('#refactorytools-event-kind');
+            var $rrule = $('#refactorytools-event-rrule');
+
+            if ($.fn.flatpickr) {
+                $('#refactorytools-event-begin, #refactorytools-event-end').flatpickr({
+                    enableTime: true,
+                    time_24hr: true,
+                    dateFormat: 'Y-m-d H:i:s',
+                    allowInput: true
+                });
+            }
+
+            function toggleRrule() {
+                // "Lembrete" é a única opção sem coluna de recorrência no
+                // banco — some com o bloco nesse caso, em vez de deixá-lo
+                // visível prometendo algo que o envio ignoraria.
+                $rrule.prop('hidden', $kindSelect.val() === {{ constant('GlpiPlugin\\RefactoryTools\\EventTypes::REMINDER')|json_encode|raw }});
+            }
+
+            $kindSelect.on('change', toggleRrule);
+            toggleRrule();
+        });
+    </script>
+{% endif %}
+
+<script>
+    $(function () {
+        GlpiRefactoryTools.init({
+            root_doc: {{ root_doc|json_encode|raw }},
+            events_url: {{ (root_doc ~ '/plugins/refactorytools/ajax/events.php')|json_encode|raw }},
+            me: {{ me }},
+            default_mode: {{ default_mode|json_encode|raw }},
+            kanban_state_order: {{ kanban_state_order|json_encode|raw }},
+            labels: {
+                busy: {{ __('Busy', 'refactorytools')|json_encode|raw }},
+                no_actor: {{ __('Select at least one schedule in the sidebar.', 'refactorytools')|json_encode|raw }},
+                no_event: {{ __('No events in this period.', 'refactorytools')|json_encode|raw }},
+                person: {{ __('Person', 'refactorytools')|json_encode|raw }},
+                allday: {{ __('All day', 'refactorytools')|json_encode|raw }},
+                state_info: {{ __('Information', 'refactorytools')|json_encode|raw }},
+                state_todo: {{ __('To do', 'refactorytools')|json_encode|raw }},
+                state_done: {{ __('Done', 'refactorytools')|json_encode|raw }},
+                col_when: {{ __('When', 'refactorytools')|json_encode|raw }},
+                col_who: {{ __('Person', 'refactorytools')|json_encode|raw }},
+                col_type: {{ __('Type', 'refactorytools')|json_encode|raw }},
+                col_subject: {{ __('Event', 'refactorytools')|json_encode|raw }},
+                col_state: {{ __('Status', 'refactorytools')|json_encode|raw }},
+                saved: {{ __('Schedule updated.', 'refactorytools')|json_encode|raw }},
+                save_denied: {{ __('You are not allowed to move this event.', 'refactorytools')|json_encode|raw }},
+                save_failed: {{ __('Could not save the new time.', 'refactorytools')|json_encode|raw }},
+                manager_note: {{ __('Manager note', 'refactorytools')|json_encode|raw }},
+                own_note: {{ __('Note', 'refactorytools')|json_encode|raw }},
+                note_by: {{ __('By', 'refactorytools')|json_encode|raw }},
+                ticket_duration: {{ __('Total time on this ticket', 'refactorytools')|json_encode|raw }},
+                add_note: {{ __('Add a note', 'refactorytools')|json_encode|raw }},
+                edit_note: {{ __('Edit note', 'refactorytools')|json_encode|raw }},
+                note_saved: {{ __('Note saved.', 'refactorytools')|json_encode|raw }},
+                save: {{ __('Save', 'refactorytools')|json_encode|raw }},
+                cancel: {{ __('Cancel', 'refactorytools')|json_encode|raw }}
+            }
+        });
+    });
+</script>

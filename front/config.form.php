@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Configuração do plugin.
  *
@@ -13,12 +13,12 @@
 include('../../../inc/includes.php');
 
 use Glpi\Application\View\TemplateRenderer;
-use GlpiPlugin\Planner\EventProvider;
-use GlpiPlugin\Planner\Menu;
-use GlpiPlugin\Planner\ReservationView;
-use GlpiPlugin\Planner\Right;
-use GlpiPlugin\Planner\Settings;
-use GlpiPlugin\Planner\Share;
+use GlpiPlugin\Refactorytools\EventProvider;
+use GlpiPlugin\Refactorytools\Menu;
+use GlpiPlugin\Refactorytools\ReservationView;
+use GlpiPlugin\Refactorytools\Right;
+use GlpiPlugin\Refactorytools\Settings;
+use GlpiPlugin\Refactorytools\Share;
 
 Session::checkRight(Right::NAME, Right::READ_ALL);
 
@@ -40,7 +40,7 @@ if (isset($_POST['update'])) {
     }
 
     Session::addMessageAfterRedirect(
-        htmlescape(__('Configuration saved.', 'planner')),
+        htmlescape(__('Configuration saved.', 'refactorytools')),
         false,
         INFO
     );
@@ -49,14 +49,14 @@ if (isset($_POST['update'])) {
 }
 
 Html::header(
-    __('Plugin configuration', 'planner'),
+    __('Plugin configuration', 'refactorytools'),
     $_SERVER['PHP_SELF'],
     'helpdesk',
     Menu::getMenuItemKey(),
-    'planner_config'
+    'refactorytools_config'
 );
 
-TemplateRenderer::getInstance()->display('@planner/config.html.twig', [
+TemplateRenderer::getInstance()->display('@refactorytools/config.html.twig', [
     'settings'     => Settings::getAll(),
     'level_labels' => Share::getLevelLabels(),
     'mode_labels'  => Settings::getModeLabels(),

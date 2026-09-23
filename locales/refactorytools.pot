@@ -1,12 +1,12 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the GLPI Planner plugin package.
+# This file is distributed under the same license as the GLPI RefactoryTools plugin package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: GLPI Planner plugin\n"
+"Project-Id-Version: GLPI RefactoryTools plugin\n"
 "Report-Msgid-Bugs-To: suporte@pellissari.com.br\n"
 "POT-Creation-Date: 2026-09-23 16:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -120,12 +120,12 @@ msgid "Configuration saved."
 msgstr ""
 
 #: front/config.form.php:52 .locales-shadow/templates/config.html.twig:14
-#: templates/planner.html.twig:322
+#: templates/refactorytools.html.twig:322
 msgid "Plugin configuration"
 msgstr ""
 
 #: hook.php:114 hook.php:137
-msgid "Planner: new note"
+msgid "RefactoryTools: new note"
 msgstr ""
 
 #: hook.php:128
@@ -133,15 +133,15 @@ msgid "A note was added to your schedule"
 msgstr ""
 
 #: hook.php:225
-msgid "Created by the Pellissari New Planners plugin to tell this event type apart."
+msgid "Created by the Pellissari New RefactoryToolss plugin to tell this event type apart."
 msgstr ""
 
 #: hook.php:242 src/ProfileRights.php:57
-msgid "Planning (Pellissari New Planners)"
+msgid "Planning (Pellissari New RefactoryToolss)"
 msgstr ""
 
 #: setup.php:212
-msgid "Pellissari New Planners: GLPI dependencies not found or incompatible:"
+msgid "Pellissari New RefactoryToolss: GLPI dependencies not found or incompatible:"
 msgstr ""
 
 #: src/AccessPolicy.php:514
@@ -168,7 +168,7 @@ msgstr ""
 msgid "Shared with me"
 msgstr ""
 
-#: src/EventNoteItem.php:32 .locales-shadow/templates/planner.html.twig:489
+#: src/EventNoteItem.php:32 .locales-shadow/templates/refactorytools.html.twig:489
 #: templates/reservations.html.twig:464
 msgid "Note"
 msgstr ""
@@ -179,23 +179,23 @@ msgid "%1$dh%2$02dmin"
 msgstr ""
 
 #: src/EventProvider.php:399
-#: templates/planner.html.twig:472
+#: templates/refactorytools.html.twig:472
 msgid "Busy"
 msgstr ""
 
 #: src/EventProvider.php:752
-#: templates/planner.html.twig:127
-#: templates/planner.html.twig:478
+#: templates/refactorytools.html.twig:127
+#: templates/refactorytools.html.twig:478
 msgid "To do"
 msgstr ""
 
 #: src/EventProvider.php:753
-#: templates/planner.html.twig:479
+#: templates/refactorytools.html.twig:479
 msgid "Done"
 msgstr ""
 
 #: src/EventProvider.php:754
-#: templates/planner.html.twig:477
+#: templates/refactorytools.html.twig:477
 msgid "Information"
 msgstr ""
 
@@ -240,7 +240,7 @@ msgid "Meeting"
 msgstr ""
 
 #: src/Menu.php:42 src/ProfileRights.php:30
-msgid "Pellissari New Planners"
+msgid "Pellissari New RefactoryToolss"
 msgstr ""
 
 #: src/Menu.php:151
@@ -260,7 +260,7 @@ msgid "Schedule owner"
 msgstr ""
 
 #: src/ProfileRights.php:67
-msgid "Someone else schedule can also be granted individually, with the owner approval, under Pellissari New Planners > Shares. That path does not depend on the rights above, except for \"Use Pellissari New Planners\"."
+msgid "Someone else schedule can also be granted individually, with the owner approval, under Pellissari New RefactoryToolss > Shares. That path does not depend on the rights above, except for \"Use Pellissari New RefactoryToolss\"."
 msgstr ""
 
 #: src/ReservationEventProvider.php:140 src/ReservationProvider.php:133
@@ -281,7 +281,7 @@ msgid "Upcoming reservation"
 msgstr ""
 
 #: src/Right.php:69
-msgid "Use Pellissari New Planners"
+msgid "Use Pellissari New RefactoryToolss"
 msgstr ""
 
 #: src/Right.php:70
@@ -304,21 +304,21 @@ msgstr ""
 msgid "Share own schedule"
 msgstr ""
 
-#: src/Right.php:75 .locales-shadow/templates/planner.html.twig:304
+#: src/Right.php:75 .locales-shadow/templates/refactorytools.html.twig:304
 msgid "Request access to a schedule"
 msgstr ""
 
-#: src/Settings.php:219 .locales-shadow/templates/planner.html.twig:47
+#: src/Settings.php:219 .locales-shadow/templates/refactorytools.html.twig:47
 #: templates/reservations.html.twig:44
 msgid "Calendar"
 msgstr ""
 
-#: src/Settings.php:220 .locales-shadow/templates/planner.html.twig:50
+#: src/Settings.php:220 .locales-shadow/templates/refactorytools.html.twig:50
 #: templates/reservations.html.twig:47
 msgid "List"
 msgstr ""
 
-#: src/Settings.php:221 .locales-shadow/templates/planner.html.twig:53
+#: src/Settings.php:221 .locales-shadow/templates/refactorytools.html.twig:53
 msgid "Kanban"
 msgstr ""
 
@@ -436,7 +436,7 @@ msgid "Replace the native Planning"
 msgstr ""
 
 #: templates/config.html.twig:151
-msgid "When on, the \"Planning\" entry under Assistance opens this screen, and anyone reaching the old URL is redirected. The menu label stays \"Planning\": \"Planner\" is the plugin name, not the entry name. When off, the native planning is restored and Planner appears as a separate entry, which is useful to compare both screens."
+msgid "When on, the \"Planning\" entry under Assistance opens this screen, and anyone reaching the old URL is redirected. The menu label stays \"Planning\": \"RefactoryTools\" is the plugin name, not the entry name. When off, the native planning is restored and RefactoryTools appears as a separate entry, which is useful to compare both screens."
 msgstr ""
 
 #: templates/config.html.twig:161
@@ -460,244 +460,244 @@ msgid "Open the schedule with the team already selected"
 msgstr ""
 
 #: templates/config.html.twig:196
-#: templates/planner.html.twig:495
+#: templates/refactorytools.html.twig:495
 msgid "Save"
 msgstr ""
 
-#: templates/planner.html.twig:27
+#: templates/refactorytools.html.twig:27
 #: templates/reservations.html.twig:24
 msgid "Previous"
 msgstr ""
 
-#: templates/planner.html.twig:30
+#: templates/refactorytools.html.twig:30
 #: templates/reservations.html.twig:27
 msgid "Today"
 msgstr ""
 
-#: templates/planner.html.twig:31
+#: templates/refactorytools.html.twig:31
 #: templates/reservations.html.twig:28
 msgid "Next"
 msgstr ""
 
-#: templates/planner.html.twig:42
-#: templates/planner.html.twig:373
+#: templates/refactorytools.html.twig:42
+#: templates/refactorytools.html.twig:373
 msgid "New event"
 msgstr ""
 
-#: templates/planner.html.twig:45
+#: templates/refactorytools.html.twig:45
 #: templates/reservations.html.twig:42
 msgid "View mode"
 msgstr ""
 
-#: templates/planner.html.twig:65
+#: templates/refactorytools.html.twig:65
 #: templates/reservations.html.twig:56
 msgid "Day"
 msgstr ""
 
-#: templates/planner.html.twig:66
+#: templates/refactorytools.html.twig:66
 #: templates/reservations.html.twig:57
 msgid "Week"
 msgstr ""
 
-#: templates/planner.html.twig:67
+#: templates/refactorytools.html.twig:67
 #: templates/reservations.html.twig:58
 msgid "Month"
 msgstr ""
 
-#: templates/planner.html.twig:75
+#: templates/refactorytools.html.twig:75
 msgid "One lane per person, same period"
 msgstr ""
 
-#: templates/planner.html.twig:76
+#: templates/refactorytools.html.twig:76
 msgid "By person"
 msgstr ""
 
-#: templates/planner.html.twig:87
+#: templates/refactorytools.html.twig:87
 msgid "Each group member gets a colour; event types become text tags"
 msgstr ""
 
-#: templates/planner.html.twig:88
+#: templates/refactorytools.html.twig:88
 msgid "Group manager view"
 msgstr ""
 
-#: templates/planner.html.twig:93
+#: templates/refactorytools.html.twig:93
 msgid "Group by"
 msgstr ""
 
-#: templates/planner.html.twig:95
-#: templates/planner.html.twig:484
+#: templates/refactorytools.html.twig:95
+#: templates/refactorytools.html.twig:484
 #: templates/reservations.html.twig:466
 msgid "Status"
 msgstr ""
 
-#: templates/planner.html.twig:96
-#: templates/planner.html.twig:475
-#: templates/planner.html.twig:481
+#: templates/refactorytools.html.twig:96
+#: templates/refactorytools.html.twig:475
+#: templates/refactorytools.html.twig:481
 msgid "Person"
 msgstr ""
 
-#: templates/planner.html.twig:111
-#: templates/planner.html.twig:235
+#: templates/refactorytools.html.twig:111
+#: templates/refactorytools.html.twig:235
 msgid "Planned hours"
 msgstr ""
 
-#: templates/planner.html.twig:115
-#: templates/planner.html.twig:239
+#: templates/refactorytools.html.twig:115
+#: templates/refactorytools.html.twig:239
 msgid "Realised hours"
 msgstr ""
 
-#: templates/planner.html.twig:119
-#: templates/planner.html.twig:243
+#: templates/refactorytools.html.twig:119
+#: templates/refactorytools.html.twig:243
 msgid "Total hours"
 msgstr ""
 
-#: templates/planner.html.twig:123
+#: templates/refactorytools.html.twig:123
 msgid "Appointments"
 msgstr ""
 
-#: templates/planner.html.twig:131
+#: templates/refactorytools.html.twig:131
 msgid "Completed"
 msgstr ""
 
-#: templates/planner.html.twig:148
+#: templates/refactorytools.html.twig:148
 #, php-format
 msgid "%d access request(s) awaiting your decision"
 msgstr ""
 
-#: templates/planner.html.twig:174
+#: templates/refactorytools.html.twig:174
 msgid "You only see this person busy times"
 msgstr ""
 
-#: templates/planner.html.twig:175
+#: templates/refactorytools.html.twig:175
 msgid "free/busy"
 msgstr ""
 
-#: templates/planner.html.twig:187
+#: templates/refactorytools.html.twig:187
 msgid "Event types"
 msgstr ""
 
-#: templates/planner.html.twig:213
+#: templates/refactorytools.html.twig:213
 msgid "Show completed"
 msgstr ""
 
-#: templates/planner.html.twig:230
+#: templates/refactorytools.html.twig:230
 msgid "My tickets as technician"
 msgstr ""
 
-#: templates/planner.html.twig:260
+#: templates/refactorytools.html.twig:260
 msgid "See all my tickets"
 msgstr ""
 
-#: templates/planner.html.twig:277
-#: templates/planner.html.twig:300
+#: templates/refactorytools.html.twig:277
+#: templates/refactorytools.html.twig:300
 msgid "Open another schedule"
 msgstr ""
 
-#: templates/planner.html.twig:281
+#: templates/refactorytools.html.twig:281
 msgid "Your profile has \"See all schedules\": you can open any user schedule, without depending on team, group or sharing."
 msgstr ""
 
-#: templates/planner.html.twig:315
+#: templates/refactorytools.html.twig:315
 msgid "Manage shares"
 msgstr ""
 
-#: templates/planner.html.twig:336
+#: templates/refactorytools.html.twig:336
 msgid "Loading schedule…"
 msgstr ""
 
-#: templates/planner.html.twig:375
+#: templates/refactorytools.html.twig:375
 #: templates/reservations.html.twig:195
 msgid "Close"
 msgstr ""
 
-#: templates/planner.html.twig:380
-#: templates/planner.html.twig:482
+#: templates/refactorytools.html.twig:380
+#: templates/refactorytools.html.twig:482
 msgid "Type"
 msgstr ""
 
-#: templates/planner.html.twig:389
+#: templates/refactorytools.html.twig:389
 msgid "Title"
 msgstr ""
 
-#: templates/planner.html.twig:395
+#: templates/refactorytools.html.twig:395
 #: templates/reservations.html.twig:201
 msgid "Start"
 msgstr ""
 
-#: templates/planner.html.twig:403
+#: templates/refactorytools.html.twig:403
 #: templates/reservations.html.twig:212
 msgid "End"
 msgstr ""
 
-#: templates/planner.html.twig:410
+#: templates/refactorytools.html.twig:410
 msgid "Description"
 msgstr ""
 
-#: templates/planner.html.twig:426
-#: templates/planner.html.twig:496
+#: templates/refactorytools.html.twig:426
+#: templates/refactorytools.html.twig:496
 #: templates/reservations.html.twig:295
 msgid "Cancel"
 msgstr ""
 
-#: templates/planner.html.twig:429
+#: templates/refactorytools.html.twig:429
 msgid "Create"
 msgstr ""
 
-#: templates/planner.html.twig:473
+#: templates/refactorytools.html.twig:473
 msgid "Select at least one schedule in the sidebar."
 msgstr ""
 
-#: templates/planner.html.twig:474
+#: templates/refactorytools.html.twig:474
 msgid "No events in this period."
 msgstr ""
 
-#: templates/planner.html.twig:476
+#: templates/refactorytools.html.twig:476
 #: templates/reservations.html.twig:461
 msgid "All day"
 msgstr ""
 
-#: templates/planner.html.twig:480
+#: templates/refactorytools.html.twig:480
 #: templates/reservations.html.twig:462
 msgid "When"
 msgstr ""
 
-#: templates/planner.html.twig:483
+#: templates/refactorytools.html.twig:483
 msgid "Event"
 msgstr ""
 
-#: templates/planner.html.twig:485
+#: templates/refactorytools.html.twig:485
 msgid "Schedule updated."
 msgstr ""
 
-#: templates/planner.html.twig:486
+#: templates/refactorytools.html.twig:486
 msgid "You are not allowed to move this event."
 msgstr ""
 
-#: templates/planner.html.twig:487
+#: templates/refactorytools.html.twig:487
 msgid "Could not save the new time."
 msgstr ""
 
-#: templates/planner.html.twig:488
+#: templates/refactorytools.html.twig:488
 msgid "Manager note"
 msgstr ""
 
-#: templates/planner.html.twig:490
+#: templates/refactorytools.html.twig:490
 msgid "By"
 msgstr ""
 
-#: templates/planner.html.twig:491
+#: templates/refactorytools.html.twig:491
 msgid "Total time on this ticket"
 msgstr ""
 
-#: templates/planner.html.twig:492
+#: templates/refactorytools.html.twig:492
 msgid "Add a note"
 msgstr ""
 
-#: templates/planner.html.twig:493
+#: templates/refactorytools.html.twig:493
 msgid "Edit note"
 msgstr ""
 
-#: templates/planner.html.twig:494
+#: templates/refactorytools.html.twig:494
 msgid "Note saved."
 msgstr ""
 
@@ -938,5 +938,5 @@ msgid "No schedule has been shared with you."
 msgstr ""
 
 #: templates/shares.html.twig:227
-msgid "Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > Planner."
+msgid "Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > RefactoryTools."
 msgstr ""

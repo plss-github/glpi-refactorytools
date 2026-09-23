@@ -1,86 +1,86 @@
 {#
- # Planner — tela de Reservas remodelada.
+ # RefactoryTools — tela de Reservas remodelada.
  #
  # Mesma estrutura da agenda (mesmas classes, mesmo JavaScript), com um eixo
  # diferente: cada faixa é um ITEM RESERVÁVEL, não uma pessoa. Reaproveitar as
- # classes `planner-*` não é economia de digitação — é o que garante que as
+ # classes `refactorytools-*` não é economia de digitação — é o que garante que as
  # duas telas continuem parecidas quando uma delas mudar.
  #
  # Sem Kanban aqui: uma reserva responde a duas perguntas, qual item e quando,
  # e Calendário e Lista já cobrem as duas.
  #}
 
-{# `planner-page-reservations` é o gancho de CSS que diferencia as duas telas
+{# `refactorytools-page-reservations` é o gancho de CSS que diferencia as duas telas
    onde o significado muda: uma reserva "encerrada" é só uma que já passou,
    não uma que foi cancelada. #}
-<div class="planner-page planner-page-reservations" id="planner-app"
+<div class="refactorytools-page refactorytools-page-reservations" id="refactorytools-app"
      data-root="{{ root_doc }}"
      data-me="{{ me }}"
      data-today="{{ today }}">
 
-    <div class="planner-topbar">
-        <div class="planner-nav">
+    <div class="refactorytools-topbar">
+        <div class="refactorytools-nav">
             <div class="btn-group">
-                <button type="button" class="btn btn-sm planner-prev" title="{{ __('Previous', 'planner') }}">
+                <button type="button" class="btn btn-sm refactorytools-prev" title="{{ __('Previous', 'refactorytools') }}">
                     <i class="ti ti-chevron-left"></i>
                 </button>
-                <button type="button" class="btn btn-sm planner-today">{{ __('Today', 'planner') }}</button>
-                <button type="button" class="btn btn-sm planner-next" title="{{ __('Next', 'planner') }}">
+                <button type="button" class="btn btn-sm refactorytools-today">{{ __('Today', 'refactorytools') }}</button>
+                <button type="button" class="btn btn-sm refactorytools-next" title="{{ __('Next', 'refactorytools') }}">
                     <i class="ti ti-chevron-right"></i>
                 </button>
             </div>
-            <span class="planner-period" data-period>&nbsp;</span>
+            <span class="refactorytools-period" data-period>&nbsp;</span>
         </div>
 
         <div class="d-flex align-items-center gap-2">
             {% if can_reserve and items_count > 0 %}
                 <button type="button" class="btn btn-sm btn-primary"
-                        data-bs-toggle="modal" data-bs-target="#planner-new-reservation">
-                    <i class="ti ti-plus"></i> {{ __('New reservation', 'planner') }}
+                        data-bs-toggle="modal" data-bs-target="#refactorytools-new-reservation">
+                    <i class="ti ti-plus"></i> {{ __('New reservation', 'refactorytools') }}
                 </button>
             {% endif %}
-            <div class="planner-modes btn-group" role="group" aria-label="{{ __('View mode', 'planner') }}">
+            <div class="refactorytools-modes btn-group" role="group" aria-label="{{ __('View mode', 'refactorytools') }}">
                 <button type="button" class="btn btn-sm" data-mode="calendar">
-                    <i class="ti ti-calendar-month"></i> {{ __('Calendar', 'planner') }}
+                    <i class="ti ti-calendar-month"></i> {{ __('Calendar', 'refactorytools') }}
                 </button>
                 <button type="button" class="btn btn-sm" data-mode="list">
-                    <i class="ti ti-list-details"></i> {{ __('List', 'planner') }}
+                    <i class="ti ti-list-details"></i> {{ __('List', 'refactorytools') }}
                 </button>
             </div>
         </div>
     </div>
 
-    <div class="planner-subbar">
-        <div class="planner-subopts">
-            <div class="btn-group planner-ranges" role="group">
-                <button type="button" class="btn btn-sm" data-range="day">{{ __('Day', 'planner') }}</button>
-                <button type="button" class="btn btn-sm" data-range="week">{{ __('Week', 'planner') }}</button>
-                <button type="button" class="btn btn-sm" data-range="month">{{ __('Month', 'planner') }}</button>
+    <div class="refactorytools-subbar">
+        <div class="refactorytools-subopts">
+            <div class="btn-group refactorytools-ranges" role="group">
+                <button type="button" class="btn btn-sm" data-range="day">{{ __('Day', 'refactorytools') }}</button>
+                <button type="button" class="btn btn-sm" data-range="week">{{ __('Week', 'refactorytools') }}</button>
+                <button type="button" class="btn btn-sm" data-range="month">{{ __('Month', 'refactorytools') }}</button>
             </div>
 
-            <button type="button" class="btn btn-sm planner-team-toggle"
-                    title="{{ __('One lane per item, same period', 'planner') }}">
-                <i class="ti ti-layout-rows"></i> {{ __('By item', 'planner') }}
+            <button type="button" class="btn btn-sm refactorytools-team-toggle"
+                    title="{{ __('One lane per item, same period', 'refactorytools') }}">
+                <i class="ti ti-layout-rows"></i> {{ __('By item', 'refactorytools') }}
             </button>
         </div>
 
-        <div class="planner-kpis">
-            <div class="planner-kpi">
-                <span class="planner-kpi-value" data-kpi="count">—</span>
-                <span class="planner-kpi-label">{{ __('Reservations', 'planner') }}</span>
+        <div class="refactorytools-kpis">
+            <div class="refactorytools-kpi">
+                <span class="refactorytools-kpi-value" data-kpi="count">—</span>
+                <span class="refactorytools-kpi-label">{{ __('Reservations', 'refactorytools') }}</span>
             </div>
         </div>
     </div>
 
-    <div class="planner-body">
+    <div class="refactorytools-body">
 
-        <aside class="planner-sidebar card">
-            <div class="planner-sidebar-scroll">
+        <aside class="refactorytools-sidebar card">
+            <div class="refactorytools-sidebar-scroll">
 
                 {% if items_count == 0 %}
-                    <div class="planner-hint">
+                    <div class="refactorytools-hint">
                         <i class="ti ti-info-circle"></i>
-                        {{ __('No reservable item is available in this entity. An item becomes reservable from its own form, under the Reservations tab.', 'planner') }}
+                        {{ __('No reservable item is available in this entity. An item becomes reservable from its own form, under the Reservations tab.', 'refactorytools') }}
                     </div>
                 {% else %}
                     {# Uma seção só, "Filtros": os tipos de ativo e as duas
@@ -95,39 +95,39 @@
                        reserváveis; cada aparelho vira uma faixa na visão Por
                        item. Uma lista aparelho a aparelho não escala, e o que
                        se quer quase sempre é "ver os computadores". #}
-                    <div class="planner-section">
-                        <div class="planner-section-title">{{ __('Filters', 'planner') }}</div>
+                    <div class="refactorytools-section">
+                        <div class="refactorytools-section-title">{{ __('Filters', 'refactorytools') }}</div>
 
-                        <label class="planner-type-label">
-                            {# `data-planner-flag` faz o JavaScript mandar esta
+                        <label class="refactorytools-type-label">
+                            {# `data-refactorytools-flag` faz o JavaScript mandar esta
                                caixa como parâmetro na busca de eventos, sem
                                precisar de código específico desta tela.
                                Marcada por padrão: o uso mais comum da tela é
                                conferir as próprias reservas. #}
-                            <input type="checkbox" class="form-check-input planner-type-toggle"
-                                   id="planner-only-mine" data-planner-flag="only_mine" checked>
-                            <span>{{ __('Only my reservations', 'planner') }}</span>
+                            <input type="checkbox" class="form-check-input refactorytools-type-toggle"
+                                   id="refactorytools-only-mine" data-refactorytools-flag="only_mine" checked>
+                            <span>{{ __('Only my reservations', 'refactorytools') }}</span>
                         </label>
-                        <label class="planner-type-label">
-                            <input type="checkbox" class="form-check-input" id="planner-show-done" checked>
-                            <span>{{ __('Show finished', 'planner') }}</span>
+                        <label class="refactorytools-type-label">
+                            <input type="checkbox" class="form-check-input" id="refactorytools-show-done" checked>
+                            <span>{{ __('Show finished', 'refactorytools') }}</span>
                         </label>
 
-                        <div class="planner-section-subtitle">{{ __('Asset types', 'planner') }}</div>
-                        <ul class="planner-actors">
+                        <div class="refactorytools-section-subtitle">{{ __('Asset types', 'refactorytools') }}</div>
+                        <ul class="refactorytools-actors">
                             {% for type in types %}
-                                <li class="planner-actor" data-actor="{{ type.itemtype }}">
-                                    <label class="planner-actor-label">
-                                        <input type="checkbox" class="form-check-input planner-actor-toggle"
+                                <li class="refactorytools-actor" data-actor="{{ type.itemtype }}">
+                                    <label class="refactorytools-actor-label">
+                                        <input type="checkbox" class="form-check-input refactorytools-actor-toggle"
                                                value="{{ type.itemtype }}"
                                                data-color="{{ type.color }}"
                                                data-name="{{ type.label }}" checked>
-                                        <span class="planner-avatar planner-avatar-square"
-                                              style="--planner-actor-color: {{ type.color }}">
+                                        <span class="refactorytools-avatar refactorytools-avatar-square"
+                                              style="--refactorytools-actor-color: {{ type.color }}">
                                             <i class="{{ type.icon }}"></i>
                                         </span>
-                                        <span class="planner-actor-name">{{ type.label }}</span>
-                                        <span class="badge bg-secondary-lt planner-actor-badge">{{ type.count }}</span>
+                                        <span class="refactorytools-actor-name">{{ type.label }}</span>
+                                        <span class="badge bg-secondary-lt refactorytools-actor-badge">{{ type.count }}</span>
                                     </label>
                                 </li>
                             {% endfor %}
@@ -136,29 +136,29 @@
                 {% endif %}
 
                 {% if can_manage %}
-                    <div class="planner-section planner-section-footer">
+                    <div class="refactorytools-section refactorytools-section-footer">
                         <a href="{{ root_doc }}/front/reservationitem.php"
                            class="btn btn-sm btn-ghost-secondary w-100">
                             <i class="ti ti-settings"></i>
-                            {{ __('Manage reservable items', 'planner') }}
+                            {{ __('Manage reservable items', 'refactorytools') }}
                         </a>
                     </div>
                 {% endif %}
             </div>
         </aside>
 
-        <main class="planner-main card">
-            <div class="planner-loading" hidden>
+        <main class="refactorytools-main card">
+            <div class="refactorytools-loading" hidden>
                 <div class="spinner-border spinner-border-sm"></div>
-                {{ __('Loading reservations…', 'planner') }}
+                {{ __('Loading reservations…', 'refactorytools') }}
             </div>
 
-            <div class="planner-pane" data-pane="calendar">
-                <div id="planner-calendar"></div>
+            <div class="refactorytools-pane" data-pane="calendar">
+                <div id="refactorytools-calendar"></div>
             </div>
 
-            <div class="planner-pane" data-pane="list" hidden>
-                <div class="planner-list"></div>
+            <div class="refactorytools-pane" data-pane="list" hidden>
+                <div class="refactorytools-list"></div>
             </div>
         </main>
     </div>
@@ -182,97 +182,97 @@
 {# a mesma rotina que confere conflito e expande a recorrência.              #}
 {# ------------------------------------------------------------------------ #}
 {% if can_reserve and items_count > 0 %}
-    <div class="modal fade" id="planner-new-reservation" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="refactorytools-new-reservation" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <form class="modal-content" method="post"
-                  action="{{ root_doc }}/plugins/planner/ajax/create_reservation.php"
-                  id="planner-new-reservation-form">
+                  action="{{ root_doc }}/plugins/refactorytools/ajax/create_reservation.php"
+                  id="refactorytools-new-reservation-form">
                 <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
 
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('New reservation', 'planner') }}</h5>
+                    <h5 class="modal-title">{{ __('New reservation', 'refactorytools') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="{{ __('Close', 'planner') }}"></button>
+                            aria-label="{{ __('Close', 'refactorytools') }}"></button>
                 </div>
 
-                <div class="modal-body planner-res-form">
+                <div class="modal-body refactorytools-res-form">
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-sm-6">
-                            <label class="form-label required" for="planner-res-begin">{{ __('Start', 'planner') }}</label>
+                            <label class="form-label required" for="refactorytools-res-begin">{{ __('Start', 'refactorytools') }}</label>
                             {# Texto simples + flatpickr, não `type="datetime-local"`:
                                o widget nativo do navegador para esse tipo de
                                campo varia demais de um SO/navegador para outro
                                e em vários deles não dá pra digitar a hora
                                direto, só clicar nas setinhas. flatpickr é o
                                que o resto do GLPI já usa para isso. #}
-                            <input type="text" class="form-control" id="planner-res-begin"
+                            <input type="text" class="form-control" id="refactorytools-res-begin"
                                    name="resa[begin]" value="{{ default_begin }}" required autocomplete="off">
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label required" for="planner-res-end">{{ __('End', 'planner') }}</label>
-                            <input type="text" class="form-control" id="planner-res-end"
+                            <label class="form-label required" for="refactorytools-res-end">{{ __('End', 'refactorytools') }}</label>
+                            <input type="text" class="form-control" id="refactorytools-res-end"
                                    name="resa[end]" value="{{ default_end }}" required autocomplete="off">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label required" for="planner-res-type">{{ __('Asset type', 'planner') }}</label>
-                        <select class="form-select" id="planner-res-type" required disabled>
-                            <option value="">{{ __('Fill in the dates above first', 'planner') }}</option>
+                        <label class="form-label required" for="refactorytools-res-type">{{ __('Asset type', 'refactorytools') }}</label>
+                        <select class="form-select" id="refactorytools-res-type" required disabled>
+                            <option value="">{{ __('Fill in the dates above first', 'refactorytools') }}</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label required" for="planner-res-item">
-                            {{ __('Reservable item', 'planner') }}
+                        <label class="form-label required" for="refactorytools-res-item">
+                            {{ __('Reservable item', 'refactorytools') }}
                         </label>
-                        <select class="form-select" id="planner-res-item" name="items[]" required disabled>
+                        <select class="form-select" id="refactorytools-res-item" name="items[]" required disabled>
                             <option value="">—</option>
                         </select>
-                        <div class="form-hint" id="planner-res-availability-hint"></div>
+                        <div class="form-hint" id="refactorytools-res-availability-hint"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label required" for="planner-res-comment">
-                            {{ __('Reservation justification', 'planner') }}
+                        <label class="form-label required" for="refactorytools-res-comment">
+                            {{ __('Reservation justification', 'refactorytools') }}
                         </label>
-                        <textarea class="form-control" id="planner-res-comment" name="comment" rows="2"
-                                  placeholder="{{ __('What is it for?', 'planner') }}" required></textarea>
+                        <textarea class="form-control" id="refactorytools-res-comment" name="comment" rows="2"
+                                  placeholder="{{ __('What is it for?', 'refactorytools') }}" required></textarea>
                     </div>
 
                     {# Recorrência: mesmos nomes de campo (`periodicity[...]`)
                        que o formulário nativo de reserva usa, então
                        `Reservation::handleAddForm()` entende sem tradução. #}
                     <div class="mb-1">
-                        <label class="form-label" for="planner-res-periodicity">{{ __('Repeat', 'planner') }}</label>
-                        <select class="form-select" id="planner-res-periodicity" name="periodicity[type]">
-                            <option value="">{{ __('Does not repeat', 'planner') }}</option>
-                            <option value="day">{{ __('Every day', 'planner') }}</option>
-                            <option value="week">{{ __('Every week', 'planner') }}</option>
-                            <option value="month">{{ __('Every month', 'planner') }}</option>
+                        <label class="form-label" for="refactorytools-res-periodicity">{{ __('Repeat', 'refactorytools') }}</label>
+                        <select class="form-select" id="refactorytools-res-periodicity" name="periodicity[type]">
+                            <option value="">{{ __('Does not repeat', 'refactorytools') }}</option>
+                            <option value="day">{{ __('Every day', 'refactorytools') }}</option>
+                            <option value="week">{{ __('Every week', 'refactorytools') }}</option>
+                            <option value="month">{{ __('Every month', 'refactorytools') }}</option>
                         </select>
                     </div>
 
-                    <div class="planner-res-periodicity-detail" hidden>
+                    <div class="refactorytools-res-periodicity-detail" hidden>
                         <div class="row g-2 mt-1">
                             <div class="col-12 col-sm-6">
-                                <label class="form-label" for="planner-res-periodicity-end">{{ __('Repeat until', 'planner') }}</label>
-                                <input type="date" class="form-control" id="planner-res-periodicity-end"
+                                <label class="form-label" for="refactorytools-res-periodicity-end">{{ __('Repeat until', 'refactorytools') }}</label>
+                                <input type="date" class="form-control" id="refactorytools-res-periodicity-end"
                                        name="periodicity[end]">
                             </div>
-                            <div class="col-12 col-sm-6 planner-res-periodicity-month" hidden>
-                                <label class="form-label" for="planner-res-periodicity-subtype">{{ __('Monthly pattern', 'planner') }}</label>
-                                <select class="form-select" id="planner-res-periodicity-subtype" name="periodicity[subtype]">
-                                    <option value="date">{{ __('Same date every month', 'planner') }}</option>
-                                    <option value="day">{{ __('Same weekday every month', 'planner') }}</option>
+                            <div class="col-12 col-sm-6 refactorytools-res-periodicity-month" hidden>
+                                <label class="form-label" for="refactorytools-res-periodicity-subtype">{{ __('Monthly pattern', 'refactorytools') }}</label>
+                                <select class="form-select" id="refactorytools-res-periodicity-subtype" name="periodicity[subtype]">
+                                    <option value="date">{{ __('Same date every month', 'refactorytools') }}</option>
+                                    <option value="day">{{ __('Same weekday every month', 'refactorytools') }}</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="planner-res-periodicity-week" hidden>
-                            <div class="form-label mt-2 mb-1">{{ __('On these days', 'planner') }}</div>
+                        <div class="refactorytools-res-periodicity-week" hidden>
+                            <div class="form-label mt-2 mb-1">{{ __('On these days', 'refactorytools') }}</div>
                             <div class="d-flex flex-wrap gap-2">
-                                {% for day, label in {'Monday': __('Mon', 'planner'), 'Tuesday': __('Tue', 'planner'), 'Wednesday': __('Wed', 'planner'), 'Thursday': __('Thu', 'planner'), 'Friday': __('Fri', 'planner'), 'Saturday': __('Sat', 'planner'), 'Sunday': __('Sun', 'planner')} %}
-                                    <label class="planner-res-day-toggle">
+                                {% for day, label in {'Monday': __('Mon', 'refactorytools'), 'Tuesday': __('Tue', 'refactorytools'), 'Wednesday': __('Wed', 'refactorytools'), 'Thursday': __('Thu', 'refactorytools'), 'Friday': __('Fri', 'refactorytools'), 'Saturday': __('Sat', 'refactorytools'), 'Sunday': __('Sun', 'refactorytools')} %}
+                                    <label class="refactorytools-res-day-toggle">
                                         <input type="checkbox" name="periodicity[days][{{ day }}]" value="1">
                                         <span>{{ label }}</span>
                                     </label>
@@ -284,18 +284,18 @@
                     {# Aviso escrito para quem reserva, não para quem mantém o
                        sistema: diz o que vai acontecer com ELE, sem citar o
                        nome do produto nem o mecanismo interno. #}
-                    <div class="planner-res-note mt-3">
+                    <div class="refactorytools-res-note mt-3">
                         <i class="ti ti-info-circle"></i>
-                        <span>{{ __('The item is held only for you during this period. If someone has already reserved it, we will tell you and nothing is saved.', 'planner') }}</span>
+                        <span>{{ __('The item is held only for you during this period. If someone has already reserved it, we will tell you and nothing is saved.', 'refactorytools') }}</span>
                     </div>
                 </div>
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">
-                        {{ __('Cancel', 'planner') }}
+                        {{ __('Cancel', 'refactorytools') }}
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="ti ti-calendar-plus"></i>{{ __('Reserve', 'planner') }}
+                        <i class="ti ti-calendar-plus"></i>{{ __('Reserve', 'refactorytools') }}
                     </button>
                 </div>
             </form>
@@ -304,21 +304,21 @@
 
     <script>
         // Comportamento do modal de nova reserva. Fica aqui, e não no
-        // planner.js compartilhado, porque é específico desta tela: o
-        // planner.js carrega em TODA página do GLPI (hook `add_javascript`),
+        // refactorytools.js compartilhado, porque é específico desta tela: o
+        // refactorytools.js carrega em TODA página do GLPI (hook `add_javascript`),
         // e este código só existe onde o formulário existe.
         $(function () {
-            var $modal   = $('#planner-new-reservation');
-            var $begin   = $('#planner-res-begin');
-            var $end     = $('#planner-res-end');
-            var $type    = $('#planner-res-type');
-            var $item    = $('#planner-res-item');
-            var $hint    = $('#planner-res-availability-hint');
+            var $modal   = $('#refactorytools-new-reservation');
+            var $begin   = $('#refactorytools-res-begin');
+            var $end     = $('#refactorytools-res-end');
+            var $type    = $('#refactorytools-res-type');
+            var $item    = $('#refactorytools-res-item');
+            var $hint    = $('#refactorytools-res-availability-hint');
             var labels = {
-                choose_type: {{ __('Choose an asset type', 'planner')|json_encode|raw }},
-                choose_item: {{ __('Choose an item', 'planner')|json_encode|raw }},
-                fill_dates:  {{ __('Fill in the dates above first', 'planner')|json_encode|raw }},
-                no_items:    {{ __('Nothing is free for this period.', 'planner')|json_encode|raw }}
+                choose_type: {{ __('Choose an asset type', 'refactorytools')|json_encode|raw }},
+                choose_item: {{ __('Choose an item', 'refactorytools')|json_encode|raw }},
+                fill_dates:  {{ __('Fill in the dates above first', 'refactorytools')|json_encode|raw }},
+                no_items:    {{ __('Nothing is free for this period.', 'refactorytools')|json_encode|raw }}
             };
             var availableItems = [];
             var fetchToken = 0;
@@ -394,7 +394,7 @@
 
                 var token = ++fetchToken;
 
-                $.getJSON({{ (root_doc ~ '/plugins/planner/ajax/reservation_availability.php')|json_encode|raw }}, {
+                $.getJSON({{ (root_doc ~ '/plugins/refactorytools/ajax/reservation_availability.php')|json_encode|raw }}, {
                     begin: begin,
                     end: end
                 }).done(function (data) {
@@ -432,15 +432,15 @@
             // Recorrência: mostra só os campos que fazem sentido para o tipo
             // escolhido (dias da semana só para "toda semana", padrão mensal
             // só para "todo mês").
-            $(document).on('change', '.planner-res-day-toggle input', function () {
-                $(this).closest('.planner-res-day-toggle').toggleClass('is-checked', this.checked);
+            $(document).on('change', '.refactorytools-res-day-toggle input', function () {
+                $(this).closest('.refactorytools-res-day-toggle').toggleClass('is-checked', this.checked);
             });
 
-            $('#planner-res-periodicity').on('change', function () {
+            $('#refactorytools-res-periodicity').on('change', function () {
                 var type = $(this).val();
-                $('.planner-res-periodicity-detail').prop('hidden', !type);
-                $('.planner-res-periodicity-week').prop('hidden', type !== 'week');
-                $('.planner-res-periodicity-month').prop('hidden', type !== 'month');
+                $('.refactorytools-res-periodicity-detail').prop('hidden', !type);
+                $('.refactorytools-res-periodicity-week').prop('hidden', type !== 'week');
+                $('.refactorytools-res-periodicity-month').prop('hidden', type !== 'month');
             });
 
         });
@@ -449,27 +449,27 @@
 
 <script>
     $(function () {
-        GlpiPlanner.init({
+        GlpiRefactoryTools.init({
             root_doc: {{ root_doc|json_encode|raw }},
-            events_url: {{ (root_doc ~ '/plugins/planner/ajax/reservation_events.php')|json_encode|raw }},
+            events_url: {{ (root_doc ~ '/plugins/refactorytools/ajax/reservation_events.php')|json_encode|raw }},
             me: {{ me }},
             default_mode: {{ default_mode|json_encode|raw }},
             // O eixo desta tela é o item reservável, não a pessoa.
             actor_param: 'itemtypes',
-            resource_prefix: {{ constant('GlpiPlugin\\Planner\\ReservationView::RESOURCE_PREFIX')|json_encode|raw }},
+            resource_prefix: {{ constant('GlpiPlugin\\RefactoryTools\\ReservationView::RESOURCE_PREFIX')|json_encode|raw }},
             // Faixas aqui são itens, não pessoas: não existe reatribuir uma
             // reserva arrastando de uma faixa para outra.
             resource_itemtype: null,
             labels: {
-                no_actor: {{ __('Select at least one asset type in the sidebar.', 'planner')|json_encode|raw }},
-                no_event: {{ __('No reservation in this period.', 'planner')|json_encode|raw }},
-                person: {{ __('Item', 'planner')|json_encode|raw }},
-                allday: {{ __('All day', 'planner')|json_encode|raw }},
-                col_when: {{ __('When', 'planner')|json_encode|raw }},
-                col_who: {{ __('Item', 'planner')|json_encode|raw }},
-                col_type: {{ __('Note', 'planner')|json_encode|raw }},
-                col_subject: {{ __('Reserved by', 'planner')|json_encode|raw }},
-                col_state: {{ __('Status', 'planner')|json_encode|raw }}
+                no_actor: {{ __('Select at least one asset type in the sidebar.', 'refactorytools')|json_encode|raw }},
+                no_event: {{ __('No reservation in this period.', 'refactorytools')|json_encode|raw }},
+                person: {{ __('Item', 'refactorytools')|json_encode|raw }},
+                allday: {{ __('All day', 'refactorytools')|json_encode|raw }},
+                col_when: {{ __('When', 'refactorytools')|json_encode|raw }},
+                col_who: {{ __('Item', 'refactorytools')|json_encode|raw }},
+                col_type: {{ __('Note', 'refactorytools')|json_encode|raw }},
+                col_subject: {{ __('Reserved by', 'refactorytools')|json_encode|raw }},
+                col_state: {{ __('Status', 'refactorytools')|json_encode|raw }}
             }
         });
     });

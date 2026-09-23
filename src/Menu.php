@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Entrada de menu do plugin em Assistência.
  *
@@ -11,11 +11,11 @@
  *  - LIGADO (padrão): o plugin SUBSTITUI o item "Planejamento" nativo. O
  *    rótulo continua sendo o do core (`Planning::getMenuName()`, já traduzido
  *    em todos os idiomas do GLPI) — quem usa o sistema não precisa aprender um
- *    nome novo; "Planner" é o nome do plugin, não do item de menu. Só o
+ *    nome novo; "RefactoryTools" é o nome do plugin, não do item de menu. Só o
  *    destino muda. A entrada própria do plugin é removida para não ficarem
  *    dois itens parecidos lado a lado.
  *
- *  - DESLIGADO: o item nativo fica intacto e o Planner aparece como entrada
+ *  - DESLIGADO: o item nativo fica intacto e o RefactoryTools aparece como entrada
  *    separada. Útil para comparar as duas telas durante a adoção.
  *
  * A substituição é feita pelo hook `redefine_menus`, que o GLPI aplica sobre o
@@ -24,7 +24,7 @@
  * desativar nada do core.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use CommonGLPI;
 use Planning;
@@ -39,7 +39,7 @@ class Menu extends CommonGLPI
 
     public static function getTypeName($nb = 0)
     {
-        return __('Pellissari RefactoryTools', 'planner');
+        return __('Pellissari RefactoryTools', 'refactorytools');
     }
 
     public static function getMenuName()
@@ -80,7 +80,7 @@ class Menu extends CommonGLPI
     {
         $menu = [
             'title' => self::getMenuName(),
-            'page'  => self::getPlannerPage(),
+            'page'  => self::getRefactoryToolsPage(),
             'icon'  => self::getIcon(),
         ];
 
@@ -107,7 +107,7 @@ class Menu extends CommonGLPI
             return $menu;
         }
 
-        // Sem o direito de usar o Planner, o usuário fica com o planejamento
+        // Sem o direito de usar o RefactoryTools, o usuário fica com o planejamento
         // nativo — substituir levaria a uma tela que ele não pode abrir.
         if (!Right::canUse()) {
             return $menu;
@@ -125,7 +125,7 @@ class Menu extends CommonGLPI
         // Mantém rótulo, ícone e atalho do core: para quem usa, o item é o
         // mesmo "Planejamento" de sempre. Só o destino muda.
         $menu['helpdesk']['content'][self::NATIVE_KEY] = array_merge($native, [
-            'page'    => self::getPlannerPage(),
+            'page'    => self::getRefactoryToolsPage(),
             // As opções nativas (Eventos externos) continuam valendo — são
             // telas do core que o plugin não substitui. As do plugin entram
             // depois delas.
@@ -147,31 +147,31 @@ class Menu extends CommonGLPI
     {
         $options = [];
 
-        $options['planner_agenda'] = [
-            'title' => __('Schedule', 'planner'),
-            'page'  => self::getPlannerPage(),
+        $options['refactorytools_agenda'] = [
+            'title' => __('Schedule', 'refactorytools'),
+            'page'  => self::getRefactoryToolsPage(),
             'icon'  => self::getIcon(),
             'links' => [
-                'search' => self::getPlannerPage(),
+                'search' => self::getRefactoryToolsPage(),
             ],
         ];
 
-        $options['planner_share'] = [
+        $options['refactorytools_share'] = [
             'title' => Share::getTypeName(2),
-            'page'  => '/plugins/planner/front/share.php',
+            'page'  => '/plugins/refactorytools/front/share.php',
             'icon'  => Share::getIcon(),
             'links' => [
-                'search' => '/plugins/planner/front/share.php',
+                'search' => '/plugins/refactorytools/front/share.php',
             ],
         ];
 
         if (Right::has(Right::READ_ALL)) {
-            $options['planner_config'] = [
-                'title' => __('Configuration', 'planner'),
-                'page'  => '/plugins/planner/front/config.form.php',
+            $options['refactorytools_config'] = [
+                'title' => __('Configuration', 'refactorytools'),
+                'page'  => '/plugins/refactorytools/front/config.form.php',
                 'icon'  => 'ti ti-settings',
                 'links' => [
-                    'search' => '/plugins/planner/front/config.form.php',
+                    'search' => '/plugins/refactorytools/front/config.form.php',
                 ],
             ];
         }
@@ -179,9 +179,9 @@ class Menu extends CommonGLPI
         return $options;
     }
 
-    public static function getPlannerPage(): string
+    public static function getRefactoryToolsPage(): string
     {
-        return '/plugins/planner/front/planner.php';
+        return '/plugins/refactorytools/front/refactorytools.php';
     }
 
     /**

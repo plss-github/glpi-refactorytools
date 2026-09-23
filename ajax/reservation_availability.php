@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Tipos e itens reserváveis LIVRES num intervalo, para o formulário de nova
  * reserva. É por isso que o formulário pede a data ANTES do tipo e do item:
@@ -15,7 +15,7 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\ReservationView;
+use GlpiPlugin\Refactorytools\ReservationView;
 
 if (!ReservationView::canReserve()) {
     http_response_code(403);

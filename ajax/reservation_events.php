@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Reservas dos itens pedidos, em JSON, para a tela de Reservas.
  *
@@ -15,8 +15,8 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\ReservationEventProvider;
-use GlpiPlugin\Planner\ReservationView;
+use GlpiPlugin\Refactorytools\ReservationEventProvider;
+use GlpiPlugin\Refactorytools\ReservationView;
 
 if (!ReservationView::canView()) {
     Session::redirectIfNotLoggedIn();

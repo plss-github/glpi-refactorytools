@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Tela principal: a agenda remodelada.
  *
@@ -12,11 +12,11 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\Menu;
-use GlpiPlugin\Planner\Right;
-use GlpiPlugin\Planner\View;
+use GlpiPlugin\Refactorytools\Menu;
+use GlpiPlugin\Refactorytools\Right;
+use GlpiPlugin\Refactorytools\View;
 
-Session::checkRight(Right::NAME, Right::USE_PLANNER);
+Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);
 
 // O terceiro e quarto argumentos (setor e item) são o que faz Html::header()
 // resolver $CFG_GLPI['javascript']['helpdesk'][<menu>] e carregar o
@@ -31,9 +31,9 @@ Html::header(
     $_SERVER['PHP_SELF'],
     'helpdesk',
     Menu::getMenuItemKey(),
-    'planner_agenda'
+    'refactorytools_agenda'
 );
 
-View::showPlanner();
+View::showRefactoryTools();
 
 Html::footer();

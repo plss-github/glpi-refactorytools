@@ -1,7 +1,7 @@
 /* global FullCalendar, CFG_GLPI, $ */
 
 /**
- * Planner — comportamento da agenda.
+ * RefactoryTools — comportamento da agenda.
  *
  * Usa o FullCalendar que o GLPI 11 já embarca, que é a versão 4 (API com
  * `header`, `eventRender`, `plugins` como strings e `minTime`/`maxTime`).
@@ -20,7 +20,7 @@
  * por isso não faz nada na carga: só define o objeto. Tudo começa em init(),
  * chamado pelo template da tela.
  */
-var GlpiPlanner = {
+var GlpiRefactoryTools = {
 
     calendar: null,
     config: {},
@@ -71,7 +71,7 @@ var GlpiPlanner = {
     serverResources: null,
 
     init: function (config) {
-        var root = document.getElementById('planner-app');
+        var root = document.getElementById('refactorytools-app');
         if (!root || typeof FullCalendar === 'undefined') {
             return;
         }
@@ -122,7 +122,7 @@ var GlpiPlanner = {
         var self = this;
 
         self.actors = {};
-        $('.planner-actor-toggle:checked').each(function () {
+        $('.refactorytools-actor-toggle:checked').each(function () {
             self.actors[$(this).val()] = {
                 id: parseInt($(this).val(), 10),
                 name: $(this).data('name'),
@@ -132,9 +132,9 @@ var GlpiPlanner = {
 
         // Só caixas com `value` próprio entram como filtro de tipo. As caixas
         // booleanas da barra lateral ("somente as minhas", "mostrar
-        // encerradas") viajam por `data-planner-flag` e não devem virar
+        // encerradas") viajam por `data-refactorytools-flag` e não devem virar
         // itemtype — sem esta checagem elas entravam na lista como "on".
-        self.types = $('.planner-type-toggle:checked').map(function () {
+        self.types = $('.refactorytools-type-toggle:checked').map(function () {
             var value = $(this).attr('value');
 
             return value ? value : null;
@@ -165,7 +165,7 @@ var GlpiPlanner = {
             return self.serverResources;
         }
 
-        $('.planner-actor-toggle:checked').each(function () {
+        $('.refactorytools-actor-toggle:checked').each(function () {
             var resource = {
                 id: self.resourcePrefix() + $(this).val(),
                 title: $(this).data('name'),
@@ -196,7 +196,7 @@ var GlpiPlanner = {
 
     render: function () {
         var self = this;
-        var el = document.getElementById('planner-calendar');
+        var el = document.getElementById('refactorytools-calendar');
         if (!el) {
             return;
         }
@@ -307,10 +307,10 @@ var GlpiPlanner = {
 
         self.calendar.render();
         self.syncPeriodLabel();
-        self.markActive('.planner-ranges', 'range', self.range);
-        self.markActive('.planner-modes', 'mode', self.mode);
-        self.markActive('.planner-kanban-opts', 'group', self.kanbanGroup);
-        $('.planner-team-toggle').toggleClass('active', self.byActor);
+        self.markActive('.refactorytools-ranges', 'range', self.range);
+        self.markActive('.refactorytools-modes', 'mode', self.mode);
+        self.markActive('.refactorytools-kanban-opts', 'group', self.kanbanGroup);
+        $('.refactorytools-team-toggle').toggleClass('active', self.byActor);
     },
 
     /**
@@ -370,13 +370,13 @@ var GlpiPlanner = {
             // Esta marca resolve: com ela, a lista acima é a palavra final,
             // mesmo vazia.
             types_defined: 1,
-            include_done: $('#planner-show-done').is(':checked') ? 1 : 0
+            include_done: $('#refactorytools-show-done').is(':checked') ? 1 : 0
         };
         payload[self.config.actor_param || 'users_ids'] = ids;
 
         // Filtros extras da tela, lidos de caixas marcadas na barra lateral.
-        $('[data-planner-flag]').each(function () {
-            payload[$(this).data('planner-flag')] = $(this).is(':checked') ? 1 : 0;
+        $('[data-refactorytools-flag]').each(function () {
+            payload[$(this).data('refactorytools-flag')] = $(this).is(':checked') ? 1 : 0;
         });
 
         $.ajax({
@@ -585,11 +585,11 @@ var GlpiPlanner = {
         }
 
         if (props.level === 'busy') {
-            $el.addClass('planner-event-busy');
+            $el.addClass('refactorytools-event-busy');
         }
         // Planning::DONE === 2 no core.
         if (props.state === 2) {
-            $el.addClass('planner-event-done');
+            $el.addClass('refactorytools-event-done');
         }
 
         var view = info.view.type;
@@ -601,8 +601,8 @@ var GlpiPlanner = {
         // encontra ao passar pela linha do tempo.
         if (is_other_person) {
             $el.find('.fc-content, .fc-title').first().before(
-                $('<span class="planner-event-avatar"></span>')
-                    .css('--planner-actor-color', props.actorColor || '')
+                $('<span class="refactorytools-event-avatar"></span>')
+                    .css('--refactorytools-actor-color', props.actorColor || '')
                     .text(this.actorInitials(props))
                     .attr('title', props.actorName || '')
             );
@@ -618,14 +618,14 @@ var GlpiPlanner = {
             }
             if (meta.length) {
                 $el.find('.fc-title').after(
-                    $('<span class="planner-event-meta"></span>').text(meta.join(' · '))
+                    $('<span class="refactorytools-event-meta"></span>').text(meta.join(' · '))
                 );
             }
         }
 
         if (group_manager && props.typeLabel) {
             $el.find('.fc-title').after(
-                $('<span class="planner-type-tag"></span>').text(props.typeLabel)
+                $('<span class="refactorytools-type-tag"></span>').text(props.typeLabel)
             );
         }
 
@@ -685,8 +685,8 @@ var GlpiPlanner = {
 
     renderPopover: function (anchorEl, event, props) {
         var self = this;
-        var $pop = $('<div class="planner-popover"></div>');
-        $('<div class="planner-popover-title"></div>').text(event.title).appendTo($pop);
+        var $pop = $('<div class="refactorytools-popover"></div>');
+        $('<div class="refactorytools-popover-title"></div>').text(event.title).appendTo($pop);
 
         var meta = [];
         if (props.actorName) {
@@ -699,17 +699,17 @@ var GlpiPlanner = {
             meta.push(props.stateLabel);
         }
         if (meta.length) {
-            $('<div class="planner-popover-meta"></div>').text(meta.join(' · ')).appendTo($pop);
+            $('<div class="refactorytools-popover-meta"></div>').text(meta.join(' · ')).appendTo($pop);
         }
 
         if (props.content) {
-            $('<div class="planner-popover-content"></div>').html(props.content).appendTo($pop);
+            $('<div class="refactorytools-popover-content"></div>').html(props.content).appendTo($pop);
         }
 
         // Duração total já registrada no CHAMADO (soma de todas as tarefas,
         // não só desta) — só existe em eventos de tipo Chamado.
         if (props.ticketDuration) {
-            $('<div class="planner-popover-meta"></div>')
+            $('<div class="refactorytools-popover-meta"></div>')
                 .html('<i class="ti ti-clock-hour-4"></i> ' + (self.label('ticket_duration') || 'Total time') + ': ' + props.ticketDuration)
                 .appendTo($pop);
         }
@@ -726,16 +726,16 @@ var GlpiPlanner = {
         var is_own_event = String(props.users_id) === String(self.config.me);
         var notes = props.notes || [];
         if (notes.length) {
-            var $notes = $('<div class="planner-popover-notes"></div>');
+            var $notes = $('<div class="refactorytools-popover-notes"></div>');
             notes.forEach(function (note) {
-                var $note = $('<div class="planner-popover-note"></div>');
-                var $label = $('<div class="planner-popover-note-label"></div>')
+                var $note = $('<div class="refactorytools-popover-note"></div>');
+                var $label = $('<div class="refactorytools-popover-note-label"></div>')
                     .html('<i class="ti ti-message-2"></i> ' + (is_own_event
                         ? (self.label('own_note') || 'Note')
                         : (self.label('manager_note') || 'Manager note')));
 
                 if (props.canManageNote) {
-                    $('<button type="button" class="btn btn-icon btn-sm btn-ghost-secondary planner-popover-note-edit-one" title="' + (self.label('edit_note') || 'Edit note') + '"><i class="ti ti-pencil"></i></button>')
+                    $('<button type="button" class="btn btn-icon btn-sm btn-ghost-secondary refactorytools-popover-note-edit-one" title="' + (self.label('edit_note') || 'Edit note') + '"><i class="ti ti-pencil"></i></button>')
                         .on('click', function (e) {
                             e.stopPropagation();
                             self.showNoteEditor($pop, event, props, note);
@@ -744,7 +744,7 @@ var GlpiPlanner = {
                 }
 
                 $label.appendTo($note);
-                $('<div class="planner-popover-note-text"></div>').text(note.note).appendTo($note);
+                $('<div class="refactorytools-popover-note-text"></div>').text(note.note).appendTo($note);
                 // O autor aparece sempre que o servidor manda um, mesmo no
                 // próprio compromisso: uma nota "minha" pode ter sido escrita
                 // por um gestor que tem `canManageNote` sobre mim, e sem o
@@ -752,7 +752,7 @@ var GlpiPlanner = {
                 // posição.
                 if (note.author) {
                     var author_prefix = self.label('note_by') || 'By';
-                    $('<div class="planner-popover-note-author"></div>').text(author_prefix + ' ' + note.author).appendTo($note);
+                    $('<div class="refactorytools-popover-note-author"></div>').text(author_prefix + ' ' + note.author).appendTo($note);
                 }
                 $note.appendTo($notes);
             });
@@ -760,7 +760,7 @@ var GlpiPlanner = {
         }
 
         if (props.canManageNote) {
-            $('<button type="button" class="btn btn-sm btn-ghost-secondary planner-popover-note-edit"></button>')
+            $('<button type="button" class="btn btn-sm btn-ghost-secondary refactorytools-popover-note-edit"></button>')
                 .html('<i class="ti ti-note"></i> ' + (self.label('add_note') || 'Add a note'))
                 .on('click', function (e) {
                     e.stopPropagation();
@@ -813,14 +813,14 @@ var GlpiPlanner = {
         var self = this;
         self.notePinned = true;
 
-        $pop.find('.planner-popover-notes, .planner-popover-note-edit').remove();
+        $pop.find('.refactorytools-popover-notes, .refactorytools-popover-note-edit').remove();
 
-        var $form = $('<div class="planner-popover-note-form"></div>');
+        var $form = $('<div class="refactorytools-popover-note-form"></div>');
         var $textarea = $('<textarea class="form-control form-control-sm" rows="3"></textarea>')
             .val((note && note.note) || '')
             .appendTo($form);
 
-        var $actions = $('<div class="planner-popover-note-actions"></div>');
+        var $actions = $('<div class="refactorytools-popover-note-actions"></div>');
         var $save = $('<button type="button" class="btn btn-sm btn-primary"></button>')
             .text(self.label('save') || 'Save')
             .appendTo($actions);
@@ -838,7 +838,7 @@ var GlpiPlanner = {
 
         $save.on('click', function () {
             $.post(
-                (self.config.root_doc || '') + '/plugins/planner/ajax/save_event_note.php',
+                (self.config.root_doc || '') + '/plugins/refactorytools/ajax/save_event_note.php',
                 {
                     itemtype: props.itemtype,
                     items_id: props.items_id,
@@ -870,7 +870,7 @@ var GlpiPlanner = {
     bindPopoverDismiss: function () {
         var self = this;
         $(document).on('mousedown', function (e) {
-            if (self.notePinned && !$(e.target).closest('.planner-popover').length) {
+            if (self.notePinned && !$(e.target).closest('.refactorytools-popover').length) {
                 self.hidePopover();
             }
         });
@@ -879,7 +879,7 @@ var GlpiPlanner = {
     hidePopover: function () {
         this.cancelPopoverHide();
         this.notePinned = false;
-        $('.planner-popover').remove();
+        $('.refactorytools-popover').remove();
     },
 
     // -----------------------------------------------------------------
@@ -889,16 +889,16 @@ var GlpiPlanner = {
     applyMode: function () {
         var self = this;
 
-        $('.planner-pane').each(function () {
+        $('.refactorytools-pane').each(function () {
             $(this).prop('hidden', $(this).data('pane') !== self.mode);
         });
 
-        self.markActive('.planner-modes', 'mode', self.mode);
+        self.markActive('.refactorytools-modes', 'mode', self.mode);
 
         // "Por pessoa" só existe no calendário: Lista e Kanban já identificam
         // a pessoa em cada linha ou card.
-        $('.planner-team-toggle').prop('hidden', self.mode !== 'calendar');
-        $('.planner-kanban-opts').prop('hidden', self.mode !== 'kanban');
+        $('.refactorytools-team-toggle').prop('hidden', self.mode !== 'calendar');
+        $('.refactorytools-kanban-opts').prop('hidden', self.mode !== 'kanban');
 
         if (self.mode === 'calendar' && self.calendar) {
             // O calendário foi renderizado dentro de um painel escondido, e
@@ -948,7 +948,7 @@ var GlpiPlanner = {
 
     renderList: function () {
         var self = this;
-        var $box = $('.planner-list').empty();
+        var $box = $('.refactorytools-list').empty();
         var events = self.getLoadedEvents();
 
         if (!events.length) {
@@ -966,18 +966,18 @@ var GlpiPlanner = {
             if (day !== current_day) {
                 current_day = day;
 
-                var $group = $('<div class="planner-list-day"></div>');
-                $('<div class="planner-list-daytitle"></div>')
+                var $group = $('<div class="refactorytools-list-day"></div>');
+                $('<div class="refactorytools-list-daytitle"></div>')
                     .text(self.formatDayLabel(ev.start))
                     .appendTo($group);
 
-                var $table = $('<table class="table table-sm planner-list-table"></table>');
+                var $table = $('<table class="table table-sm refactorytools-list-table"></table>');
                 $('<thead><tr>' +
-                    '<th class="planner-list-when"></th>' +
-                    '<th class="planner-list-who"></th>' +
-                    '<th class="planner-list-type"></th>' +
+                    '<th class="refactorytools-list-when"></th>' +
+                    '<th class="refactorytools-list-who"></th>' +
+                    '<th class="refactorytools-list-type"></th>' +
                     '<th></th>' +
-                    '<th class="planner-list-state"></th>' +
+                    '<th class="refactorytools-list-state"></th>' +
                   '</tr></thead>').appendTo($table);
                 $table.find('th').eq(0).text(labels.col_when || '');
                 $table.find('th').eq(1).text(labels.col_who || '');
@@ -996,7 +996,7 @@ var GlpiPlanner = {
 
     buildListRow: function (ev) {
         var props = ev.extendedProps || {};
-        var $tr = $('<tr class="planner-list-row"></tr>');
+        var $tr = $('<tr class="refactorytools-list-row"></tr>');
 
         // Colometria: a linha inteira ganha um tom claro da cor do tipo (ou
         // da pessoa, no modo gerente de grupo) — mesmo tratamento do cartão
@@ -1007,7 +1007,7 @@ var GlpiPlanner = {
             $tr.css('background-color', this.tint(row_color, 0.08));
         }
 
-        var $when = $('<td class="planner-list-when"></td>').text(this.formatTimeRange(ev));
+        var $when = $('<td class="refactorytools-list-when"></td>').text(this.formatTimeRange(ev));
         // Borda na primeira célula, não na linha: `<tr>` não renderiza
         // `border-left` com a tabela em `border-collapse: collapse` (o
         // Bootstrap usa isso em `.table`), a célula sim.
@@ -1016,20 +1016,20 @@ var GlpiPlanner = {
         }
         $when.appendTo($tr);
 
-        var $who = $('<td class="planner-list-who"></td>');
-        $('<span class="planner-avatar planner-avatar-sm"></span>')
-            .css('--planner-actor-color', props.actorColor || '')
+        var $who = $('<td class="refactorytools-list-who"></td>');
+        $('<span class="refactorytools-avatar refactorytools-avatar-sm"></span>')
+            .css('--refactorytools-actor-color', props.actorColor || '')
             .text(this.actorInitials(props))
             .appendTo($who);
         $('<span></span>').text(props.actorName || '').appendTo($who);
         $who.appendTo($tr);
 
-        var $type = $('<td class="planner-list-type"></td>');
+        var $type = $('<td class="refactorytools-list-type"></td>');
         if (props.typeLabel) {
             if (this.groupManagerMode && props.level !== 'busy') {
-                $('<span class="planner-type-tag"></span>').text(props.typeLabel).appendTo($type);
+                $('<span class="refactorytools-type-tag"></span>').text(props.typeLabel).appendTo($type);
             } else {
-                $('<span class="planner-type-dot"></span>')
+                $('<span class="refactorytools-type-dot"></span>')
                     .css('background', props.typeColor || '')
                     .appendTo($type);
                 $('<span></span>').text(props.typeLabel).appendTo($type);
@@ -1045,7 +1045,7 @@ var GlpiPlanner = {
         }
         $subject.appendTo($tr);
 
-        var $state = $('<td class="planner-list-state"></td>');
+        var $state = $('<td class="refactorytools-list-state"></td>');
         if (props.stateLabel) {
             $('<span class="badge"></span>')
                 .addClass(this.stateBadgeClass(props.state))
@@ -1063,7 +1063,7 @@ var GlpiPlanner = {
 
     renderKanban: function () {
         var self = this;
-        var $box = $('.planner-kanban').empty();
+        var $box = $('.refactorytools-kanban').empty();
         var events = self.getLoadedEvents();
 
         var columns = self.kanbanGroup === 'actor'
@@ -1097,29 +1097,29 @@ var GlpiPlanner = {
 
         keys.forEach(function (key) {
             var col = columns[key];
-            var $col = $('<div class="planner-kanban-col"></div>');
+            var $col = $('<div class="refactorytools-kanban-col"></div>');
             if (draggable) {
                 // O número puro (sem o prefixo 's' usado só para preservar a
                 // ordem das chaves do objeto — ver comentário acima).
                 $col.attr('data-state', key.slice(1));
             }
 
-            var $head = $('<div class="planner-kanban-head"></div>');
+            var $head = $('<div class="refactorytools-kanban-head"></div>');
             if (draggable) {
                 // Cabeçalho arrastável para reordenar as PRÓPRIAS colunas —
                 // gesto diferente de arrastar um cartão (ver
                 // `bindKanbanDragDrop()`, que distingue os dois pelo formato
                 // do payload solto).
-                $head.attr('draggable', 'true').addClass('planner-kanban-head-draggable');
+                $head.attr('draggable', 'true').addClass('refactorytools-kanban-head-draggable');
             }
-            $('<span class="planner-kanban-dot"></span>').css('background', col.color).appendTo($head);
-            $('<span class="planner-kanban-title"></span>').text(col.title).appendTo($head);
-            $('<span class="planner-kanban-count"></span>').text(col.events.length).appendTo($head);
+            $('<span class="refactorytools-kanban-dot"></span>').css('background', col.color).appendTo($head);
+            $('<span class="refactorytools-kanban-title"></span>').text(col.title).appendTo($head);
+            $('<span class="refactorytools-kanban-count"></span>').text(col.events.length).appendTo($head);
             $head.appendTo($col);
 
-            var $body = $('<div class="planner-kanban-body"></div>');
+            var $body = $('<div class="refactorytools-kanban-body"></div>');
             if (!col.events.length) {
-                $('<div class="planner-kanban-empty"></div>').appendTo($body);
+                $('<div class="refactorytools-kanban-empty"></div>').appendTo($body);
             }
             col.events.forEach(function (ev) {
                 $body.append(self.buildKanbanCard(ev, draggable));
@@ -1146,9 +1146,9 @@ var GlpiPlanner = {
      */
     bindKanbanDragDrop: function () {
         var self = this;
-        var $kanban = $('.planner-kanban');
+        var $kanban = $('.refactorytools-kanban');
 
-        $kanban.find('.planner-kanban-card[draggable="true"]').on('dragstart', function (e) {
+        $kanban.find('.refactorytools-kanban-card[draggable="true"]').on('dragstart', function (e) {
             var $card = $(this);
             $card.addClass('is-dragging');
             e.originalEvent.dataTransfer.effectAllowed = 'move';
@@ -1165,16 +1165,16 @@ var GlpiPlanner = {
         // lugar de `itemtype`/`items_id` é o que distingue este arrasto do
         // de um cartão no handler de 'drop' abaixo, que os dois
         // compartilham.
-        $kanban.find('.planner-kanban-head-draggable').on('dragstart', function (e) {
-            var state = $(this).closest('.planner-kanban-col').data('state');
-            $(this).closest('.planner-kanban-col').addClass('is-dragging');
+        $kanban.find('.refactorytools-kanban-head-draggable').on('dragstart', function (e) {
+            var state = $(this).closest('.refactorytools-kanban-col').data('state');
+            $(this).closest('.refactorytools-kanban-col').addClass('is-dragging');
             e.originalEvent.dataTransfer.effectAllowed = 'move';
             e.originalEvent.dataTransfer.setData('text/plain', JSON.stringify({ reorderState: state }));
         }).on('dragend', function () {
-            $(this).closest('.planner-kanban-col').removeClass('is-dragging');
+            $(this).closest('.refactorytools-kanban-col').removeClass('is-dragging');
         });
 
-        $kanban.find('.planner-kanban-col').on('dragover', function (e) {
+        $kanban.find('.refactorytools-kanban-col').on('dragover', function (e) {
             e.preventDefault();
             e.originalEvent.dataTransfer.dropEffect = 'move';
             $(this).addClass('is-drop-target');
@@ -1205,7 +1205,7 @@ var GlpiPlanner = {
 
             var newState = parseInt($col.data('state'), 10);
 
-            $.post(self.config.update_state_url || (self.config.root_doc + '/plugins/planner/ajax/update_event_state.php'), {
+            $.post(self.config.update_state_url || (self.config.root_doc + '/plugins/refactorytools/ajax/update_event_state.php'), {
                 itemtype: raw.itemtype,
                 items_id: raw.items_id,
                 state: newState
@@ -1248,7 +1248,7 @@ var GlpiPlanner = {
         this.kanbanStateOrder = order;
         this.renderKanban();
 
-        $.post((this.config.root_doc || '') + '/plugins/planner/ajax/save_kanban_order.php', { states: order });
+        $.post((this.config.root_doc || '') + '/plugins/refactorytools/ajax/save_kanban_order.php', { states: order });
     },
 
     /**
@@ -1296,7 +1296,7 @@ var GlpiPlanner = {
     buildActorColumns: function () {
         var columns = {};
 
-        $('.planner-actor-toggle:checked').each(function () {
+        $('.refactorytools-actor-toggle:checked').each(function () {
             columns['u' + $(this).val()] = {
                 title: $(this).data('name'),
                 color: $(this).data('color'),
@@ -1311,7 +1311,7 @@ var GlpiPlanner = {
         var props = ev.extendedProps || {};
         var group_manager = this.groupManagerMode && props.level !== 'busy';
         var card_color = (group_manager ? props.actorColor : props.typeColor) || '';
-        var $card = $('<div class="planner-kanban-card"></div>')
+        var $card = $('<div class="refactorytools-kanban-card"></div>')
             .css('border-left-color', card_color || 'transparent');
 
         // Colometria: se o tipo é vermelho, o cartão precisa PARECER
@@ -1323,7 +1323,7 @@ var GlpiPlanner = {
         }
 
         if (props.level === 'busy') {
-            $card.addClass('planner-event-busy');
+            $card.addClass('refactorytools-event-busy');
         }
 
         // Só é arrastável se: o Kanban está agrupado por situação, o item
@@ -1342,11 +1342,11 @@ var GlpiPlanner = {
                 .data('items-id', props.items_id);
         }
 
-        $('<div class="planner-kanban-when"></div>')
+        $('<div class="refactorytools-kanban-when"></div>')
             .text(this.formatDayLabel(ev.start) + ' · ' + this.formatTimeRange(ev))
             .appendTo($card);
 
-        var $title = $('<div class="planner-kanban-cardtitle"></div>');
+        var $title = $('<div class="refactorytools-kanban-cardtitle"></div>');
         if (props.url) {
             $('<a></a>').attr('href', props.url).text(ev.title).appendTo($title);
         } else {
@@ -1358,14 +1358,14 @@ var GlpiPlanner = {
         // avatar obrigava a passar o mouse (ou decorar as iniciais) para saber
         // de quem era o compromisso — justamente a pergunta que um Kanban de
         // equipe precisa responder de relance.
-        var $foot = $('<div class="planner-kanban-foot"></div>');
-        $('<span class="planner-avatar planner-avatar-sm"></span>')
-            .css('--planner-actor-color', props.actorColor || '')
+        var $foot = $('<div class="refactorytools-kanban-foot"></div>');
+        $('<span class="refactorytools-avatar refactorytools-avatar-sm"></span>')
+            .css('--refactorytools-actor-color', props.actorColor || '')
             .text(this.actorInitials(props))
             .appendTo($foot);
-        $('<span class="planner-kanban-actor"></span>').text(props.actorName || '').appendTo($foot);
+        $('<span class="refactorytools-kanban-actor"></span>').text(props.actorName || '').appendTo($foot);
         if (props.typeLabel) {
-            $('<span class="planner-kanban-type' + (group_manager ? ' planner-type-tag' : '') + '"></span>')
+            $('<span class="refactorytools-kanban-type' + (group_manager ? ' refactorytools-type-tag' : '') + '"></span>')
                 .text(props.typeLabel).appendTo($foot);
         }
         $foot.appendTo($card);
@@ -1457,7 +1457,7 @@ var GlpiPlanner = {
             ? (this.config.labels && this.config.labels.no_actor)
             : (this.config.labels && this.config.labels.no_event);
 
-        return $('<div class="planner-empty"><i class="ti ti-calendar-off"></i><span></span></div>')
+        return $('<div class="refactorytools-empty"><i class="ti ti-calendar-off"></i><span></span></div>')
             .find('span').text(msg || '').end();
     },
 
@@ -1536,7 +1536,7 @@ var GlpiPlanner = {
         // padrão — grupo, compartilhamentos e gerência de grupo são opt-in),
         // então exigir isso faria o modo "horas" quase nunca aparecer, nem
         // na abertura da tela.
-        var $types = $('.planner-type-toggle');
+        var $types = $('.refactorytools-type-toggle');
 
         if ($types.length === 0) {
             return true;
@@ -1546,7 +1546,7 @@ var GlpiPlanner = {
     },
 
     setLoading: function (on) {
-        $('.planner-loading').prop('hidden', !on);
+        $('.refactorytools-loading').prop('hidden', !on);
     },
 
     syncPeriodLabel: function () {
@@ -1567,7 +1567,7 @@ var GlpiPlanner = {
     bindSidebar: function () {
         var self = this;
 
-        $(document).on('change', '.planner-actor-toggle', function () {
+        $(document).on('change', '.refactorytools-actor-toggle', function () {
             self.readSidebar();
             // refetchResources redesenha as raias da visão de equipe;
             // refetchEvents recarrega o conteúdo e, no fim, os painéis.
@@ -1577,7 +1577,7 @@ var GlpiPlanner = {
             }
         });
 
-        $(document).on('change', '.planner-type-toggle, #planner-show-done', function () {
+        $(document).on('change', '.refactorytools-type-toggle, #refactorytools-show-done', function () {
             self.readSidebar();
             if (self.calendar) {
                 self.calendar.refetchEvents();
@@ -1588,20 +1588,20 @@ var GlpiPlanner = {
     bindToolbar: function () {
         var self = this;
 
-        $(document).on('click', '.planner-modes [data-mode]', function () {
+        $(document).on('click', '.refactorytools-modes [data-mode]', function () {
             self.mode = $(this).data('mode');
             self.applyMode();
         });
 
-        $(document).on('click', '.planner-ranges [data-range]', function () {
+        $(document).on('click', '.refactorytools-ranges [data-range]', function () {
             self.range = $(this).data('range');
-            self.markActive('.planner-ranges', 'range', self.range);
+            self.markActive('.refactorytools-ranges', 'range', self.range);
             self.applyCalendarView();
         });
 
         // "Por pessoa" é um alternador do calendário, não um período: mantém a
         // semana/mês escolhidos e troca só a forma de empilhar.
-        $(document).on('click', '.planner-team-toggle', function () {
+        $(document).on('click', '.refactorytools-team-toggle', function () {
             self.byActor = !self.byActor;
             $(this).toggleClass('active', self.byActor);
             self.applyCalendarView();
@@ -1610,7 +1610,7 @@ var GlpiPlanner = {
         // Alterna a apresentação (cor por pessoa + tag de tipo) sem refazer
         // a busca: os campos de que precisa (actorColor, typeLabel) já vêm em
         // todo evento, então basta redesenhar o que já está carregado.
-        $(document).on('click', '#planner-group-manager-toggle', function () {
+        $(document).on('click', '#refactorytools-group-manager-toggle', function () {
             self.groupManagerMode = !self.groupManagerMode;
             $(this).toggleClass('active', self.groupManagerMode);
             if (self.calendar) {
@@ -1619,19 +1619,19 @@ var GlpiPlanner = {
             self.renderPanes();
         });
 
-        $(document).on('click', '.planner-kanban-opts [data-group]', function () {
+        $(document).on('click', '.refactorytools-kanban-opts [data-group]', function () {
             self.kanbanGroup = $(this).data('group');
-            self.markActive('.planner-kanban-opts', 'group', self.kanbanGroup);
+            self.markActive('.refactorytools-kanban-opts', 'group', self.kanbanGroup);
             self.renderKanban();
         });
 
-        $(document).on('click', '.planner-prev', function () {
+        $(document).on('click', '.refactorytools-prev', function () {
             if (self.calendar) { self.calendar.prev(); }
         });
-        $(document).on('click', '.planner-next', function () {
+        $(document).on('click', '.refactorytools-next', function () {
             if (self.calendar) { self.calendar.next(); }
         });
-        $(document).on('click', '.planner-today', function () {
+        $(document).on('click', '.refactorytools-today', function () {
             if (self.calendar) { self.calendar.today(); }
         });
     },
@@ -1644,9 +1644,9 @@ var GlpiPlanner = {
     bindUserPicker: function () {
         var self = this;
 
-        $(document).on('change', 'select[name="planner_add_user"]', function () {
+        $(document).on('change', 'select[name="refactorytools_add_user"]', function () {
             var id = parseInt($(this).val(), 10);
-            if (!id || $('.planner-actor-toggle[value="' + id + '"]').length) {
+            if (!id || $('.refactorytools-actor-toggle[value="' + id + '"]').length) {
                 return;
             }
 
@@ -1654,24 +1654,24 @@ var GlpiPlanner = {
             var color = self.pickColor(id);
 
             var $li = $(
-                '<li class="planner-actor">' +
-                    '<label class="planner-actor-label">' +
-                        '<input type="checkbox" class="form-check-input planner-actor-toggle" checked>' +
-                        '<span class="planner-avatar"></span>' +
-                        '<span class="planner-actor-name"></span>' +
+                '<li class="refactorytools-actor">' +
+                    '<label class="refactorytools-actor-label">' +
+                        '<input type="checkbox" class="form-check-input refactorytools-actor-toggle" checked>' +
+                        '<span class="refactorytools-avatar"></span>' +
+                        '<span class="refactorytools-actor-name"></span>' +
                     '</label>' +
                 '</li>'
             );
 
-            $li.find('.planner-actor-toggle').val(id).attr('data-name', name).attr('data-color', color)
+            $li.find('.refactorytools-actor-toggle').val(id).attr('data-name', name).attr('data-color', color)
                 .data('name', name).data('color', color);
-            $li.find('.planner-avatar').css('--planner-actor-color', color).text(self.initials(name));
-            $li.find('.planner-actor-name').text(name);
+            $li.find('.refactorytools-avatar').css('--refactorytools-actor-color', color).text(self.initials(name));
+            $li.find('.refactorytools-actor-name').text(name);
 
-            var $section = $('.planner-picker').closest('.planner-section');
-            var $list = $section.find('.planner-actors');
+            var $section = $('.refactorytools-picker').closest('.refactorytools-section');
+            var $list = $section.find('.refactorytools-actors');
             if (!$list.length) {
-                $list = $('<ul class="planner-actors mb-2"></ul>').insertBefore($section.find('.planner-picker'));
+                $list = $('<ul class="refactorytools-actors mb-2"></ul>').insertBefore($section.find('.refactorytools-picker'));
             }
             $list.append($li);
 

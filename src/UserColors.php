@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Cores de tipo de compromisso, por USUÁRIO.
  *
@@ -18,7 +18,7 @@
  * mudaram alguns tipos" sem gravar um JSON grande para todo mundo.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Migration;
 
@@ -26,7 +26,7 @@ final class UserColors
 {
     private static function getTable(): string
     {
-        return 'glpi_plugin_planner_user_colors';
+        return 'glpi_plugin_refactorytools_user_colors';
     }
 
     /**
@@ -99,6 +99,14 @@ final class UserColors
         global $DB;
 
         $table = self::getTable();
+
+        // Rename do plugin (planner -> refactorytools): a tabela de uma
+        // instalação antiga só precisa mudar de nome, os dados continuam
+        // válidos como estão.
+        $old_table = 'glpi_plugin_planner_user_colors';
+        if (!$DB->tableExists($table) && $DB->tableExists($old_table)) {
+            $DB->doQuery("RENAME TABLE `{$old_table}` TO `{$table}`");
+        }
 
         if (!$DB->tableExists($table)) {
             $DB->doQuery("

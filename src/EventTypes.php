@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Taxonomia de tipos de compromisso exibida na interface.
  *
@@ -20,7 +20,7 @@
  * a partir do itemtype real e, quando for o caso, da categoria.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use PlanningExternalEvent;
 
@@ -82,16 +82,16 @@ final class EventTypes
     public static function getLabel(string $key): string
     {
         return match ($key) {
-            self::TICKET_TASK  => __('Ticket', 'planner'),
-            self::CHANGE_TASK  => __('Change', 'planner'),
-            self::PROBLEM_TASK => __('Problem', 'planner'),
-            self::PROJECT_TASK => __('Project', 'planner'),
-            self::RESERVATION  => __('Reservation', 'planner'),
-            self::REMINDER     => __('Reminder', 'planner'),
-            self::EVENT_EXTERNAL => __('External event', 'planner'),
-            self::EVENT_INTERNAL => __('Internal event', 'planner'),
-            self::EVENT_TRAVEL   => __('Travel', 'planner'),
-            self::EVENT_MEETING  => __('Meeting', 'planner'),
+            self::TICKET_TASK  => __('Ticket', 'refactorytools'),
+            self::CHANGE_TASK  => __('Change', 'refactorytools'),
+            self::PROBLEM_TASK => __('Problem', 'refactorytools'),
+            self::PROJECT_TASK => __('Project', 'refactorytools'),
+            self::RESERVATION  => __('Reservation', 'refactorytools'),
+            self::REMINDER     => __('Reminder', 'refactorytools'),
+            self::EVENT_EXTERNAL => __('External event', 'refactorytools'),
+            self::EVENT_INTERNAL => __('Internal event', 'refactorytools'),
+            self::EVENT_TRAVEL   => __('Travel', 'refactorytools'),
+            self::EVENT_MEETING  => __('Meeting', 'refactorytools'),
             default => $key,
         };
     }
@@ -183,9 +183,9 @@ final class EventTypes
     public static function seedCategoryName(string $key): ?string
     {
         return match ($key) {
-            self::EVENT_INTERNAL => __('Internal event', 'planner'),
-            self::EVENT_TRAVEL   => __('Travel', 'planner'),
-            self::EVENT_MEETING  => __('Meeting', 'planner'),
+            self::EVENT_INTERNAL => __('Internal event', 'refactorytools'),
+            self::EVENT_TRAVEL   => __('Travel', 'refactorytools'),
+            self::EVENT_MEETING  => __('Meeting', 'refactorytools'),
             default => null,
         };
     }

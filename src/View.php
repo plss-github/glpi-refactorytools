@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Monta os dados das telas e delega a renderização ao Twig do core.
  *
@@ -11,7 +11,7 @@
  * requisição HTTP.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Glpi\Application\View\TemplateRenderer;
 use Session;
@@ -22,14 +22,14 @@ final class View
     /**
      * Tela principal: a agenda.
      */
-    public static function showPlanner(): void
+    public static function showRefactoryTools(): void
     {
         /** @var array $CFG_GLPI */
         global $CFG_GLPI;
 
         $me = (int) Session::getLoginUserID();
 
-        TemplateRenderer::getInstance()->display('@planner/planner.html.twig', [
+        TemplateRenderer::getInstance()->display('@refactorytools/refactorytools.html.twig', [
             'root_doc'       => $CFG_GLPI['root_doc'],
             'actor_groups'   => self::getActorGroups($me),
             'types'          => EventProvider::getAvailableTypes($me),
@@ -70,7 +70,7 @@ final class View
         $as_owner   = Share::getForOwner($me);
         $as_grantee = Share::getForGrantee($me);
 
-        TemplateRenderer::getInstance()->display('@planner/shares.html.twig', [
+        TemplateRenderer::getInstance()->display('@refactorytools/shares.html.twig', [
             'root_doc'    => $CFG_GLPI['root_doc'],
             'pending'     => self::decorate(array_filter(
                 $as_owner,
@@ -192,7 +192,7 @@ final class View
      */
     private static function describeActor(int $users_id, string $level, string $reason, string $color, ?array $row): array
     {
-        $name    = sprintf(__('User #%d', 'planner'), $users_id);
+        $name    = sprintf(__('User #%d', 'refactorytools'), $users_id);
         $picture = null;
 
         if ($row !== null) {
@@ -231,7 +231,7 @@ final class View
             $other_id      = (int) $row[$other_field];
             $row['other_id']   = $other_id;
             $row['other_name'] = EventProvider::getUserName($other_id)
-                ?: sprintf(__('User #%d', 'planner'), $other_id);
+                ?: sprintf(__('User #%d', 'refactorytools'), $other_id);
             $out[] = $row;
         }
 

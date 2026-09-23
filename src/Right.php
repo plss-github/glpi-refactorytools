@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Direito único do plugin e seus bits.
  *
@@ -20,17 +20,17 @@
  * (READ=1, UPDATE=2, CREATE=4, DELETE=8, PURGE=32…), que este plugin não usa.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Session;
 
 final class Right
 {
     /** Nome do direito na tabela glpi_profilerights. */
-    public const NAME = 'plugin_planner_planning';
+    public const NAME = 'plugin_refactorytools_planning';
 
-    /** Abrir o Planner e ver a própria agenda. */
-    public const USE_PLANNER = 1;
+    /** Abrir o RefactoryTools e ver a própria agenda. */
+    public const USE_REFACTORYTOOLS = 1;
 
     /** Ver a agenda de quem está nos mesmos grupos que eu. */
     public const READ_GROUP = 1024;
@@ -52,7 +52,7 @@ final class Right
      * `is_manager=1` de pelo menos um grupo (ver `glpi_groups_users`).
      *
      * Bit próprio em vez de automático: mesmo quem é gerente de grupo no
-     * GLPI pode não dever enxergar a agenda do grupo pelo Planner — quem
+     * GLPI pode não dever enxergar a agenda do grupo pelo RefactoryTools — quem
      * administra o plugin decide isso na matriz de perfis, como qualquer
      * outro nível de visibilidade aqui.
      */
@@ -66,13 +66,13 @@ final class Right
     public static function getAll(): array
     {
         return [
-            self::USE_PLANNER       => __('Use Pellissari RefactoryTools', 'planner'),
-            self::READ_TEAM         => __('See my team schedules', 'planner'),
-            self::READ_GROUP        => __('See my group schedules', 'planner'),
-            self::READ_MANAGED_GROUP => __('See the schedules of groups I manage', 'planner'),
-            self::READ_ALL          => __('See all schedules', 'planner'),
-            self::SHARE_OWN         => __('Share own schedule', 'planner'),
-            self::REQUEST_ACCESS    => __('Request access to a schedule', 'planner'),
+            self::USE_REFACTORYTOOLS       => __('Use Pellissari RefactoryTools', 'refactorytools'),
+            self::READ_TEAM         => __('See my team schedules', 'refactorytools'),
+            self::READ_GROUP        => __('See my group schedules', 'refactorytools'),
+            self::READ_MANAGED_GROUP => __('See the schedules of groups I manage', 'refactorytools'),
+            self::READ_ALL          => __('See all schedules', 'refactorytools'),
+            self::SHARE_OWN         => __('Share own schedule', 'refactorytools'),
+            self::REQUEST_ACCESS    => __('Request access to a schedule', 'refactorytools'),
         ];
     }
 
@@ -83,7 +83,7 @@ final class Right
      */
     public static function all(): int
     {
-        return self::USE_PLANNER
+        return self::USE_REFACTORYTOOLS
             | self::READ_TEAM
             | self::READ_GROUP
             | self::READ_MANAGED_GROUP
@@ -100,6 +100,6 @@ final class Right
     /** Porta de entrada: sem isto, nenhuma tela do plugin abre. */
     public static function canUse(): bool
     {
-        return self::has(self::USE_PLANNER);
+        return self::has(self::USE_REFACTORYTOOLS);
     }
 }

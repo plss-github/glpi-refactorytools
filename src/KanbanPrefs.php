@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Ordem das colunas de SITUAÇÃO no Kanban do Planejamento, por USUÁRIO.
  *
@@ -11,7 +11,7 @@
  * preferência, não decide o que cada estado significa.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Migration;
 
@@ -22,7 +22,7 @@ final class KanbanPrefs
 
     private static function getTable(): string
     {
-        return 'glpi_plugin_planner_kanban_prefs';
+        return 'glpi_plugin_refactorytools_kanban_prefs';
     }
 
     /** @return array<int, int> */
@@ -110,6 +110,14 @@ final class KanbanPrefs
         global $DB;
 
         $table = self::getTable();
+
+        // Rename do plugin (planner -> refactorytools): a tabela de uma
+        // instalação antiga só precisa mudar de nome, os dados continuam
+        // válidos como estão.
+        $old_table = 'glpi_plugin_planner_kanban_prefs';
+        if (!$DB->tableExists($table) && $DB->tableExists($old_table)) {
+            $DB->doQuery("RENAME TABLE `{$old_table}` TO `{$table}`");
+        }
 
         if (!$DB->tableExists($table)) {
             $DB->doQuery("

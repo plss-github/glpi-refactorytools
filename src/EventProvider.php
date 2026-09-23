@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Busca os compromissos e os traduz para o formato do FullCalendar.
  *
@@ -37,7 +37,7 @@
  * variante, e o filtro por variante é aplicado depois, em memória.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Planning;
 use PlanningExternalEvent;
@@ -216,7 +216,7 @@ final class EventProvider
     private static function formatHoursMinutes(int $seconds): string
     {
         return sprintf(
-            __('%1$dh%2$02dmin', 'planner'),
+            __('%1$dh%2$02dmin', 'refactorytools'),
             intdiv($seconds, 3600),
             intdiv($seconds % 3600, 60)
         );
@@ -411,7 +411,7 @@ final class EventProvider
             // Situação da Lista; a PRIORIDADE nem é usada na tela e ia junto no
             // JSON. Quem concedeu "apenas livre/ocupado" autorizou revelar que
             // o horário está tomado, nada além disso.
-            $title       = __('Busy', 'planner');
+            $title       = __('Busy', 'refactorytools');
             $content     = '';
             $itemtype    = '';
             $items_id    = 0;
@@ -535,7 +535,7 @@ final class EventProvider
             // FAZER/CONCLUÍDO entram nessas duas — um compromisso em
             // "Informação" (nem um nem outro) só conta nas horas TOTAIS. É o
             // par que a barra de indicadores mostra quando nada está
-            // filtrado (ver `GlpiPlanner.isEverythingSelected()`).
+            // filtrado (ver `GlpiRefactoryTools.isEverythingSelected()`).
             'planned_hours' => round($todo_seconds / 3600, 1),
             'realised_hours' => round($done_seconds / 3600, 1),
             'done'          => $done,
@@ -763,9 +763,9 @@ final class EventProvider
     private static function getStateLabel(int $state): string
     {
         return match ($state) {
-            Planning::TODO => __('To do', 'planner'),
-            Planning::DONE => __('Done', 'planner'),
-            default        => __('Information', 'planner'),
+            Planning::TODO => __('To do', 'refactorytools'),
+            Planning::DONE => __('Done', 'refactorytools'),
+            default        => __('Information', 'refactorytools'),
         };
     }
 

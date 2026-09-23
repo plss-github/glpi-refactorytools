@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Aba de direitos do plugin em Administração > Perfis.
  *
@@ -15,10 +15,10 @@
  * A matriz é montada com a chave `rights` (lista explícita direito => rótulo)
  * em vez de `itemtype`. `Profile::displayRightsChoiceMatrix()` aceita as duas
  * formas, e a explícita evita ter que existir uma CommonDBTM só para carregar
- * `getRights()` — os direitos do Planner não são o CRUD de nenhuma tabela.
+ * `getRights()` — os direitos do RefactoryTools não são o CRUD de nenhuma tabela.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use CommonGLPI;
 use Profile;
@@ -27,7 +27,7 @@ class ProfileRights extends CommonGLPI
 {
     public static function getTypeName($nb = 0)
     {
-        return __('Pellissari RefactoryTools', 'planner');
+        return __('Pellissari RefactoryTools', 'refactorytools');
     }
 
     public static function getIcon()
@@ -54,7 +54,7 @@ class ProfileRights extends CommonGLPI
             [
                 [
                     'rights' => Right::getAll(),
-                    'label'  => __('Planning (Pellissari RefactoryTools)', 'planner'),
+                    'label'  => __('Planning (Pellissari RefactoryTools)', 'refactorytools'),
                     'field'  => Right::NAME,
                 ],
             ],
@@ -65,7 +65,7 @@ class ProfileRights extends CommonGLPI
 
         echo '<p class="text-muted mt-2 mb-0 small">'
             . htmlescape(__('Someone else schedule can also be granted individually, with the owner approval, under Pellissari RefactoryTools > Shares. That path does not depend on the rights above, except for "Use Pellissari RefactoryTools".',
-                'planner'
+                'refactorytools'
             ))
             . '</p>';
 

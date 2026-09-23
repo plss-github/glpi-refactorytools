@@ -5,11 +5,11 @@ planejamento nativo não cobre: **um supervisor enxergar a agenda da equipe**,
 e **uma pessoa liberar a própria agenda para outra, com aceite**.
 
 Por padrão ele **substitui** o item *Planejamento* de Assistência: o rótulo do
-menu continua o mesmo, só o destino muda. "Pellissari New Planners" é o nome
+menu continua o mesmo, só o destino muda. "Pellissari RefactoryTools" é o nome
 do plugin, não do item de menu. A substituição pode ser desligada na
 configuração, e aí as duas telas convivem lado a lado.
 
-O diretório e o namespace internos continuam `planner`/`GlpiPlugin\Planner` —
+O diretório e o namespace internos continuam `refactorytools`/`GlpiPlugin\Refactorytools` —
 são identificadores técnicos (nome de tabela, autoload, direito no banco), não
 o nome exibido. Só o nome exibido mudou.
 
@@ -29,7 +29,7 @@ reconferir nada. Consequências práticas:
 - uma agenda adicionada ao painel continua rendendo eventos depois que o
   direito é retirado do perfil.
 
-O Planner recalcula a autorização a cada requisição de eventos, a partir do
+O RefactoryTools recalcula a autorização a cada requisição de eventos, a partir do
 estado atual (perfil, campo Responsável, grupos, compartilhamentos).
 
 ---
@@ -44,7 +44,7 @@ permissiva.
 | **Minha agenda** | sempre | — |
 | **Minha equipe** | campo *Responsável* do usuário (`users_id_supervisor`) | perfil |
 | **Meus grupos** | grupo em comum | perfil |
-| **Compartilhada comigo** | linha aceita e vigente em `glpi_plugin_planner_shares` | o dono da agenda |
+| **Compartilhada comigo** | linha aceita e vigente em `glpi_plugin_refactorytools_shares` | o dono da agenda |
 
 Cada origem entrega um **nível de detalhe**:
 
@@ -54,18 +54,18 @@ Cada origem entrega um **nível de detalhe**:
 
 ### Direitos de perfil
 
-Em **Administração > Perfis > Planner**:
+Em **Administração > Perfis > RefactoryTools**:
 
 | Direito | Efeito |
 |---|---|
-| Usar o Planner | abre a tela e a própria agenda. Sem ele, nada funciona |
+| Usar o RefactoryTools | abre a tela e a própria agenda. Sem ele, nada funciona |
 | Ver a agenda da minha equipe | liberados diretos pelo campo Responsável |
 | Ver a agenda dos meus grupos | colegas de grupo |
 | Ver todas as agendas | acesso administrativo; ignora nível e sempre vê detalhes |
 | Compartilhar a própria agenda | conceder acesso e responder pedidos recebidos |
 | Solicitar acesso a uma agenda | pedir; só vale depois do aceite do dono |
 
-O direito é `plugin_planner_planning`, independente do `planning` nativo.
+O direito é `plugin_refactorytools_planning`, independente do `planning` nativo.
 Desinstalar o plugin remove o direito de todos os perfis.
 
 ### Compartilhamento com aceite
@@ -157,20 +157,20 @@ pela metade. Para editar, clique no evento e vá ao item.
 ## Instalação
 
 ```bash
-# a pasta do plugin precisa se chamar exatamente "planner"
-cp -r planner /var/www/glpi/plugins/
+# a pasta do plugin precisa se chamar exatamente "refactorytools"
+cp -r refactorytools /var/www/glpi/plugins/
 
-php bin/console glpi:plugin:install -u <seu_usuario> planner
-php bin/console glpi:plugin:activate planner
+php bin/console glpi:plugin:install -u <seu_usuario> refactorytools
+php bin/console glpi:plugin:activate refactorytools
 ```
 
-A instalação cria a tabela `glpi_plugin_planner_shares`, registra o direito
-`plugin_planner_planning` em todos os perfis (com 0, "sem acesso") e concede o
+A instalação cria a tabela `glpi_plugin_refactorytools_shares`, registra o direito
+`plugin_refactorytools_planning` em todos os perfis (com 0, "sem acesso") e concede o
 conjunto completo ao(s) perfil(is) Super-Admin — sem isso, nem quem instalou
 conseguiria abrir a tela.
 
 Depois, libere os direitos aos demais perfis em **Administração > Perfis >
-Pellissari New Planners** e revise **Assistência > Pellissari New Planners >
+Pellissari RefactoryTools** e revise **Assistência > Pellissari RefactoryTools >
 Configuração**.
 
 ### Requisitos
@@ -184,7 +184,7 @@ Configuração**.
 
 ## Configuração
 
-Em **Assistência > Planner > Configuração** (exige "Ver todas as agendas"):
+Em **Assistência > RefactoryTools > Configuração** (exige "Ver todas as agendas"):
 
 | Opção | Padrão | Observação |
 |---|---|---|
@@ -199,8 +199,8 @@ Em **Assistência > Planner > Configuração** (exige "Ver todas as agendas"):
 | Modo inicial | Calendário | o usuário troca à vontade |
 | Abrir a agenda já com a equipe marcada | ligado | |
 
-Guardada no `glpi_configs` do core, contexto `plugin:planner`. O link para esta
-tela fica em **Configuração > Plugins**, no ícone de engrenagem do Planner, e
+Guardada no `glpi_configs` do core, contexto `plugin:refactorytools`. O link para esta
+tela fica em **Configuração > Plugins**, no ícone de engrenagem do RefactoryTools, e
 também na barra lateral da agenda para quem tem "Ver todas as agendas".
 
 ### Sobre a substituição do Planejamento nativo
@@ -216,7 +216,7 @@ disponibilidade (`checkavailability`): são telas do core que o plugin não
 substitui, e redirecionar a primeira quebraria assinaturas de agenda já
 configuradas em clientes externos.
 
-Desligada, o planejamento nativo volta ao normal e o Planner aparece como
+Desligada, o planejamento nativo volta ao normal e o RefactoryTools aparece como
 entrada separada em Assistência.
 
 ### Sobre a substituição das Reservas
@@ -240,7 +240,7 @@ inglês. Os comentários do código continuam em português, por serem documenta
 interna e não texto de interface.
 
 ```
-locales/planner.pot   modelo para novos idiomas
+locales/refactorytools.pot   modelo para novos idiomas
 locales/pt_BR.po/.mo  português do Brasil
 locales/en_GB.po/.mo  inglês (tradução idêntica — ver notas de arquitetura)
 ```
@@ -248,7 +248,7 @@ locales/en_GB.po/.mo  inglês (tradução idêntica — ver notas de arquitetura
 Para acrescentar um idioma, copie o `.pot`, traduza e rode a ferramenta:
 
 ```bash
-cp locales/planner.pot locales/es_ES.po   # traduza este arquivo
+cp locales/refactorytools.pot locales/es_ES.po   # traduza este arquivo
 bash tools/update_locales.sh              # atualiza o .pot, mescla e compila
 ```
 
@@ -272,8 +272,8 @@ O `docker-compose.yml` deste repositório sobe um GLPI 11.0.9 limpo na porta
 ```bash
 cp .env.example .env
 docker compose up -d
-docker compose exec glpi php bin/console glpi:plugin:install -u glpi planner
-docker compose exec glpi php bin/console glpi:plugin:activate planner
+docker compose exec glpi php bin/console glpi:plugin:install -u glpi refactorytools
+docker compose exec glpi php bin/console glpi:plugin:activate refactorytools
 # http://localhost:8081  (glpi / glpi)
 ```
 
@@ -284,9 +284,9 @@ O ambiente compartilhado da equipe fica em
 
 ## Notas de arquitetura
 
-**`plugin_planner_check_config()` não pode usar as classes do plugin.**
+**`plugin_refactorytools_check_config()` não pode usar as classes do plugin.**
 `Plugin::checkPluginState()` a chama **antes** de `Plugin::activate()` registrar
-o autoloader PSR-4. Qualquer `GlpiPlugin\Planner\*` ali derruba a ativação com
+o autoloader PSR-4. Qualquer `GlpiPlugin\Refactorytools\*` ali derruba a ativação com
 `ClassNotFoundError`. Só classes do core.
 
 **Não chamar `Session::checkCSRF()` nos endpoints.** No GLPI 11 o

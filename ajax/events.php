@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Eventos da agenda, em JSON, para o FullCalendar.
  *
@@ -16,12 +16,12 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\AccessPolicy;
-use GlpiPlugin\Planner\EventProvider;
-use GlpiPlugin\Planner\Right;
-use GlpiPlugin\Planner\TechnicianStats;
+use GlpiPlugin\Refactorytools\AccessPolicy;
+use GlpiPlugin\Refactorytools\EventProvider;
+use GlpiPlugin\Refactorytools\Right;
+use GlpiPlugin\Refactorytools\TechnicianStats;
 
-Session::checkRight(Right::NAME, Right::USE_PLANNER);
+Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);
 
 header('Content-Type: application/json; charset=UTF-8');
 

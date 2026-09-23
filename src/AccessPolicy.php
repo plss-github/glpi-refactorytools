@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Quem pode ver a agenda de quem. Ponto único de decisão do plugin.
  *
@@ -37,7 +37,7 @@
  * Quando mais de uma origem se aplica, vale a mais permissiva (details > busy).
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Group_User;
 use Session;
@@ -460,7 +460,7 @@ final class AccessPolicy
     // -----------------------------------------------------------------------
 
     /**
-     * Checado na ativação do plugin (ver plugin_planner_check_config): sem
+     * Checado na ativação do plugin (ver plugin_refactorytools_check_config): sem
      * este campo, o direito "ver a agenda da minha equipe" não tem de onde
      * derivar a equipe.
      */
@@ -511,12 +511,12 @@ final class AccessPolicy
     public static function getReasonLabel(string $reason): string
     {
         return match ($reason) {
-            self::REASON_SELF          => __('My schedule', 'planner'),
-            self::REASON_ALL           => __('Administrative access', 'planner'),
-            self::REASON_TEAM          => __('My team', 'planner'),
-            self::REASON_GROUP         => __('My group', 'planner'),
-            self::REASON_GROUP_MANAGER => __('Group I manage', 'planner'),
-            self::REASON_SHARE         => __('Shared with me', 'planner'),
+            self::REASON_SELF          => __('My schedule', 'refactorytools'),
+            self::REASON_ALL           => __('Administrative access', 'refactorytools'),
+            self::REASON_TEAM          => __('My team', 'refactorytools'),
+            self::REASON_GROUP         => __('My group', 'refactorytools'),
+            self::REASON_GROUP_MANAGER => __('Group I manage', 'refactorytools'),
+            self::REASON_SHARE         => __('Shared with me', 'refactorytools'),
             default                    => '',
         };
     }

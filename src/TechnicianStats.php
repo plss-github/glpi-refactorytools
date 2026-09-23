@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Painel "Chamados como técnico", na barra lateral da agenda.
  *
@@ -20,7 +20,7 @@
  * O intervalo acompanha o período visível no calendário (Dia/Semana/Mês) —
  * `ajax/events.php` chama `getPanelForUser()` com o MESMO `begin`/`end` que
  * usa para buscar os eventos daquela view, então trocar de período também
- * atualiza este painel (ver `GlpiPlanner.fetch()` em planner.js). Sem
+ * atualiza este painel (ver `GlpiRefactoryTools.fetch()` em refactorytools.js). Sem
  * intervalo (o render inicial da página, em Twig), o padrão é o mês
  * corrente.
  *
@@ -28,7 +28,7 @@
  * na Central, via o link de `search_url`).
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use CommonITILActor;
 use Ticket;

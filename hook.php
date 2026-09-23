@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Rotinas de instalação e desinstalação.
  */
 
-use GlpiPlugin\Planner\EventNoteItem;
-use GlpiPlugin\Planner\EventNotes;
-use GlpiPlugin\Planner\EventTypes;
-use GlpiPlugin\Planner\KanbanPrefs;
-use GlpiPlugin\Planner\Right;
-use GlpiPlugin\Planner\Settings;
-use GlpiPlugin\Planner\Share;
-use GlpiPlugin\Planner\UserColors;
+use GlpiPlugin\Refactorytools\EventNoteItem;
+use GlpiPlugin\Refactorytools\EventNotes;
+use GlpiPlugin\Refactorytools\EventTypes;
+use GlpiPlugin\Refactorytools\KanbanPrefs;
+use GlpiPlugin\Refactorytools\Right;
+use GlpiPlugin\Refactorytools\Settings;
+use GlpiPlugin\Refactorytools\Share;
+use GlpiPlugin\Refactorytools\UserColors;
 
 /**
  * Instalação.
@@ -21,9 +21,17 @@ use GlpiPlugin\Planner\UserColors;
  * O GLPI chama esta função também a cada ATUALIZAÇÃO de versão do plugin, não
  * só na primeira instalação — por isso tudo aqui precisa ser idempotente.
  */
-function plugin_planner_install(): bool
+function plugin_refactorytools_install(): bool
 {
-    $migration = new Migration(PLUGIN_PLANNER_VERSION);
+    $migration = new Migration(PLUGIN_REFACTORYTOOLS_VERSION);
+
+    // Rename do plugin (planner -> refactorytools): linhas que outras
+    // tabelas do CORE guardam contra as classes/o direito deste plugin pelo
+    // nome/itemtype ANTIGO ("GlpiPlugin\Planner\...", 'plugin_planner_planning')
+    // precisam apontar para o nome NOVO, senão a instalação parece "zerada"
+    // (direitos voltando a 0, notificação duplicada) mesmo com os dados das
+    // tabelas próprias preservados pelos ::install() abaixo.
+    plugin_refactorytools_migrate_from_planner();
 
     Share::install($migration);
     EventNotes::install($migration);
@@ -60,11 +68,11 @@ function plugin_planner_install(): bool
     // configuração mostre o estado real desde a primeira abertura em vez de
     // valores que só existem em memória.
     //
-    // Os 3 IDs de categoria ficam de FORA deste save: `plugin_planner_install()`
+    // Os 3 IDs de categoria ficam de FORA deste save: `plugin_refactorytools_install()`
     // roda de novo em toda ATUALIZAÇÃO de versão (não só na instalação), e um
     // `getDefaults()` sempre traz esses 3 campos como string vazia. Se
     // entrassem aqui, cada atualização apagaria o ID guardado ANTES de
-    // `plugin_planner_seed_event_categories()` rodar — e como essa função só
+    // `plugin_refactorytools_seed_event_categories()` rodar — e como essa função só
     // recria a categoria quando não encontra um ID válido, o resultado seria
     // uma categoria NOVA a cada atualização, duplicando "Evento Interno" /
     // "Viagem" / "Reunião" indefinidamente.
@@ -77,11 +85,51 @@ function plugin_planner_install(): bool
     // Só depois de os defaults estarem gravados (e os 3 campos de categoria
     // preservados, por não terem sido tocados acima) é que a semeadura roda —
     // ela lê o ID atual antes de decidir se precisa criar a categoria.
-    plugin_planner_seed_event_categories();
+    plugin_refactorytools_seed_event_categories();
 
-    plugin_planner_seed_note_notification();
+    plugin_refactorytools_seed_note_notification();
 
     return true;
+}
+
+/**
+ * Ajusta, pelo NOME/ITEMTYPE antigo, o que outras tabelas do core já tinham
+ * gravado quando o plugin ainda se chamava "planner". Roda toda vez
+ * (idempotente: cada UPDATE já não encontra mais linhas com o nome antigo
+ * depois da primeira execução) — sem isto:
+ *
+ *   - `glpi_profilerights` continuaria com a linha `plugin_planner_planning`;
+ *     o guard de `addProfileRights()` logo abaixo não reconheceria
+ *     `plugin_refactorytools_planning` como já existente e criaria uma linha
+ *     NOVA com direitos ZERADOS para todo perfil, sem herdar o que já tinha
+ *     sido configurado.
+ *   - `glpi_notifications`/`glpi_notificationtemplates` continuariam
+ *     apontando para o itemtype `GlpiPlugin\Planner\EventNoteItem`; o guard
+ *     de `plugin_refactorytools_seed_note_notification()` não acharia
+ *     `GlpiPlugin\Refactorytools\EventNoteItem` e criaria um modelo
+ *     duplicado, deixando o antigo órfão (itemtype que não existe mais).
+ */
+function plugin_refactorytools_migrate_from_planner(): void
+{
+    /** @var \DBmysql $DB */
+    global $DB;
+
+    if ($DB->fieldExists('glpi_profilerights', 'name')) {
+        $DB->update(
+            'glpi_profilerights',
+            ['name' => Right::NAME],
+            ['name' => 'plugin_planner_planning']
+        );
+    }
+
+    $old_itemtype = 'GlpiPlugin\\Planner\\EventNoteItem';
+    $new_itemtype = EventNoteItem::class;
+
+    foreach (['glpi_notifications', 'glpi_notificationtemplates'] as $table) {
+        if ($DB->tableExists($table) && $DB->fieldExists($table, 'itemtype')) {
+            $DB->update($table, ['itemtype' => $new_itemtype], ['itemtype' => $old_itemtype]);
+        }
+    }
 }
 
 /**
@@ -91,7 +139,7 @@ function plugin_planner_install(): bool
  * `Notification` para este itemtype+evento (checagem por linha, não por
  * versão — mais simples e sobrevive a uma reinstalação fora de ordem).
  */
-function plugin_planner_seed_note_notification(): void
+function plugin_refactorytools_seed_note_notification(): void
 {
     /** @var \DBmysql $DB */
     global $DB;
@@ -111,7 +159,7 @@ function plugin_planner_seed_note_notification(): void
 
     $template = new NotificationTemplate();
     $templates_id = $template->add([
-        'name'     => __('Planner: new note', 'planner'),
+        'name'     => __('RefactoryTools: new note', 'refactorytools'),
         'itemtype' => $itemtype,
     ]);
 
@@ -125,16 +173,16 @@ function plugin_planner_seed_note_notification(): void
         // Vazio = modelo padrão, usado por qualquer idioma sem tradução
         // própria — é a mesma convenção do core.
         'language'     => '',
-        'subject'      => __('A note was added to your schedule', 'planner'),
-        'content_text' => "##plannernote.author##\n\n##plannernote.content##\n\n##plannernote.url##",
-        'content_html' => '<p><strong>##plannernote.author##</strong></p>'
-            . '<p>##plannernote.content##</p>'
-            . '<p><a href="##plannernote.url##">##plannernote.url##</a></p>',
+        'subject'      => __('A note was added to your schedule', 'refactorytools'),
+        'content_text' => "##refactorytoolsnote.author##\n\n##refactorytoolsnote.content##\n\n##refactorytoolsnote.url##",
+        'content_html' => '<p><strong>##refactorytoolsnote.author##</strong></p>'
+            . '<p>##refactorytoolsnote.content##</p>'
+            . '<p><a href="##refactorytoolsnote.url##">##refactorytoolsnote.url##</a></p>',
     ]);
 
     $notification = new Notification();
     $notifications_id = $notification->add([
-        'name'         => __('Planner: new note', 'planner'),
+        'name'         => __('RefactoryTools: new note', 'refactorytools'),
         'itemtype'     => $itemtype,
         'event'        => $event,
         'is_active'    => 1,
@@ -179,7 +227,7 @@ function plugin_planner_seed_note_notification(): void
  * matriz de direitos com uma linha órfã que nenhuma tela do GLPI sabe mais
  * explicar.
  */
-function plugin_planner_uninstall(): bool
+function plugin_refactorytools_uninstall(): bool
 {
     Share::uninstall();
     UserColors::uninstall();
@@ -196,7 +244,7 @@ function plugin_planner_uninstall(): bool
 /**
  * Cria as 3 categorias de evento (`PlanningEventCategory`) que distinguem
  * Evento Interno, Viagem e Reunião de um Evento Externo genérico — ver
- * `EventTypes`. Rodado a cada instalação/atualização (`plugin_planner_install`
+ * `EventTypes`. Rodado a cada instalação/atualização (`plugin_refactorytools_install`
  * roda nos dois casos), por isso é preciso não duplicar numa reinstalação:
  * cada categoria só é criada se a configuração ainda não guarda um ID válido
  * para ela.
@@ -205,7 +253,7 @@ function plugin_planner_uninstall(): bool
  * um administrador pode ter apagado a categoria manualmente, e nesse caso
  * o plugin recria em vez de continuar apontando para um ID morto.
  */
-function plugin_planner_seed_event_categories(): void
+function plugin_refactorytools_seed_event_categories(): void
 {
     $variants = [EventTypes::EVENT_INTERNAL, EventTypes::EVENT_TRAVEL, EventTypes::EVENT_MEETING];
 
@@ -222,7 +270,7 @@ function plugin_planner_seed_event_categories(): void
         $category = new PlanningEventCategory();
         $new_id   = $category->add([
             'name'    => EventTypes::seedCategoryName($variant),
-            'comment' => __('Created by the Pellissari RefactoryTools plugin to tell this event type apart.', 'planner'),
+            'comment' => __('Created by the Pellissari RefactoryTools plugin to tell this event type apart.', 'refactorytools'),
         ]);
 
         if ($new_id) {
@@ -236,9 +284,9 @@ function plugin_planner_seed_event_categories(): void
  *
  * @return array<string, string>
  */
-function plugin_planner_getrights(): array
+function plugin_refactorytools_getrights(): array
 {
     return [
-        Right::NAME => __('Planning (Pellissari RefactoryTools)', 'planner'),
+        Right::NAME => __('Planning (Pellissari RefactoryTools)', 'refactorytools'),
     ];
 }

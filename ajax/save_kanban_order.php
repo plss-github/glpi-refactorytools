@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Grava a ordem das colunas de SITUAÇÃO do Kanban de Planejamento, DE QUEM
  * ESTÁ LOGADO — sem parâmetro `users_id` na requisição, ninguém reordena a
@@ -10,10 +10,10 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\KanbanPrefs;
-use GlpiPlugin\Planner\Right;
+use GlpiPlugin\Refactorytools\KanbanPrefs;
+use GlpiPlugin\Refactorytools\Right;
 
-Session::checkRight(Right::NAME, Right::USE_PLANNER);
+Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);
 
 header('Content-Type: application/json; charset=UTF-8');
 

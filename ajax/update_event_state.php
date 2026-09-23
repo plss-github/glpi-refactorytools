@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Muda a situação (A fazer / Concluído) de UM compromisso — o que o arrastar
  * entre colunas do Kanban precisa gravar.
@@ -24,9 +24,9 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\Right;
+use GlpiPlugin\Refactorytools\Right;
 
-Session::checkRight(Right::NAME, Right::USE_PLANNER);
+Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);
 
 header('Content-Type: application/json; charset=UTF-8');
 

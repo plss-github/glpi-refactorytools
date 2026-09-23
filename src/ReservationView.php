@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * A tela de Reservas remodelada (Ferramentas > Reservas).
  *
@@ -23,7 +23,7 @@
  * compartilhados.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Glpi\Application\View\TemplateRenderer;
 use Profile;
@@ -86,7 +86,7 @@ final class ReservationView
 
         $items = self::getReservableItems();
 
-        TemplateRenderer::getInstance()->display('@planner/reservations.html.twig', [
+        TemplateRenderer::getInstance()->display('@refactorytools/reservations.html.twig', [
             'root_doc'     => $CFG_GLPI['root_doc'],
             // Tipos alimentam a barra lateral; a lista completa de itens
             // alimenta o seletor do formulário de nova reserva, onde a escolha
@@ -120,9 +120,9 @@ final class ReservationView
     public static function getStateLabel(int $state): string
     {
         return match ($state) {
-            self::STATE_ONGOING  => __('In progress', 'planner'),
-            self::STATE_FINISHED => __('Finished reservation', 'planner'),
-            default              => __('Upcoming reservation', 'planner'),
+            self::STATE_ONGOING  => __('In progress', 'refactorytools'),
+            self::STATE_FINISHED => __('Finished reservation', 'refactorytools'),
+            default              => __('Upcoming reservation', 'refactorytools'),
         };
     }
 
@@ -455,7 +455,7 @@ final class ReservationView
      * Nome de ativo costuma ser um código com separadores ("SALA-REUNIAO-02",
      * "NOTE_014"), e muitas instalações usam um prefixo comum em todo o
      * parque. Pegar as duas primeiras letras do nome inteiro faria
-     * "PLANNER-NOTE-01" e "PLANNER-PROJETOR" virarem os dois "PL" — marcadores
+     * "REFACTORYTOOLS-NOTE-01" e "REFACTORYTOOLS-PROJETOR" virarem os dois "PL" — marcadores
      * idênticos para itens diferentes. Por isso as iniciais saem da primeira
      * letra de cada PEDAÇO do nome, que é onde a diferença costuma estar.
      */

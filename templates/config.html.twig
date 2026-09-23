@@ -1,5 +1,5 @@
 {#
- # Planner — configuração.
+ # RefactoryTools — configuração.
  #
  # Cada opção traz a consequência escrita abaixo dela. São chaves que mudam
  # quem enxerga a agenda de quem, e o efeito de "equipe recursiva" não é
@@ -11,12 +11,12 @@
         <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
 
         <div class="card-header">
-            <h3 class="card-title">{{ __('Plugin configuration', 'planner') }}</h3>
+            <h3 class="card-title">{{ __('Plugin configuration', 'refactorytools') }}</h3>
         </div>
 
         <div class="card-body">
 
-            <h4 class="mb-2">{{ __('Team', 'planner') }}</h4>
+            <h4 class="mb-2">{{ __('Team', 'refactorytools') }}</h4>
 
             <div class="mb-3">
                 <label class="form-check form-switch">
@@ -24,16 +24,16 @@
                     <input type="checkbox" class="form-check-input" name="team_recursive" value="1"
                            {{ settings.team_recursive == '1' ? 'checked' : '' }}>
                     <span class="form-check-label">
-                        {{ __('Include the whole hierarchy below the supervisor', 'planner') }}
+                        {{ __('Include the whole hierarchy below the supervisor', 'refactorytools') }}
                     </span>
                 </label>
                 <div class="form-hint">
-                    {{ __('When off, "my team" means direct reports only: the users whose Supervisor field points to me. When on, it also includes their own reports, and so on. In a tall org chart this lets a director see almost the whole company schedule.', 'planner') }}
+                    {{ __('When off, "my team" means direct reports only: the users whose Supervisor field points to me. When on, it also includes their own reports, and so on. In a tall org chart this lets a director see almost the whole company schedule.', 'refactorytools') }}
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">{{ __('Detail level for the team', 'planner') }}</label>
+                <label class="form-label">{{ __('Detail level for the team', 'refactorytools') }}</label>
                 <select name="team_level" class="form-select">
                     {% for value, label in level_labels %}
                         <option value="{{ value }}" {{ settings.team_level == value ? 'selected' : '' }}>{{ label }}</option>
@@ -43,10 +43,10 @@
 
             <hr>
 
-            <h4 class="mb-2">{{ __('Groups', 'planner') }}</h4>
+            <h4 class="mb-2">{{ __('Groups', 'refactorytools') }}</h4>
 
             <div class="mb-3">
-                <label class="form-label">{{ __('Detail level for group colleagues', 'planner') }}</label>
+                <label class="form-label">{{ __('Detail level for group colleagues', 'refactorytools') }}</label>
                 <select name="group_level" class="form-select">
                     {% for value, label in level_labels %}
                         <option value="{{ value }}" {{ settings.group_level == value ? 'selected' : '' }}>{{ label }}</option>
@@ -56,17 +56,17 @@
 
             <hr>
 
-            <h4 class="mb-2">{{ __('Shares', 'planner') }}</h4>
+            <h4 class="mb-2">{{ __('Shares', 'refactorytools') }}</h4>
 
             <div class="mb-3">
-                <label class="form-label">{{ __('Suggested level when sharing', 'planner') }}</label>
+                <label class="form-label">{{ __('Suggested level when sharing', 'refactorytools') }}</label>
                 <select name="default_share_level" class="form-select">
                     {% for value, label in level_labels %}
                         <option value="{{ value }}" {{ settings.default_share_level == value ? 'selected' : '' }}>{{ label }}</option>
                     {% endfor %}
                 </select>
                 <div class="form-hint">
-                    {{ __('Only the value preselected in the form. Whoever shares can change it.', 'planner') }}
+                    {{ __('Only the value preselected in the form. Whoever shares can change it.', 'refactorytools') }}
                 </div>
             </div>
 
@@ -76,31 +76,31 @@
                     <input type="checkbox" class="form-check-input" name="allow_self_request" value="1"
                            {{ settings.allow_self_request == '1' ? 'checked' : '' }}>
                     <span class="form-check-label">
-                        {{ __('Allow users to request access to a schedule', 'planner') }}
+                        {{ __('Allow users to request access to a schedule', 'refactorytools') }}
                     </span>
                 </label>
                 <div class="form-hint">
-                    {{ __('A request reveals nothing on its own: no event shows up before the owner accepts it.', 'planner') }}
+                    {{ __('A request reveals nothing on its own: no event shows up before the owner accepts it.', 'refactorytools') }}
                 </div>
             </div>
 
             <hr>
 
-            <h4 class="mb-2">{{ __('Event type colours', 'planner') }}</h4>
+            <h4 class="mb-2">{{ __('Event type colours', 'refactorytools') }}</h4>
 
             <div class="mb-3">
                 <div class="form-hint mb-2">
-                    {{ __('The colour identifies the type of appointment on the calendar, in the list and on the Kanban cards. Leave a type untouched to keep the plugin default.', 'planner') }}
+                    {{ __('The colour identifies the type of appointment on the calendar, in the list and on the Kanban cards. Leave a type untouched to keep the plugin default.', 'refactorytools') }}
                 </div>
-                <div class="planner-color-grid">
+                <div class="refactorytools-color-grid">
                     {% for type in types %}
-                        <label class="planner-color-row">
+                        <label class="refactorytools-color-row">
                             <input type="color" name="type_color[{{ type.itemtype }}]"
                                    value="{{ type.color }}"
-                                   data-planner-default="{{ type.default }}">
-                            <span class="planner-color-name">{{ type.label }}</span>
-                            <button type="button" class="btn btn-sm btn-ghost-secondary planner-color-reset"
-                                    title="{{ __('Back to default', 'planner') }}">
+                                   data-refactorytools-default="{{ type.default }}">
+                            <span class="refactorytools-color-name">{{ type.label }}</span>
+                            <button type="button" class="btn btn-sm btn-ghost-secondary refactorytools-color-reset"
+                                    title="{{ __('Back to default', 'refactorytools') }}">
                                 <i class="ti ti-rotate"></i>
                             </button>
                         </label>
@@ -111,21 +111,21 @@
             {% if reservation_types is not empty %}
                 <hr>
 
-                <h4 class="mb-2">{{ __('Reservable asset type colours', 'planner') }}</h4>
+                <h4 class="mb-2">{{ __('Reservable asset type colours', 'refactorytools') }}</h4>
 
                 <div class="mb-3">
                     <div class="form-hint mb-2">
-                        {{ __('The colour identifies every reservation of that asset type on the calendar and in the list, regardless of which specific item was reserved. Leave a type untouched to keep each item its own colour.', 'planner') }}
+                        {{ __('The colour identifies every reservation of that asset type on the calendar and in the list, regardless of which specific item was reserved. Leave a type untouched to keep each item its own colour.', 'refactorytools') }}
                     </div>
-                    <div class="planner-color-grid">
+                    <div class="refactorytools-color-grid">
                         {% for type in reservation_types %}
-                            <label class="planner-color-row">
+                            <label class="refactorytools-color-row">
                                 <input type="color" name="reservation_type_color[{{ type.itemtype }}]"
                                        value="{{ type.color }}"
-                                       data-planner-default="{{ type.default }}">
-                                <span class="planner-color-name">{{ type.label }}</span>
-                                <button type="button" class="btn btn-sm btn-ghost-secondary planner-color-reset"
-                                        title="{{ __('Back to default', 'planner') }}">
+                                       data-refactorytools-default="{{ type.default }}">
+                                <span class="refactorytools-color-name">{{ type.label }}</span>
+                                <button type="button" class="btn btn-sm btn-ghost-secondary refactorytools-color-reset"
+                                        title="{{ __('Back to default', 'refactorytools') }}">
                                     <i class="ti ti-rotate"></i>
                                 </button>
                             </label>
@@ -136,7 +136,7 @@
 
             <hr>
 
-            <h4 class="mb-2">{{ __('Screen', 'planner') }}</h4>
+            <h4 class="mb-2">{{ __('Screen', 'refactorytools') }}</h4>
 
             <div class="mb-3">
                 <label class="form-check form-switch">
@@ -144,11 +144,11 @@
                     <input type="checkbox" class="form-check-input" name="override_native_planning" value="1"
                            {{ settings.override_native_planning == '1' ? 'checked' : '' }}>
                     <span class="form-check-label">
-                        {{ __('Replace the native Planning', 'planner') }}
+                        {{ __('Replace the native Planning', 'refactorytools') }}
                     </span>
                 </label>
                 <div class="form-hint">
-                    {{ __('When on, the "Planning" entry under Assistance opens this screen, and anyone reaching the old URL is redirected. The menu label stays "Planning": "Planner" is the plugin name, not the entry name. When off, the native planning is restored and Planner appears as a separate entry, which is useful to compare both screens.', 'planner') }}
+                    {{ __('When on, the "Planning" entry under Assistance opens this screen, and anyone reaching the old URL is redirected. The menu label stays "Planning": "RefactoryTools" is the plugin name, not the entry name. When off, the native planning is restored and RefactoryTools appears as a separate entry, which is useful to compare both screens.', 'refactorytools') }}
                 </div>
             </div>
 
@@ -158,23 +158,23 @@
                     <input type="checkbox" class="form-check-input" name="override_native_reservation" value="1"
                            {{ settings.override_native_reservation == '1' ? 'checked' : '' }}>
                     <span class="form-check-label">
-                        {{ __('Replace the native Reservations', 'planner') }}
+                        {{ __('Replace the native Reservations', 'refactorytools') }}
                     </span>
                 </label>
                 <div class="form-hint">
-                    {{ __('When on, the "Reservations" entry under Tools opens this screen, and anyone reaching the old URL is redirected. Reserving a specific item still goes to the native form, which checks for conflicts.', 'planner') }}
+                    {{ __('When on, the "Reservations" entry under Tools opens this screen, and anyone reaching the old URL is redirected. Reserving a specific item still goes to the native form, which checks for conflicts.', 'refactorytools') }}
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">{{ __('Default mode', 'planner') }}</label>
+                <label class="form-label">{{ __('Default mode', 'refactorytools') }}</label>
                 <select name="default_mode" class="form-select">
                     {% for value, label in mode_labels %}
                         <option value="{{ value }}" {{ settings.default_mode == value ? 'selected' : '' }}>{{ label }}</option>
                     {% endfor %}
                 </select>
                 <div class="form-hint">
-                    {{ __('How the screen opens. Users can switch between Calendar, List and Kanban at any time.', 'planner') }}
+                    {{ __('How the screen opens. Users can switch between Calendar, List and Kanban at any time.', 'refactorytools') }}
                 </div>
             </div>
 
@@ -184,7 +184,7 @@
                     <input type="checkbox" class="form-check-input" name="auto_load_team" value="1"
                            {{ settings.auto_load_team == '1' ? 'checked' : '' }}>
                     <span class="form-check-label">
-                        {{ __('Open the schedule with the team already selected', 'planner') }}
+                        {{ __('Open the schedule with the team already selected', 'refactorytools') }}
                     </span>
                 </label>
             </div>
@@ -193,7 +193,7 @@
 
         <div class="card-footer text-end">
             <button type="submit" name="update" value="1" class="btn btn-primary">
-                {{ __('Save', 'planner') }}
+                {{ __('Save', 'refactorytools') }}
             </button>
         </div>
     </form>
@@ -201,13 +201,13 @@
 
 <script>
     // "Voltar ao padrão": devolve o input ao valor de fábrica do tipo, que o
-    // servidor escreveu em data-planner-default. Salvar com a cor igual à
+    // servidor escreveu em data-refactorytools-default. Salvar com a cor igual à
     // padrão é o mesmo que não customizar — Settings::saveTypeColors() guarda
     // só o que difere.
     $(function () {
-        $(document).on('click', '.planner-color-reset', function () {
-            var $input = $(this).closest('.planner-color-row').find('input[type=color]');
-            $input.val($input.data('planner-default'));
+        $(document).on('click', '.refactorytools-color-reset', function () {
+            var $input = $(this).closest('.refactorytools-color-row').find('input[type=color]');
+            $input.val($input.data('refactorytools-default'));
         });
     });
 </script>

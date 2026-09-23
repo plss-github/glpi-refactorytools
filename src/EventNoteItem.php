@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Casca mínima de `CommonDBTM` só para o sistema de notificação do GLPI ter
  * um item de verdade para apontar (`NotificationEvent::raiseEvent()` espera
@@ -16,7 +16,7 @@
  * acabou de gravar.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use CommonDBTM;
 
@@ -29,6 +29,6 @@ final class EventNoteItem extends CommonDBTM
 
     public static function getTypeName($nb = 0)
     {
-        return __('Note', 'planner');
+        return __('Note', 'refactorytools');
     }
 }

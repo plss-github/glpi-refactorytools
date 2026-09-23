@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Redireciona `/front/planning.php` para a tela do plugin.
  *
@@ -34,7 +34,7 @@
  * antes do arquivo legado ser incluído, então o header cru é o caminho.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Session;
 
@@ -102,7 +102,7 @@ final class NativeRedirect
      * seguir para o core.
      *
      * Cada tela substituída tem sua própria chave de configuração e seu
-     * próprio direito: quem pode usar o Planner não necessariamente pode
+     * próprio direito: quem pode usar o RefactoryTools não necessariamente pode
      * reservar, e vice-versa.
      */
     private static function getTarget(): ?string
@@ -118,7 +118,7 @@ final class NativeRedirect
             && Settings::isTrue('override_native_planning')
             && Right::canUse()
         ) {
-            return Menu::getPlannerPage();
+            return Menu::getRefactoryToolsPage();
         }
 
         // `reservation.php` é a tela de calendário de UM item reservável, que

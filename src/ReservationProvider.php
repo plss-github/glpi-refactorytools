@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Reservas de itens como compromissos da agenda.
  *
@@ -21,7 +21,7 @@
  * abertas continua sendo decidido por `AccessPolicy`, antes de chegar aqui.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Glpi\DBAL\QueryFunction;
 use Planning;
@@ -130,7 +130,7 @@ final class ReservationProvider
                 'itemtype'         => self::ITEMTYPE,
                 'id'               => (int) $row['id'],
                 'name'             => $names[$name_key]
-                    ?? sprintf(__('Reserved item #%d', 'planner'), (int) $row['reserved_items_id']),
+                    ?? sprintf(__('Reserved item #%d', 'refactorytools'), (int) $row['reserved_items_id']),
                 'content'          => (string) ($row['comment'] ?? ''),
                 'begin'            => (string) $row['begin'],
                 'end'              => (string) $row['end'],

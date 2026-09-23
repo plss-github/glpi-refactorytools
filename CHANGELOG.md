@@ -148,7 +148,7 @@ versionamento semântico.
   parava de significar a mesma coisa para quem olhasse a agenda de outra
   pessoa, o oposto do que a colometria deveria garantir.
 - Tela de configuração renomeada de "Configuração do Pellissari New
-  Planners" para "Configuração do Plugin".
+  RefactoryToolss" para "Configuração do Plugin".
 - Painel "Chamados como técnico": a duração ao passar o mouse trocou o
   `title` nativo do navegador (sem estilo, fácil de não notar) por um
   popover próprio, igual ao do calendário.
@@ -215,12 +215,12 @@ nova, todas as correções são internas.
 
 ### Alterado
 
-- **Renomeado para "Pellissari New Planners"** — nome exibido na lista de
+- **Renomeado para "Pellissari New RefactoryToolss"** — nome exibido na lista de
   plugins, no menu (quando a substituição do nativo está desligada), na aba
   de direitos de perfil, no título da tela de configuração e no rodapé da
-  barra lateral. O diretório (`planner`), o namespace
-  (`GlpiPlugin\Planner`), o nome das tabelas e o direito no banco
-  (`plugin_planner_planning`) continuam os mesmos — são identificadores
+  barra lateral. O diretório (`refactorytools`), o namespace
+  (`GlpiPlugin\Refactorytools`), o nome das tabelas e o direito no banco
+  (`plugin_refactorytools_planning`) continuam os mesmos — são identificadores
   técnicos, não o nome exibido, e renomeá-los exigiria reinstalar o plugin
   do zero. O autor já estava correto (Pellissari).
 - Reservas: os tipos de ativo, dentro de "Filtros", passaram para DEPOIS de
@@ -280,7 +280,7 @@ nova, todas as correções são internas.
 - **Ordem das colunas do Kanban de Planejamento, arrastável.** O cabeçalho de
   cada coluna de situação (A fazer/Informação/Concluído) agora se arrasta
   para outra posição; a preferência é gravada por usuário
-  (`glpi_plugin_planner_kanban_prefs`) e volta a valer em qualquer sessão
+  (`glpi_plugin_refactorytools_kanban_prefs`) e volta a valer em qualquer sessão
   futura.
 - **Duração do chamado no popover do calendário.** Passar o mouse num
   compromisso de tipo Chamado mostra o tempo total já registrado naquele
@@ -325,7 +325,7 @@ Entrega os três itens adiados na 0.6.0.
   anexar uma nota a ele, de qualquer itemtype — Chamado, Reserva, Lembrete,
   o que for. O dono vê a nota ao passar o mouse no popover do calendário;
   quem não é gestor dele não vê nada. Tabela própria
-  (`glpi_plugin_planner_notes`, chave única por itemtype+id), endpoint
+  (`glpi_plugin_refactorytools_notes`, chave única por itemtype+id), endpoint
   dedicado (`ajax/save_event_note.php`) e uma consulta só por carregamento de
   agenda (`EventProvider::attachNotes()`), não uma por evento.
 - **Painel "Chamados como técnico"** na barra lateral: lista os chamados em
@@ -434,8 +434,8 @@ entrar com qualidade junto do resto:
 
 - As iniciais do marcador de item eram calculadas duas vezes com regras
   diferentes, e o marcador da barra lateral não batia com o dos cartões. Além
-  disso, tiradas do nome inteiro, itens com prefixo comum ("PLANNER-NOTE-01" e
-  "PLANNER-PROJETOR") recebiam as mesmas letras; agora saem da primeira letra
+  disso, tiradas do nome inteiro, itens com prefixo comum ("REFACTORYTOOLS-NOTE-01" e
+  "REFACTORYTOOLS-PROJETOR") recebiam as mesmas letras; agora saem da primeira letra
   de cada pedaço do nome.
 
 ## [0.4.0] - 2026-09-22
@@ -500,7 +500,7 @@ GLPI 11.0.9 real antes e depois da correção.
 
 ### Adicionado
 
-- Catálogos de tradução: `locales/planner.pot` (modelo), `locales/pt_BR.po/.mo`
+- Catálogos de tradução: `locales/refactorytools.pot` (modelo), `locales/pt_BR.po/.mo`
   (português do Brasil, completo) e `locales/en_GB.po/.mo`.
 - `tools/update_locales.sh` — extrai, mescla e compila os catálogos preservando
   as traduções existentes.
@@ -564,7 +564,7 @@ oficial `glpi/glpi:11.0.9`).
 
 ### Adicionado
 
-- Tela **Assistência > Planner**: agenda remodelada com visões Dia, Semana,
+- Tela **Assistência > RefactoryTools**: agenda remodelada com visões Dia, Semana,
   Mês, Equipe (linha do tempo por pessoa) e Lista, barra lateral de agendas
   agrupadas pela origem do acesso, filtros por tipo de compromisso e
   indicadores de horas planejadas, a fazer, concluídos e agendas abertas.
@@ -577,9 +577,9 @@ oficial `glpi/glpi:11.0.9`).
 - Dois **níveis de detalhe**: "Detalhes" e "Livre/ocupado". No nível
   livre/ocupado, título, descrição, link e itemtype são removidos no servidor,
   antes de a resposta sair.
-- Direito próprio `plugin_planner_planning` com aba dedicada em
-  **Administração > Perfis > Planner**.
-- Tela de configuração do plugin, guardada no contexto `plugin:planner` do
+- Direito próprio `plugin_refactorytools_planning` com aba dedicada em
+  **Administração > Perfis > RefactoryTools**.
+- Tela de configuração do plugin, guardada no contexto `plugin:refactorytools` do
   `glpi_configs`.
 - `docker-compose.yml` com GLPI 11.0.9 na porta 8081 para desenvolvimento
   isolado.

@@ -1,6 +1,6 @@
 {
-    "name": "pellissari/planner",
-    "description": "Planner - remodela o planejamento do GLPI 11 e adiciona visibilidade de agenda por equipe, grupo e compartilhamento com aceite",
+    "name": "pellissari/refactorytools",
+    "description": "RefactoryTools - remodela o planejamento do GLPI 11 e adiciona visibilidade de agenda por equipe, grupo e compartilhamento com aceite",
     "type": "glpi-plugin",
     "license": "AGPL-3.0",
     "require": {
@@ -8,7 +8,7 @@
     },
     "autoload": {
         "psr-4": {
-            "GlpiPlugin\Planner\\": "src/"
+            "GlpiPlugin\\Refactorytools\\": "src/"
         }
     }
 }

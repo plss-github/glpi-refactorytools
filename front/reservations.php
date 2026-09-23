@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Tela de Reservas remodelada (Ferramentas > Reservas).
  *
@@ -12,8 +12,8 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\ReservationMenu;
-use GlpiPlugin\Planner\ReservationView;
+use GlpiPlugin\Refactorytools\ReservationMenu;
+use GlpiPlugin\Refactorytools\ReservationView;
 
 if (!ReservationView::canView()) {
     Html::displayRightError();

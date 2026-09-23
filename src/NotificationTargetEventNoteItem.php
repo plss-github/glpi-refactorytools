@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Notificação por e-mail quando alguém grava uma nota num compromisso (ver
  * `EventNotes::save()`, que dispara `NotificationEvent::raiseEvent('new_note', ...)`).
  *
  * O nome desta classe não é livre: `NotificationTarget::getInstanceClass()`
  * resolve `NotificationTarget<NomeDaClasse>` DENTRO DO MESMO NAMESPACE do
- * item (`GlpiPlugin\Planner\EventNoteItem` -> `GlpiPlugin\Planner\NotificationTargetEventNoteItem`),
+ * item (`GlpiPlugin\Refactorytools\EventNoteItem` -> `GlpiPlugin\Refactorytools\NotificationTargetEventNoteItem`),
  * não o prefixo `Plugin<Nome>NotificationTarget<Classe>` usado por plugins
  * antigos sem namespace — conferido lendo `NotificationTarget.php` do core.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use NotificationTarget;
 use User;
@@ -34,7 +34,7 @@ class NotificationTargetEventNoteItem extends NotificationTarget
     public function getEvents()
     {
         return [
-            'new_note' => __('New note', 'planner'),
+            'new_note' => __('New note', 'refactorytools'),
         ];
     }
 
@@ -51,14 +51,14 @@ class NotificationTargetEventNoteItem extends NotificationTarget
      */
     public function addAdditionalTargets($event = '')
     {
-        $this->addTarget(self::TARGET_OWNER, __('Schedule owner', 'planner'));
+        $this->addTarget(self::TARGET_OWNER, __('Schedule owner', 'refactorytools'));
     }
 
     /**
      * Resolução de verdade do destinatário — chamada por `addForTarget()`
      * (via `NotificationEventAbstract::raise()`, já depois de `setEvent()`)
      * para cada linha de `glpi_notificationtargets` da notificação, que
-     * `plugin_planner_seed_note_notification()` semeia apontando para
+     * `plugin_refactorytools_seed_note_notification()` semeia apontando para
      * `self::TARGET_OWNER`.
      */
     public function addSpecificTargets($data, $options)
@@ -86,8 +86,8 @@ class NotificationTargetEventNoteItem extends NotificationTarget
             $url = $item::getFormURLWithID($items_id);
         }
 
-        $this->data['##plannernote.content##'] = (string) $note->getField('note');
-        $this->data['##plannernote.author##']   = $author_name;
-        $this->data['##plannernote.url##']      = $url !== '' ? $this->getUrlBase() . $url : '';
+        $this->data['##refactorytoolsnote.content##'] = (string) $note->getField('note');
+        $this->data['##refactorytoolsnote.author##']   = $author_name;
+        $this->data['##refactorytoolsnote.url##']      = $url !== '' ? $this->getUrlBase() . $url : '';
     }
 }

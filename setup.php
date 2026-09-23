@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Plugin GLPI 11.0.x — remodela o módulo de Planejamento (agenda) com uma
  * interface atual e adiciona visibilidade de equipe para supervisores.
@@ -25,36 +25,36 @@
  */
 
 use Glpi\Plugin\Hooks;
-use GlpiPlugin\Planner\EventNoteItem;
-use GlpiPlugin\Planner\Menu;
-use GlpiPlugin\Planner\NativeRedirect;
-use GlpiPlugin\Planner\NotificationTargetEventNoteItem;
-use GlpiPlugin\Planner\ProfileRights;
-use GlpiPlugin\Planner\ReservationMenu;
-use GlpiPlugin\Planner\Share;
+use GlpiPlugin\Refactorytools\EventNoteItem;
+use GlpiPlugin\Refactorytools\Menu;
+use GlpiPlugin\Refactorytools\NativeRedirect;
+use GlpiPlugin\Refactorytools\NotificationTargetEventNoteItem;
+use GlpiPlugin\Refactorytools\ProfileRights;
+use GlpiPlugin\Refactorytools\ReservationMenu;
+use GlpiPlugin\Refactorytools\Share;
 
-define('PLUGIN_PLANNER_VERSION', '0.11.4');
+define('PLUGIN_REFACTORYTOOLS_VERSION', '0.11.4');
 
 // Alvo: GLPI 11.0.x. As assinaturas usadas aqui (Planning::$rightname,
 // CFG_GLPI['planning_types'], populatePlanning(), Html::requireJs('fullcalendar'))
 // foram conferidas contra o código-fonte da imagem oficial glpi/glpi:11.0.9.
-define('PLUGIN_PLANNER_MIN_GLPI', '11.0.0');
-define('PLUGIN_PLANNER_MAX_GLPI', '11.9.99');
+define('PLUGIN_REFACTORYTOOLS_MIN_GLPI', '11.0.0');
+define('PLUGIN_REFACTORYTOOLS_MAX_GLPI', '11.9.99');
 
 /**
  * Init: registrado a cada carregamento do GLPI.
  */
-function plugin_init_planner(): void
+function plugin_init_refactorytools(): void
 {
     global $PLUGIN_HOOKS, $CFG_GLPI;
 
-    $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT]['planner'] = true;
+    $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT]['refactorytools'] = true;
 
     // Entrada própria no setor "Assistência". Com a substituição ligada (o
     // padrão) ela é removida por Menu::redefineMenus(), que em troca aponta o
     // item nativo para cá — o registro precisa existir mesmo assim, porque é
     // ele que serve de menu quando a substituição está desligada.
-    $PLUGIN_HOOKS['menu_toadd']['planner'] = [
+    $PLUGIN_HOOKS['menu_toadd']['refactorytools'] = [
         'helpdesk' => Menu::class,
     ];
 
@@ -74,18 +74,18 @@ function plugin_init_planner(): void
     // Substituição dos itens nativos "Planejamento" (Assistência) e "Reservas"
     // (Ferramentas). O hook aceita um callable só por plugin, então as duas
     // substituições passam por uma função que encadeia as duas.
-    $PLUGIN_HOOKS[Hooks::REDEFINE_MENUS]['planner'] = 'plugin_planner_redefine_menus';
+    $PLUGIN_HOOKS[Hooks::REDEFINE_MENUS]['refactorytools'] = 'plugin_refactorytools_redefine_menus';
 
     // Link de configuração na tela Configuração > Plugins. É o lugar onde o
     // GLPI espera encontrar a configuração de um plugin — o menu lateral não
     // exibe as `options` de um item (elas só alimentam o breadcrumb), então
     // sem este hook a tela de configuração ficaria sem caminho de acesso a
     // partir do menu.
-    $PLUGIN_HOOKS[Hooks::CONFIG_PAGE]['planner'] = 'front/config.form.php';
+    $PLUGIN_HOOKS[Hooks::CONFIG_PAGE]['refactorytools'] = 'front/config.form.php';
 
     // Quem chega na URL antiga (/front/planning.php) por favorito ou link
     // também precisa cair na tela nova — o hook de menu sozinho não cobre isso.
-    $PLUGIN_HOOKS[Hooks::POST_INIT]['planner'] = NativeRedirect::class . '::handle';
+    $PLUGIN_HOOKS[Hooks::POST_INIT]['refactorytools'] = NativeRedirect::class . '::handle';
 
     // O GLPI só carrega o FullCalendar quando a lib está declarada em
     // $CFG_GLPI['javascript'][setor][item] (ver Html::header(), que também
@@ -115,8 +115,8 @@ function plugin_init_planner(): void
         ['fullcalendar']
     )));
 
-    $PLUGIN_HOOKS[Hooks::ADD_CSS]['planner']        = 'public/css/planner.css';
-    $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['planner'] = 'public/js/planner.js';
+    $PLUGIN_HOOKS[Hooks::ADD_CSS]['refactorytools']        = 'public/css/refactorytools.css';
+    $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['refactorytools'] = 'public/js/refactorytools.js';
 }
 
 /**
@@ -129,7 +129,7 @@ function plugin_init_planner(): void
  * @param array<string, mixed> $menu
  * @return array<string, mixed>
  */
-function plugin_planner_redefine_menus(array $menu): array
+function plugin_refactorytools_redefine_menus(array $menu): array
 {
     $menu = Menu::redefineMenus($menu);
 
@@ -139,18 +139,18 @@ function plugin_planner_redefine_menus(array $menu): array
 /**
  * Metadados exibidos na tela de plugins.
  */
-function plugin_version_planner(): array
+function plugin_version_refactorytools(): array
 {
     return [
         'name'         => 'Pellissari RefactoryTools',
-        'version'      => PLUGIN_PLANNER_VERSION,
+        'version'      => PLUGIN_REFACTORYTOOLS_VERSION,
         'author'       => 'Pellissari',
         'license'      => 'AGPL-3.0',
         'homepage'     => '',
         'requirements' => [
             'glpi' => [
-                'min' => PLUGIN_PLANNER_MIN_GLPI,
-                'max' => PLUGIN_PLANNER_MAX_GLPI,
+                'min' => PLUGIN_REFACTORYTOOLS_MIN_GLPI,
+                'max' => PLUGIN_REFACTORYTOOLS_MAX_GLPI,
             ],
             'php' => [
                 'min' => '8.2',
@@ -162,7 +162,7 @@ function plugin_version_planner(): array
 /**
  * Pré-requisitos de ambiente (o GLPI já valida `requirements` acima).
  */
-function plugin_planner_check_prerequisites(): bool
+function plugin_refactorytools_check_prerequisites(): bool
 {
     return true;
 }
@@ -176,7 +176,7 @@ function plugin_planner_check_prerequisites(): bool
  * Lista deliberadamente curta — cobre só o que é específico do subsistema de
  * planejamento (o ponto menos estável), não cada chamada do plugin.
  */
-function plugin_planner_check_config($verbose = false): bool
+function plugin_refactorytools_check_config($verbose = false): bool
 {
     /** @var array $CFG_GLPI */
     /** @var \DBmysql $DB */
@@ -185,7 +185,7 @@ function plugin_planner_check_config($verbose = false): bool
     // ATENÇÃO: esta função NÃO pode usar as classes do próprio plugin.
     // `Plugin::checkPluginState()` a chama antes de `Plugin::activate()`
     // registrar o autoloader PSR-4 do plugin — qualquer
-    // `GlpiPlugin\Planner\*` aqui morre com ClassNotFoundError e a ativação
+    // `GlpiPlugin\Refactorytools\*` aqui morre com ClassNotFoundError e a ativação
     // falha com uma mensagem que não explica nada (confirmado testando a
     // ativação contra o GLPI 11.0.9: o rastro passa por
     // ActivateCommand::execute() -> checkPluginState(), não por activate()).
@@ -209,7 +209,7 @@ function plugin_planner_check_config($verbose = false): bool
 
     if ($missing !== []) {
         if ($verbose) {
-            echo __('Pellissari RefactoryTools: GLPI dependencies not found or incompatible:', 'planner')
+            echo __('Pellissari RefactoryTools: GLPI dependencies not found or incompatible:', 'refactorytools')
                 . ' ' . implode(', ', $missing);
         }
         return false;

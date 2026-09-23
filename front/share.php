@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Compartilhamentos de agenda: conceder, pedir, aceitar, recusar, revogar.
  *
@@ -14,19 +14,19 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\Menu;
-use GlpiPlugin\Planner\Right;
-use GlpiPlugin\Planner\Share;
-use GlpiPlugin\Planner\View;
+use GlpiPlugin\Refactorytools\Menu;
+use GlpiPlugin\Refactorytools\Right;
+use GlpiPlugin\Refactorytools\Share;
+use GlpiPlugin\Refactorytools\View;
 
-Session::checkRight(Right::NAME, Right::USE_PLANNER);
+Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);
 
 Html::header(
     Share::getTypeName(2),
     $_SERVER['PHP_SELF'],
     'helpdesk',
     Menu::getMenuItemKey(),
-    'planner_share'
+    'refactorytools_share'
 );
 
 View::showShares();

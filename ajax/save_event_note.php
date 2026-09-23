@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Grava (ou apaga, se vazia) a nota de gestor de UM compromisso do calendário
  * — qualquer itemtype, é por isso que existe um endpoint próprio em vez de
@@ -21,11 +21,11 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\AccessPolicy;
-use GlpiPlugin\Planner\EventNotes;
-use GlpiPlugin\Planner\Right;
+use GlpiPlugin\Refactorytools\AccessPolicy;
+use GlpiPlugin\Refactorytools\EventNotes;
+use GlpiPlugin\Refactorytools\Right;
 
-Session::checkRight(Right::NAME, Right::USE_PLANNER);
+Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);
 
 header('Content-Type: application/json; charset=UTF-8');
 

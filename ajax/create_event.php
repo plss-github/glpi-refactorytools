@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Cria um novo compromisso na agenda ("+ Novo compromisso").
  *
@@ -22,16 +22,16 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\EventTypes;
-use GlpiPlugin\Planner\Right;
-use GlpiPlugin\Planner\Settings;
+use GlpiPlugin\Refactorytools\EventTypes;
+use GlpiPlugin\Refactorytools\Right;
+use GlpiPlugin\Refactorytools\Settings;
 
-Session::checkRight(Right::NAME, Right::USE_PLANNER);
+Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);
 
 $kind = (string) ($_POST['kind'] ?? '');
 
 if (!in_array($kind, EventTypes::CREATABLE, true)) {
-    Session::addMessageAfterRedirect(htmlescape(__('Unknown event type.', 'planner')), false, ERROR);
+    Session::addMessageAfterRedirect(htmlescape(__('Unknown event type.', 'refactorytools')), false, ERROR);
     Html::back();
 }
 
@@ -42,7 +42,7 @@ $end   = (string) ($_POST['end'] ?? '');
 
 if ($begin === '' || $end === '' || $begin >= $end) {
     Session::addMessageAfterRedirect(
-        htmlescape(__('Error in entering dates. The starting date is later than the ending date', 'planner')),
+        htmlescape(__('Error in entering dates. The starting date is later than the ending date', 'refactorytools')),
         false,
         ERROR
     );
@@ -54,7 +54,7 @@ $item     = new $itemtype();
 
 if (!$item::canCreate()) {
     Session::addMessageAfterRedirect(
-        htmlescape(__('You are not allowed to create this type of event.', 'planner')),
+        htmlescape(__('You are not allowed to create this type of event.', 'refactorytools')),
         false,
         ERROR
     );
@@ -91,12 +91,12 @@ $new_id = $item->add($input);
 
 if ($new_id) {
     Session::addMessageAfterRedirect(
-        htmlescape(sprintf(__('"%s" was added to the schedule.', 'planner'), $name !== '' ? $name : __('Without title', 'planner'))),
+        htmlescape(sprintf(__('"%s" was added to the schedule.', 'refactorytools'), $name !== '' ? $name : __('Without title', 'refactorytools'))),
         false,
         INFO
     );
 } else {
-    Session::addMessageAfterRedirect(htmlescape(__('Could not create the event.', 'planner')), false, ERROR);
+    Session::addMessageAfterRedirect(htmlescape(__('Could not create the event.', 'refactorytools')), false, ERROR);
 }
 
 Html::back();

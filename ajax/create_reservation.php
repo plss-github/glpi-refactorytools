@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Cria uma reserva, com duas checagens que o formulário nativo não faz por
  * conta própria:
@@ -25,11 +25,11 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\ReservationView;
+use GlpiPlugin\Refactorytools\ReservationView;
 
 if (!ReservationView::canReserve()) {
     Session::addMessageAfterRedirect(
-        htmlescape(__('You are not allowed to create reservations.', 'planner')),
+        htmlescape(__('You are not allowed to create reservations.', 'refactorytools')),
         false,
         ERROR
     );
@@ -40,7 +40,7 @@ $comment = trim((string) ($_POST['comment'] ?? ''));
 
 if ($comment === '') {
     Session::addMessageAfterRedirect(
-        htmlescape(__('The reservation justification is required.', 'planner')),
+        htmlescape(__('The reservation justification is required.', 'refactorytools')),
         false,
         ERROR
     );
@@ -58,7 +58,7 @@ $end   = (string) ($_POST['resa']['end'] ?? '');
 
 if ($items === [] || $begin === '' || $end === '' || $begin >= $end) {
     Session::addMessageAfterRedirect(
-        htmlescape(__('Fill in the item and the period before reserving.', 'planner')),
+        htmlescape(__('Fill in the item and the period before reserving.', 'refactorytools')),
         false,
         ERROR
     );
@@ -76,7 +76,7 @@ $items = array_values(array_intersect($items, $available_ids));
 
 if ($items === []) {
     Session::addMessageAfterRedirect(
-        htmlescape(__('The selected item is no longer available for this period.', 'planner')),
+        htmlescape(__('The selected item is no longer available for this period.', 'refactorytools')),
         false,
         ERROR
     );

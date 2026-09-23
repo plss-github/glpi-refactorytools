@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner — torna as strings dos templates Twig visíveis para o xgettext.
+ * RefactoryTools — torna as strings dos templates Twig visíveis para o xgettext.
  *
  * O xgettext não entende Twig. Rodá-lo com `--language=PHP` sobre um `.twig`
  * também não resolve: o analisador PHP só olha dentro de `<?php ... ?>`, e um

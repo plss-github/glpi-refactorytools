@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Nota do gestor sobre UM compromisso do calendário, independente do
  * itemtype real por trás dele (Chamado, Reserva, Lembrete...).
@@ -13,7 +13,7 @@
  * nunca lido de volta desta tabela.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Migration;
 use NotificationEvent;
@@ -22,7 +22,7 @@ final class EventNotes
 {
     public static function getTable(): string
     {
-        return 'glpi_plugin_planner_notes';
+        return 'glpi_plugin_refactorytools_notes';
     }
 
     public static function install(Migration $migration): void
@@ -31,6 +31,16 @@ final class EventNotes
         global $DB;
 
         $table = self::getTable();
+
+        // Rename do plugin (planner -> refactorytools): a tabela de uma
+        // instalação antiga só precisa mudar de nome, os dados continuam
+        // válidos como estão. Feito antes de qualquer outra checagem, para
+        // que a migração do índice único logo abaixo já opere sobre o nome
+        // novo.
+        $old_table = 'glpi_plugin_planner_notes';
+        if (!$DB->tableExists($table) && $DB->tableExists($old_table)) {
+            $DB->doQuery("RENAME TABLE `{$old_table}` TO `{$table}`");
+        }
 
         if (!$DB->tableExists($table)) {
             $DB->doQuery("

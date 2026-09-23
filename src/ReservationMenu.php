@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Substituição do item "Reservas" em Ferramentas.
  *
@@ -15,7 +15,7 @@
  * `getMenuContent()` para o setor Ferramentas (e não `Reservation`).
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use CommonGLPI;
 use Reservation;
@@ -37,7 +37,7 @@ class ReservationMenu extends CommonGLPI
 
     public static function getPage(): string
     {
-        return '/plugins/planner/front/reservations.php';
+        return '/plugins/refactorytools/front/reservations.php';
     }
 
     /**

@@ -1,5 +1,5 @@
 {#
- # Planner — compartilhamentos de agenda.
+ # RefactoryTools — compartilhamentos de agenda.
  #
  # Três blocos, na ordem em que interessam a quem abre a tela:
  #   1. pedidos aguardando MINHA decisão (a única coisa acionável e urgente);
@@ -10,7 +10,7 @@
  # reconferida no servidor (Share::decide()), o formulário aqui é só o gesto.
  #}
 
-<div class="planner-shares" data-root="{{ root_doc }}">
+<div class="refactorytools-shares" data-root="{{ root_doc }}">
 
     {# ------------------------------------------------------------------ #}
     {% if pending is not empty %}
@@ -18,7 +18,7 @@
             <div class="card-header">
                 <h3 class="card-title">
                     <i class="ti ti-bell text-warning"></i>
-                    {{ __('Requests awaiting your decision', 'planner') }}
+                    {{ __('Requests awaiting your decision', 'refactorytools') }}
                     <span class="badge bg-warning ms-2">{{ pending|length }}</span>
                 </h3>
             </div>
@@ -27,26 +27,26 @@
                     <div class="list-group-item d-flex flex-wrap align-items-center gap-2">
                         <div class="flex-fill">
                             <strong>{{ row.other_name }}</strong>
-                            {{ __('wants to see your schedule', 'planner') }}
+                            {{ __('wants to see your schedule', 'refactorytools') }}
                             <span class="badge bg-blue-lt">{{ level_labels[row.level] ?? row.level }}</span>
                             {% if row.comment %}
                                 <div class="text-muted small mt-1">{{ row.comment }}</div>
                             {% endif %}
                         </div>
-                        <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php" class="d-inline">
+                        <form method="post" action="{{ root_doc }}/plugins/refactorytools/ajax/share.php" class="d-inline">
                             <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
                             <input type="hidden" name="shares_id" value="{{ row.id }}">
                             <input type="hidden" name="action" value="accept">
                             <button type="submit" class="btn btn-sm btn-success">
-                                <i class="ti ti-check"></i> {{ __('Accept', 'planner') }}
+                                <i class="ti ti-check"></i> {{ __('Accept', 'refactorytools') }}
                             </button>
                         </form>
-                        <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php" class="d-inline">
+                        <form method="post" action="{{ root_doc }}/plugins/refactorytools/ajax/share.php" class="d-inline">
                             <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
                             <input type="hidden" name="shares_id" value="{{ row.id }}">
                             <input type="hidden" name="action" value="refuse">
                             <button type="submit" class="btn btn-sm btn-outline-danger">
-                                <i class="ti ti-x"></i> {{ __('Refuse', 'planner') }}
+                                <i class="ti ti-x"></i> {{ __('Refuse', 'refactorytools') }}
                             </button>
                         </form>
                     </div>
@@ -64,18 +64,18 @@
             <div class="card h-100">
                 <div class="card-header">
                     <h3 class="card-title">
-                        <i class="ti ti-eye"></i> {{ __('Who can see my schedule', 'planner') }}
+                        <i class="ti ti-eye"></i> {{ __('Who can see my schedule', 'refactorytools') }}
                     </h3>
                 </div>
 
                 {% if can_share %}
                     <div class="card-body border-bottom">
-                        <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php"
+                        <form method="post" action="{{ root_doc }}/plugins/refactorytools/ajax/share.php"
                               class="row g-2 align-items-end">
                             <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
                             <input type="hidden" name="action" value="grant">
                             <div class="col-12 col-sm-6">
-                                <label class="form-label">{{ __('User', 'planner') }}</label>
+                                <label class="form-label">{{ __('User', 'refactorytools') }}</label>
                                 {{ 'User'|itemtype_dropdown({
                                     name: 'users_id',
                                     value: 0,
@@ -86,7 +86,7 @@
                                 }) }}
                             </div>
                             <div class="col-8 col-sm-4">
-                                <label class="form-label">{{ __('Level', 'planner') }}</label>
+                                <label class="form-label">{{ __('Level', 'refactorytools') }}</label>
                                 <select name="level" class="form-select">
                                     {% for value, label in level_labels %}
                                         <option value="{{ value }}" {{ value == default_level ? 'selected' : '' }}>
@@ -115,23 +115,23 @@
                                 </span>
                                 {% if row.date_end %}
                                     <div class="text-muted small">
-                                        {{ __('Until', 'planner') }} {{ row.date_end }}
+                                        {{ __('Until', 'refactorytools') }} {{ row.date_end }}
                                     </div>
                                 {% endif %}
                             </div>
-                            <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php">
+                            <form method="post" action="{{ root_doc }}/plugins/refactorytools/ajax/share.php">
                                 <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
                                 <input type="hidden" name="shares_id" value="{{ row.id }}">
                                 <input type="hidden" name="action" value="delete">
                                 <button type="submit" class="btn btn-sm btn-ghost-danger"
-                                        title="{{ __('Remove', 'planner') }}">
+                                        title="{{ __('Remove', 'refactorytools') }}">
                                     <i class="ti ti-trash"></i>
                                 </button>
                             </form>
                         </div>
                     {% else %}
                         <div class="list-group-item text-muted">
-                            {{ __('Nobody has access to your schedule through sharing.', 'planner') }}
+                            {{ __('Nobody has access to your schedule through sharing.', 'refactorytools') }}
                         </div>
                     {% endfor %}
                 </div>
@@ -145,18 +145,18 @@
             <div class="card h-100">
                 <div class="card-header">
                     <h3 class="card-title">
-                        <i class="ti ti-calendar-user"></i> {{ __('Schedules shared with me', 'planner') }}
+                        <i class="ti ti-calendar-user"></i> {{ __('Schedules shared with me', 'refactorytools') }}
                     </h3>
                 </div>
 
                 {% if can_request %}
                     <div class="card-body border-bottom">
-                        <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php"
+                        <form method="post" action="{{ root_doc }}/plugins/refactorytools/ajax/share.php"
                               class="row g-2 align-items-end">
                             <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
                             <input type="hidden" name="action" value="request">
                             <div class="col-12 col-sm-6">
-                                <label class="form-label">{{ __('Request access to', 'planner') }}</label>
+                                <label class="form-label">{{ __('Request access to', 'refactorytools') }}</label>
                                 {{ 'User'|itemtype_dropdown({
                                     name: 'users_id',
                                     value: 0,
@@ -167,7 +167,7 @@
                                 }) }}
                             </div>
                             <div class="col-8 col-sm-4">
-                                <label class="form-label">{{ __('Level', 'planner') }}</label>
+                                <label class="form-label">{{ __('Level', 'refactorytools') }}</label>
                                 <select name="level" class="form-select">
                                     {% for value, label in level_labels %}
                                         <option value="{{ value }}" {{ value == default_level ? 'selected' : '' }}>
@@ -178,13 +178,13 @@
                             </div>
                             <div class="col-4 col-sm-2">
                                 <button type="submit" class="btn btn-outline-primary w-100"
-                                        title="{{ __('Send request', 'planner') }}">
+                                        title="{{ __('Send request', 'refactorytools') }}">
                                     <i class="ti ti-send"></i>
                                 </button>
                             </div>
                             <div class="col-12">
                                 <span class="text-muted small">
-                                    {{ __('The request only takes effect after the person accepts it.', 'planner') }}
+                                    {{ __('The request only takes effect after the person accepts it.', 'refactorytools') }}
                                 </span>
                             </div>
                         </form>
@@ -202,12 +202,12 @@
                                 </span>
                             </div>
                             {% if row.status == 'accepted' %}
-                                <form method="post" action="{{ root_doc }}/plugins/planner/ajax/share.php">
+                                <form method="post" action="{{ root_doc }}/plugins/refactorytools/ajax/share.php">
                                     <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
                                     <input type="hidden" name="shares_id" value="{{ row.id }}">
                                     <input type="hidden" name="action" value="revoke">
                                     <button type="submit" class="btn btn-sm btn-ghost-secondary"
-                                            title="{{ __('Give up this access', 'planner') }}">
+                                            title="{{ __('Give up this access', 'refactorytools') }}">
                                         <i class="ti ti-eye-off"></i>
                                     </button>
                                 </form>
@@ -215,7 +215,7 @@
                         </div>
                     {% else %}
                         <div class="list-group-item text-muted">
-                            {{ __('No schedule has been shared with you.', 'planner') }}
+                            {{ __('No schedule has been shared with you.', 'refactorytools') }}
                         </div>
                     {% endfor %}
                 </div>
@@ -224,6 +224,6 @@
     </div>
 
     <p class="text-muted small mt-3">
-        {{ __('Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > Planner.', 'planner') }}
+        {{ __('Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > RefactoryTools.', 'refactorytools') }}
     </p>
 </div>

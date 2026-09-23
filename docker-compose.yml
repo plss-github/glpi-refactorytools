@@ -1,19 +1,19 @@
 # Ambiente isolado para desenvolver/testar SÓ este plugin: GLPI 11.0.9
 # (imagem oficial glpi/glpi) + MariaDB, com esta pasta montada como o plugin
-# "planner" dentro do container. NÃO é configuração de produção (senhas fracas,
+# "refactorytools" dentro do container. NÃO é configuração de produção (senhas fracas,
 # sem TLS).
 #
 # Porta 8081 de propósito: o ambiente de desenvolvimento compartilhado da
 # equipe (em ../analyticdesign/docker-compose.yml) já ocupa a 8080 e monta
 # este mesmo plugin. Use aquele quando quiser os dois plugins e a base de
-# testes existente; use este quando precisar de um GLPI limpo só com o Planner.
+# testes existente; use este quando precisar de um GLPI limpo só com o RefactoryTools.
 #
 # Uso:
 #   cp .env.example .env
 #   docker compose up -d
 #   # aguardar a instalação automática do GLPI (alguns minutos na 1a vez)
-#   docker compose exec glpi php bin/console glpi:plugin:install -u glpi planner
-#   docker compose exec glpi php bin/console glpi:plugin:activate planner
+#   docker compose exec glpi php bin/console glpi:plugin:install -u glpi refactorytools
+#   docker compose exec glpi php bin/console glpi:plugin:activate refactorytools
 #   # abrir http://localhost:8081 (login padrão: glpi / glpi)
 
 services:
@@ -53,7 +53,7 @@ services:
       - glpi_logs:/var/glpi/logs
       - glpi_marketplace:/var/glpi/marketplace
       # Plugin montado direto do repositório — editar aqui reflete no container.
-      - ./:/var/www/glpi/plugins/planner:ro
+      - ./:/var/www/glpi/plugins/refactorytools:ro
 
 volumes:
   glpi_db_data:

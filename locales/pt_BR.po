@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: GLPI Planner plugin\n"
+"Project-Id-Version: GLPI RefactoryTools plugin\n"
 "Report-Msgid-Bugs-To: suporte@pellissari.com.br\n"
 "POT-Creation-Date: 2026-09-23 16:49+0000\n"
 "PO-Revision-Date: 2026-09-22 14:00+0000\n"
@@ -114,29 +114,29 @@ msgid "Configuration saved."
 msgstr "Configuração salva."
 
 #: front/config.form.php:52 .locales-shadow/templates/config.html.twig:14
-#: templates/planner.html.twig:322
+#: templates/refactorytools.html.twig:322
 msgid "Plugin configuration"
 msgstr "Configuração do Plugin"
 
 #: hook.php:114 hook.php:137
-msgid "Planner: new note"
-msgstr "Planner: nova nota"
+msgid "RefactoryTools: new note"
+msgstr "RefactoryTools: nova nota"
 
 #: hook.php:128
 msgid "A note was added to your schedule"
 msgstr "Uma nota foi adicionada à sua agenda"
 
 #: hook.php:225
-msgid "Created by the Pellissari New Planners plugin to tell this event type apart."
-msgstr "Criada pelo plugin Pellissari New Planners para diferenciar este tipo de compromisso."
+msgid "Created by the Pellissari New RefactoryToolss plugin to tell this event type apart."
+msgstr "Criada pelo plugin Pellissari New RefactoryToolss para diferenciar este tipo de compromisso."
 
 #: hook.php:242 src/ProfileRights.php:57
-msgid "Planning (Pellissari New Planners)"
-msgstr "Planejamento (Pellissari New Planners)"
+msgid "Planning (Pellissari New RefactoryToolss)"
+msgstr "Planejamento (Pellissari New RefactoryToolss)"
 
 #: setup.php:212
-msgid "Pellissari New Planners: GLPI dependencies not found or incompatible:"
-msgstr "Pellissari New Planners: dependências do GLPI não encontradas ou incompatíveis:"
+msgid "Pellissari New RefactoryToolss: GLPI dependencies not found or incompatible:"
+msgstr "Pellissari New RefactoryToolss: dependências do GLPI não encontradas ou incompatíveis:"
 
 #: src/AccessPolicy.php:514
 msgid "My schedule"
@@ -162,7 +162,7 @@ msgstr "Grupo que eu gerencio"
 msgid "Shared with me"
 msgstr "Compartilhada comigo"
 
-#: src/EventNoteItem.php:32 .locales-shadow/templates/planner.html.twig:489
+#: src/EventNoteItem.php:32 .locales-shadow/templates/refactorytools.html.twig:489
 #: templates/reservations.html.twig:464
 msgid "Note"
 msgstr "Observação"
@@ -172,20 +172,20 @@ msgstr "Observação"
 msgid "%1$dh%2$02dmin"
 msgstr "%1$dh%2$02dmin"
 
-#: src/EventProvider.php:399 templates/planner.html.twig:472
+#: src/EventProvider.php:399 templates/refactorytools.html.twig:472
 msgid "Busy"
 msgstr "Ocupado"
 
-#: src/EventProvider.php:752 templates/planner.html.twig:127
-#: templates/planner.html.twig:478
+#: src/EventProvider.php:752 templates/refactorytools.html.twig:127
+#: templates/refactorytools.html.twig:478
 msgid "To do"
 msgstr "A fazer"
 
-#: src/EventProvider.php:753 templates/planner.html.twig:479
+#: src/EventProvider.php:753 templates/refactorytools.html.twig:479
 msgid "Done"
 msgstr "Concluído"
 
-#: src/EventProvider.php:754 templates/planner.html.twig:477
+#: src/EventProvider.php:754 templates/refactorytools.html.twig:477
 msgid "Information"
 msgstr "Informação"
 
@@ -230,8 +230,8 @@ msgid "Meeting"
 msgstr "Reunião"
 
 #: src/Menu.php:42 src/ProfileRights.php:30
-msgid "Pellissari New Planners"
-msgstr "Pellissari New Planners"
+msgid "Pellissari New RefactoryToolss"
+msgstr "Pellissari New RefactoryToolss"
 
 #: src/Menu.php:151
 msgid "Schedule"
@@ -250,8 +250,8 @@ msgid "Schedule owner"
 msgstr "Dono da agenda"
 
 #: src/ProfileRights.php:67
-msgid "Someone else schedule can also be granted individually, with the owner approval, under Pellissari New Planners > Shares. That path does not depend on the rights above, except for \"Use Pellissari New Planners\"."
-msgstr "A agenda de terceiros também pode ser liberada individualmente, com aceite do dono, na tela Pellissari New Planners > Compartilhamentos — isso independe dos direitos acima, exceto por \"Usar o Pellissari New Planners\"."
+msgid "Someone else schedule can also be granted individually, with the owner approval, under Pellissari New RefactoryToolss > Shares. That path does not depend on the rights above, except for \"Use Pellissari New RefactoryToolss\"."
+msgstr "A agenda de terceiros também pode ser liberada individualmente, com aceite do dono, na tela Pellissari New RefactoryToolss > Compartilhamentos — isso independe dos direitos acima, exceto por \"Usar o Pellissari New RefactoryToolss\"."
 
 #: src/ReservationEventProvider.php:140 src/ReservationProvider.php:133
 #, php-format
@@ -271,8 +271,8 @@ msgid "Upcoming reservation"
 msgstr "Próxima"
 
 #: src/Right.php:69
-msgid "Use Pellissari New Planners"
-msgstr "Usar o Pellissari New Planners"
+msgid "Use Pellissari New RefactoryToolss"
+msgstr "Usar o Pellissari New RefactoryToolss"
 
 #: src/Right.php:70
 msgid "See my team schedules"
@@ -294,21 +294,21 @@ msgstr "Ver todas as agendas"
 msgid "Share own schedule"
 msgstr "Compartilhar a própria agenda"
 
-#: src/Right.php:75 .locales-shadow/templates/planner.html.twig:304
+#: src/Right.php:75 .locales-shadow/templates/refactorytools.html.twig:304
 msgid "Request access to a schedule"
 msgstr "Solicitar acesso a uma agenda"
 
-#: src/Settings.php:219 .locales-shadow/templates/planner.html.twig:47
+#: src/Settings.php:219 .locales-shadow/templates/refactorytools.html.twig:47
 #: templates/reservations.html.twig:44
 msgid "Calendar"
 msgstr "Calendário"
 
-#: src/Settings.php:220 .locales-shadow/templates/planner.html.twig:50
+#: src/Settings.php:220 .locales-shadow/templates/refactorytools.html.twig:50
 #: templates/reservations.html.twig:47
 msgid "List"
 msgstr "Lista"
 
-#: src/Settings.php:221 .locales-shadow/templates/planner.html.twig:53
+#: src/Settings.php:221 .locales-shadow/templates/refactorytools.html.twig:53
 msgid "Kanban"
 msgstr "Kanban"
 
@@ -420,8 +420,8 @@ msgid "Replace the native Planning"
 msgstr "Substituir o Planejamento nativo"
 
 #: templates/config.html.twig:151
-msgid "When on, the \"Planning\" entry under Assistance opens this screen, and anyone reaching the old URL is redirected. The menu label stays \"Planning\": \"Planner\" is the plugin name, not the entry name. When off, the native planning is restored and Planner appears as a separate entry, which is useful to compare both screens."
-msgstr "Ligado, o item \"Planejamento\" de Assistência passa a abrir esta tela, e quem acessar a URL antiga é redirecionado. O rótulo do menu continua sendo \"Planejamento\" — \"Planner\" é o nome do plugin, não do item. Desligado, o planejamento nativo volta ao normal e o Planner aparece como entrada separada, o que serve para comparar as duas telas."
+msgid "When on, the \"Planning\" entry under Assistance opens this screen, and anyone reaching the old URL is redirected. The menu label stays \"Planning\": \"RefactoryTools\" is the plugin name, not the entry name. When off, the native planning is restored and RefactoryTools appears as a separate entry, which is useful to compare both screens."
+msgstr "Ligado, o item \"Planejamento\" de Assistência passa a abrir esta tela, e quem acessar a URL antiga é redirecionado. O rótulo do menu continua sendo \"Planejamento\" — \"RefactoryTools\" é o nome do plugin, não do item. Desligado, o planejamento nativo volta ao normal e o RefactoryTools aparece como entrada separada, o que serve para comparar as duas telas."
 
 #: templates/config.html.twig:161
 msgid "Replace the native Reservations"
@@ -443,223 +443,223 @@ msgstr "Como a tela abre. O usuário pode trocar a qualquer momento entre Calend
 msgid "Open the schedule with the team already selected"
 msgstr "Abrir a agenda já com a equipe marcada"
 
-#: templates/config.html.twig:196 templates/planner.html.twig:495
+#: templates/config.html.twig:196 templates/refactorytools.html.twig:495
 msgid "Save"
 msgstr "Salvar"
 
-#: templates/planner.html.twig:27 templates/reservations.html.twig:24
+#: templates/refactorytools.html.twig:27 templates/reservations.html.twig:24
 msgid "Previous"
 msgstr "Anterior"
 
-#: templates/planner.html.twig:30 templates/reservations.html.twig:27
+#: templates/refactorytools.html.twig:30 templates/reservations.html.twig:27
 msgid "Today"
 msgstr "Hoje"
 
-#: templates/planner.html.twig:31 templates/reservations.html.twig:28
+#: templates/refactorytools.html.twig:31 templates/reservations.html.twig:28
 msgid "Next"
 msgstr "Próximo"
 
-#: templates/planner.html.twig:42 templates/planner.html.twig:373
+#: templates/refactorytools.html.twig:42 templates/refactorytools.html.twig:373
 msgid "New event"
 msgstr "Novo compromisso"
 
-#: templates/planner.html.twig:45 templates/reservations.html.twig:42
+#: templates/refactorytools.html.twig:45 templates/reservations.html.twig:42
 msgid "View mode"
 msgstr "Modo de visualização"
 
-#: templates/planner.html.twig:65 templates/reservations.html.twig:56
+#: templates/refactorytools.html.twig:65 templates/reservations.html.twig:56
 msgid "Day"
 msgstr "Dia"
 
-#: templates/planner.html.twig:66 templates/reservations.html.twig:57
+#: templates/refactorytools.html.twig:66 templates/reservations.html.twig:57
 msgid "Week"
 msgstr "Semana"
 
-#: templates/planner.html.twig:67 templates/reservations.html.twig:58
+#: templates/refactorytools.html.twig:67 templates/reservations.html.twig:58
 msgid "Month"
 msgstr "Mês"
 
-#: templates/planner.html.twig:75
+#: templates/refactorytools.html.twig:75
 msgid "One lane per person, same period"
 msgstr "Uma faixa por pessoa, no mesmo período"
 
-#: templates/planner.html.twig:76
+#: templates/refactorytools.html.twig:76
 msgid "By person"
 msgstr "Por pessoa"
 
-#: templates/planner.html.twig:87
+#: templates/refactorytools.html.twig:87
 msgid "Each group member gets a colour; event types become text tags"
 msgstr "Cada integrante do grupo recebe uma cor; os tipos de compromisso viram tags de texto"
 
-#: templates/planner.html.twig:88
+#: templates/refactorytools.html.twig:88
 msgid "Group manager view"
 msgstr "Visão de gerente de grupo"
 
-#: templates/planner.html.twig:93
+#: templates/refactorytools.html.twig:93
 msgid "Group by"
 msgstr "Agrupar por"
 
-#: templates/planner.html.twig:95 templates/planner.html.twig:484
+#: templates/refactorytools.html.twig:95 templates/refactorytools.html.twig:484
 #: templates/reservations.html.twig:466
 msgid "Status"
 msgstr "Situação"
 
-#: templates/planner.html.twig:96 templates/planner.html.twig:475
-#: templates/planner.html.twig:481
+#: templates/refactorytools.html.twig:96 templates/refactorytools.html.twig:475
+#: templates/refactorytools.html.twig:481
 msgid "Person"
 msgstr "Pessoa"
 
-#: templates/planner.html.twig:111 templates/planner.html.twig:235
+#: templates/refactorytools.html.twig:111 templates/refactorytools.html.twig:235
 msgid "Planned hours"
 msgstr "Horas planejadas"
 
-#: templates/planner.html.twig:115 templates/planner.html.twig:239
+#: templates/refactorytools.html.twig:115 templates/refactorytools.html.twig:239
 msgid "Realised hours"
 msgstr "Horas realizadas"
 
-#: templates/planner.html.twig:119 templates/planner.html.twig:243
+#: templates/refactorytools.html.twig:119 templates/refactorytools.html.twig:243
 msgid "Total hours"
 msgstr "Horas totais"
 
-#: templates/planner.html.twig:123
+#: templates/refactorytools.html.twig:123
 msgid "Appointments"
 msgstr "Compromissos"
 
-#: templates/planner.html.twig:131
+#: templates/refactorytools.html.twig:131
 msgid "Completed"
 msgstr "Concluídos"
 
-#: templates/planner.html.twig:148
+#: templates/refactorytools.html.twig:148
 #, php-format
 msgid "%d access request(s) awaiting your decision"
 msgstr "%d pedido(s) de acesso aguardando sua decisão"
 
-#: templates/planner.html.twig:174
+#: templates/refactorytools.html.twig:174
 msgid "You only see this person busy times"
 msgstr "Você vê apenas os horários ocupados desta pessoa"
 
-#: templates/planner.html.twig:175
+#: templates/refactorytools.html.twig:175
 msgid "free/busy"
 msgstr "livre/ocupado"
 
-#: templates/planner.html.twig:187
+#: templates/refactorytools.html.twig:187
 msgid "Event types"
 msgstr "Tipos de compromisso"
 
-#: templates/planner.html.twig:213
+#: templates/refactorytools.html.twig:213
 msgid "Show completed"
 msgstr "Mostrar concluídos"
 
-#: templates/planner.html.twig:230
+#: templates/refactorytools.html.twig:230
 msgid "My tickets as technician"
 msgstr "Meus chamados como técnico"
 
-#: templates/planner.html.twig:260
+#: templates/refactorytools.html.twig:260
 msgid "See all my tickets"
 msgstr "Ver todos os meus chamados"
 
-#: templates/planner.html.twig:277 templates/planner.html.twig:300
+#: templates/refactorytools.html.twig:277 templates/refactorytools.html.twig:300
 msgid "Open another schedule"
 msgstr "Abrir outra agenda"
 
-#: templates/planner.html.twig:281
+#: templates/refactorytools.html.twig:281
 msgid "Your profile has \"See all schedules\": you can open any user schedule, without depending on team, group or sharing."
 msgstr "Seu perfil tem \"Ver todas as agendas\": você pode abrir a agenda de qualquer usuário, sem depender de equipe, grupo ou compartilhamento."
 
-#: templates/planner.html.twig:315
+#: templates/refactorytools.html.twig:315
 msgid "Manage shares"
 msgstr "Gerenciar compartilhamentos"
 
-#: templates/planner.html.twig:336
+#: templates/refactorytools.html.twig:336
 msgid "Loading schedule…"
 msgstr "Carregando agenda…"
 
-#: templates/planner.html.twig:375 templates/reservations.html.twig:195
+#: templates/refactorytools.html.twig:375 templates/reservations.html.twig:195
 msgid "Close"
 msgstr "Fechar"
 
-#: templates/planner.html.twig:380 templates/planner.html.twig:482
+#: templates/refactorytools.html.twig:380 templates/refactorytools.html.twig:482
 msgid "Type"
 msgstr "Tipo"
 
-#: templates/planner.html.twig:389
+#: templates/refactorytools.html.twig:389
 msgid "Title"
 msgstr "Título"
 
-#: templates/planner.html.twig:395 templates/reservations.html.twig:201
+#: templates/refactorytools.html.twig:395 templates/reservations.html.twig:201
 msgid "Start"
 msgstr "Início"
 
-#: templates/planner.html.twig:403 templates/reservations.html.twig:212
+#: templates/refactorytools.html.twig:403 templates/reservations.html.twig:212
 msgid "End"
 msgstr "Fim"
 
-#: templates/planner.html.twig:410
+#: templates/refactorytools.html.twig:410
 msgid "Description"
 msgstr "Descrição"
 
-#: templates/planner.html.twig:426 templates/planner.html.twig:496
+#: templates/refactorytools.html.twig:426 templates/refactorytools.html.twig:496
 #: templates/reservations.html.twig:295
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: templates/planner.html.twig:429
+#: templates/refactorytools.html.twig:429
 msgid "Create"
 msgstr "Criar"
 
-#: templates/planner.html.twig:473
+#: templates/refactorytools.html.twig:473
 msgid "Select at least one schedule in the sidebar."
 msgstr "Selecione ao menos uma agenda na barra lateral."
 
-#: templates/planner.html.twig:474
+#: templates/refactorytools.html.twig:474
 msgid "No events in this period."
 msgstr "Nenhum compromisso neste período."
 
-#: templates/planner.html.twig:476 templates/reservations.html.twig:461
+#: templates/refactorytools.html.twig:476 templates/reservations.html.twig:461
 msgid "All day"
 msgstr "Dia inteiro"
 
-#: templates/planner.html.twig:480 templates/reservations.html.twig:462
+#: templates/refactorytools.html.twig:480 templates/reservations.html.twig:462
 msgid "When"
 msgstr "Quando"
 
-#: templates/planner.html.twig:483
+#: templates/refactorytools.html.twig:483
 msgid "Event"
 msgstr "Compromisso"
 
-#: templates/planner.html.twig:485
+#: templates/refactorytools.html.twig:485
 msgid "Schedule updated."
 msgstr "Agenda atualizada."
 
-#: templates/planner.html.twig:486
+#: templates/refactorytools.html.twig:486
 msgid "You are not allowed to move this event."
 msgstr "Você não tem permissão para mover este compromisso."
 
-#: templates/planner.html.twig:487
+#: templates/refactorytools.html.twig:487
 msgid "Could not save the new time."
 msgstr "Não foi possível salvar o novo horário."
 
-#: templates/planner.html.twig:488
+#: templates/refactorytools.html.twig:488
 msgid "Manager note"
 msgstr "Nota do gestor"
 
-#: templates/planner.html.twig:490
+#: templates/refactorytools.html.twig:490
 msgid "By"
 msgstr "Por"
 
-#: templates/planner.html.twig:491
+#: templates/refactorytools.html.twig:491
 msgid "Total time on this ticket"
 msgstr "Tempo total neste chamado"
 
-#: templates/planner.html.twig:492
+#: templates/refactorytools.html.twig:492
 msgid "Add a note"
 msgstr "Adicionar nota"
 
-#: templates/planner.html.twig:493
+#: templates/refactorytools.html.twig:493
 msgid "Edit note"
 msgstr "Editar nota"
 
-#: templates/planner.html.twig:494
+#: templates/refactorytools.html.twig:494
 msgid "Note saved."
 msgstr "Nota salva."
 
@@ -896,8 +896,8 @@ msgid "No schedule has been shared with you."
 msgstr "Nenhuma agenda foi compartilhada com você."
 
 #: templates/shares.html.twig:227
-msgid "Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > Planner."
-msgstr "Compartilhamento é só uma das formas de acesso. Sua equipe (pelo campo Supervisor do usuário), seus grupos e o acesso administrativo são liberados pelo perfil, em Administração > Perfis > Planner."
+msgid "Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > RefactoryTools."
+msgstr "Compartilhamento é só uma das formas de acesso. Sua equipe (pelo campo Supervisor do usuário), seus grupos e o acesso administrativo são liberados pelo perfil, em Administração > Perfis > RefactoryTools."
 
 #~ msgid "My requested ticket"
 #~ msgstr "Meu chamado como requerente"
@@ -905,8 +905,8 @@ msgstr "Compartilhamento é só uma das formas de acesso. Sua equipe (pelo campo
 #~ msgid "Your colours were saved."
 #~ msgstr "Suas cores foram salvas."
 
-#~ msgid "Pellissari New Planners configuration"
-#~ msgstr "Configuração do Pellissari New Planners"
+#~ msgid "Pellissari New RefactoryToolss configuration"
+#~ msgstr "Configuração do Pellissari New RefactoryToolss"
 
 #~ msgid "Customise my colours"
 #~ msgstr "Personalizar minhas cores"
@@ -914,11 +914,11 @@ msgstr "Compartilhamento é só uma das formas de acesso. Sua equipe (pelo campo
 #~ msgid "Save my colours"
 #~ msgstr "Salvar minhas cores"
 
-#~ msgid "Use Planner"
-#~ msgstr "Usar o Planner"
+#~ msgid "Use RefactoryTools"
+#~ msgstr "Usar o RefactoryTools"
 
-#~ msgid "Planner"
-#~ msgstr "Planner"
+#~ msgid "RefactoryTools"
+#~ msgstr "RefactoryTools"
 
 #~ msgid "Comment"
 #~ msgstr "Observação"

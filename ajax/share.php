@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Ações sobre compartilhamentos de agenda.
  *
@@ -25,11 +25,11 @@
 
 include('../../../inc/includes.php');
 
-use GlpiPlugin\Planner\Right;
-use GlpiPlugin\Planner\Settings;
-use GlpiPlugin\Planner\Share;
+use GlpiPlugin\Refactorytools\Right;
+use GlpiPlugin\Refactorytools\Settings;
+use GlpiPlugin\Refactorytools\Share;
 
-Session::checkRight(Right::NAME, Right::USE_PLANNER);
+Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);
 
 $me        = (int) Session::getLoginUserID();
 $action    = (string) ($_POST['action'] ?? '');
@@ -47,8 +47,8 @@ switch ($action) {
         }
         $ok      = Share::grant($me, $users_id, $level);
         $message = $ok
-            ? __('Access granted.', 'planner')
-            : __('Could not grant access.', 'planner');
+            ? __('Access granted.', 'refactorytools')
+            : __('Could not grant access.', 'refactorytools');
         break;
 
     case 'request':
@@ -60,44 +60,44 @@ switch ($action) {
         // pedido caia na caixa de decisão da pessoa certa.
         $ok      = Share::request($users_id, $me, $level);
         $message = $ok
-            ? __('Request sent. It takes effect when the person accepts it.', 'planner')
-            : __('Could not send the request.', 'planner');
+            ? __('Request sent. It takes effect when the person accepts it.', 'refactorytools')
+            : __('Could not send the request.', 'refactorytools');
         break;
 
     case 'accept':
         $ok      = Share::decide($shares_id, Share::STATUS_ACCEPTED, $me);
         $message = $ok
-            ? __('Request accepted.', 'planner')
-            : __('Could not accept the request.', 'planner');
+            ? __('Request accepted.', 'refactorytools')
+            : __('Could not accept the request.', 'refactorytools');
         break;
 
     case 'refuse':
         $ok      = Share::decide($shares_id, Share::STATUS_REFUSED, $me);
         $message = $ok
-            ? __('Request refused.', 'planner')
-            : __('Could not refuse the request.', 'planner');
+            ? __('Request refused.', 'refactorytools')
+            : __('Could not refuse the request.', 'refactorytools');
         break;
 
     case 'revoke':
         $ok      = Share::decide($shares_id, Share::STATUS_REVOKED, $me);
         $message = $ok
-            ? __('Access revoked.', 'planner')
-            : __('Could not revoke access.', 'planner');
+            ? __('Access revoked.', 'refactorytools')
+            : __('Could not revoke access.', 'refactorytools');
         break;
 
     case 'delete':
         $ok      = Share::remove($shares_id, $me);
         $message = $ok
-            ? __('Share removed.', 'planner')
-            : __('Could not remove the share.', 'planner');
+            ? __('Share removed.', 'refactorytools')
+            : __('Could not remove the share.', 'refactorytools');
         break;
 
     default:
-        $message = __('Unknown action.', 'planner');
+        $message = __('Unknown action.', 'refactorytools');
 }
 
 if ($message === '') {
-    $message = __('You are not allowed to perform this action.', 'planner');
+    $message = __('You are not allowed to perform this action.', 'refactorytools');
 }
 
 Session::addMessageAfterRedirect(htmlescape($message), false, $ok ? INFO : ERROR);

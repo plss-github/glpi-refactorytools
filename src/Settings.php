@@ -1,24 +1,24 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Configuração do plugin.
  *
- * Guardada no `glpi_configs` do core sob o contexto "plugin:planner", via
+ * Guardada no `glpi_configs` do core sob o contexto "plugin:refactorytools", via
  * `Config::getConfigurationValues()` / `setConfigurationValues()` — em vez de
  * uma tabela própria. São meia dúzia de chaves globais (não por entidade, não
  * por usuário); uma tabela só para isso seria peso morto, e o contexto do core
  * já entra de graça no backup/restore e no export de configuração.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Config;
 
 final class Settings
 {
-    public const CONTEXT = 'plugin:planner';
+    public const CONTEXT = 'plugin:refactorytools';
 
     /** Nível de detalhe: vê título, descrição e link do item. */
     public const LEVEL_DETAILS = 'details';
@@ -38,7 +38,7 @@ final class Settings
      *    até o dono aceitar.
      *  - `override_native_planning` = 1: o plugin existe para SER o
      *    planejamento, não para conviver com dois itens de menu parecidos.
-     *    Desligar devolve o item nativo e move o Planner para uma entrada
+     *    Desligar devolve o item nativo e move o RefactoryTools para uma entrada
      *    própria, o que serve para comparar as duas telas durante a adoção.
      *
      * @return array<string, string>
@@ -216,9 +216,9 @@ final class Settings
     public static function getModeLabels(): array
     {
         return [
-            self::MODE_CALENDAR => __('Calendar', 'planner'),
-            self::MODE_LIST     => __('List', 'planner'),
-            self::MODE_KANBAN   => __('Kanban', 'planner'),
+            self::MODE_CALENDAR => __('Calendar', 'refactorytools'),
+            self::MODE_LIST     => __('List', 'refactorytools'),
+            self::MODE_KANBAN   => __('Kanban', 'refactorytools'),
         ];
     }
 

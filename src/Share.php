@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Compartilhamento de agenda entre dois usuários.
- * Tabela: glpi_plugin_planner_shares
+ * Tabela: glpi_plugin_refactorytools_shares
  *
  * Modela as duas direções de um mesmo acordo:
  *
@@ -24,7 +24,7 @@
  * nativos do core (ver EventProvider).
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use CommonDBTM;
 use Migration;
@@ -48,7 +48,7 @@ class Share extends CommonDBTM
 
     public static function getTypeName($nb = 0)
     {
-        return _n('Schedule share', 'Schedule shares', $nb, 'planner');
+        return _n('Schedule share', 'Schedule shares', $nb, 'refactorytools');
     }
 
     public static function getIcon()
@@ -72,10 +72,10 @@ class Share extends CommonDBTM
     public static function getStatusLabels(): array
     {
         return [
-            self::STATUS_PENDING  => __('Awaiting approval', 'planner'),
-            self::STATUS_ACCEPTED => __('Active', 'planner'),
-            self::STATUS_REFUSED  => __('Refused', 'planner'),
-            self::STATUS_REVOKED  => __('Revoked', 'planner'),
+            self::STATUS_PENDING  => __('Awaiting approval', 'refactorytools'),
+            self::STATUS_ACCEPTED => __('Active', 'refactorytools'),
+            self::STATUS_REFUSED  => __('Refused', 'refactorytools'),
+            self::STATUS_REVOKED  => __('Revoked', 'refactorytools'),
         ];
     }
 
@@ -85,8 +85,8 @@ class Share extends CommonDBTM
     public static function getLevelLabels(): array
     {
         return [
-            Settings::LEVEL_DETAILS => __('Event details', 'planner'),
-            Settings::LEVEL_BUSY    => __('Free/busy only', 'planner'),
+            Settings::LEVEL_DETAILS => __('Event details', 'refactorytools'),
+            Settings::LEVEL_BUSY    => __('Free/busy only', 'refactorytools'),
         ];
     }
 
@@ -333,6 +333,14 @@ class Share extends CommonDBTM
         global $DB;
 
         $table = self::getTable();
+
+        // Rename do plugin (planner -> refactorytools): a tabela de uma
+        // instalação antiga só precisa mudar de nome, os dados continuam
+        // válidos como estão.
+        $old_table = 'glpi_plugin_planner_shares';
+        if (!$DB->tableExists($table) && $DB->tableExists($old_table)) {
+            $DB->doQuery("RENAME TABLE `{$old_table}` TO `{$table}`");
+        }
 
         if (!$DB->tableExists($table)) {
             $DB->doQuery("

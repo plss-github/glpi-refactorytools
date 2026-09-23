@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Planner
+ * RefactoryTools
  * -----------------------------------------------------------------------------
  * Reservas no formato do FullCalendar, para a tela de Reservas.
  *
@@ -12,7 +12,7 @@
  * classes em vez de uma com um parâmetro de modo.
  */
 
-namespace GlpiPlugin\Planner;
+namespace GlpiPlugin\Refactorytools;
 
 use Reservation;
 use Session;
@@ -141,7 +141,7 @@ final class ReservationEventProvider
             $color      = ($itemtype !== null && isset($type_colors[$itemtype]))
                 ? $type_colors[$itemtype]
                 : EventProvider::getActorColor(crc32($itemtype ?? Reservation::class));
-            $item_name  = $item_info['name'] ?? sprintf(__('Reserved item #%d', 'planner'), $res_item_id);
+            $item_name  = $item_info['name'] ?? sprintf(__('Reserved item #%d', 'refactorytools'), $res_item_id);
             $item_label = $item_info !== null
                 ? sprintf('%s - %s', $item_info['type_name'], $item_info['name'])
                 : $item_name;
