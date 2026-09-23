@@ -3,6 +3,57 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.9.0] - 2026-09-23
+
+Revisão de segurança, desempenho e bugs sobre o plugin inteiro — nenhuma tela
+nova, todas as correções são internas.
+
+### Segurança
+
+- **Corrigido: um gestor podia anexar nota de gestor em compromissos de
+  QUALQUER pessoa, não só de quem ele realmente gerencia.**
+  `ajax/save_event_note.php` decidia a permissão a partir do `users_id` que o
+  PRÓPRIO CLIENTE mandava no POST, sem reconferir se aquele item era mesmo
+  dessa pessoa. Bastava alegar, na requisição, que o dono era um subordinado
+  de verdade para anexar um recado em qualquer chamado, reserva ou lembrete
+  do sistema — de qualquer pessoa, de qualquer equipe. Corrigido lendo o
+  dono sempre DO ITEM já carregado do banco (`users_id_tech` para tarefas,
+  `users_id` para os demais), nunca do que o cliente informa. Confirmado com
+  um teste de exploração real: a mesma requisição que antes gravava a nota
+  agora volta `{"ok":false}` e nada é persistido.
+
+### Corrigido (desempenho)
+
+- **Reservas embutidas na agenda de Planejamento também tinham o N+1 de
+  nomes de item** que a 0.8.1 já tinha corrigido do lado da tela de Reservas
+  — `ReservationProvider::populatePlanning()` chamava `getFromDB()` uma vez
+  POR RESERVA para montar o título do evento. Agora reaproveita a mesma
+  lista de itens reserváveis já cacheada por requisição, com fallback em
+  lote só para o caso raro de um item ter sido desmarcado como reservável
+  depois da reserva existir.
+- **Barra lateral do Planejamento buscava cada pessoa visível com uma
+  consulta própria** (`View::describeActor()`, um `getFromDB()` por linha
+  da barra lateral). Com equipe, grupo e compartilhamentos abertos ao mesmo
+  tempo, isso já passava de uma dezena de consultas só para montar nomes.
+  Agora é uma consulta só, para todo mundo de uma vez.
+- `AccessPolicy::getManagedGroupMembers()` também rodava duas vezes por
+  carregamento da tela quando o direito de gerente de grupo está ligado
+  (uma vez direto, outra dentro de `getVisibleUsers()`) — agora cacheada
+  por requisição, como o resto do padrão já estabelecido em `ReservationView`.
+
+### Corrigido (bugs)
+
+- `ajax/reservation_availability.php` não tinha nenhum teto no intervalo
+  consultado — um `begin`/`end` absurdo (manipulado ou por bug de UI) fazia
+  a consulta varrer a tabela de reservas inteira. Acrescentado um teto de
+  2 anos, generoso o bastante para não atrapalhar um empréstimo de
+  equipamento realmente longo (diferente do teto de 31 dias do
+  CALENDÁRIO, que é sobre janela de VISUALIZAÇÃO, não sobre duração de
+  reserva).
+- Nota de um compromisso: teto de 2000 caracteres no texto — é um recado
+  curto, não um campo de descrição, e nada impedia um POST com um valor
+  desproporcional indo parar na coluna.
+
 ## [0.8.1] - 2026-09-23
 
 ### Alterado

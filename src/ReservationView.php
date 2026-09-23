@@ -246,6 +246,12 @@ final class ReservationView
             $items[] = [
                 'id'         => $id,
                 'itemtype'   => $itemtype,
+                // O id do ATIVO por trás do item reservável — diferente de
+                // `id` acima, que é o id da linha de `ReservationItem`. Sem
+                // isto, nada nesta lista permite achar um item pelo par
+                // (itemtype, id do ativo), que é como uma reserva referencia
+                // o que foi reservado (ver `ReservationProvider::describeReservedItems()`).
+                'items_id'   => (int) $row['items_id'],
                 'name'       => $name,
                 'type_name'  => $item::getTypeName(1),
                 'type_label' => $item::getTypeName(2),
@@ -280,6 +286,23 @@ final class ReservationView
     {
         if ($begin === '' || $end === '' || $begin >= $end) {
             return [];
+        }
+
+        // Diferente do intervalo de VISUALIZAÇÃO do calendário (limitado a 31
+        // dias em EventProvider/ReservationEventProvider), a duração de uma
+        // reserva é um valor de negócio legítimo — um equipamento pode ficar
+        // emprestado por semanas. O teto aqui é só uma rede de segurança
+        // contra um `begin`/`end` absurdo (ano 1 a ano 9999, manipulado ou por
+        // bug de UI) obrigar a consulta a varrer TODA a tabela de reservas já
+        // feitas; dois anos cobre qualquer empréstimo realista sem abrir essa
+        // porta.
+        $begin_ts = strtotime($begin);
+        $end_ts   = strtotime($end);
+        if ($begin_ts !== false && $end_ts !== false) {
+            $max_ts = $begin_ts + (730 * 86400);
+            if ($end_ts > $max_ts) {
+                $end = date('Y-m-d H:i:s', $max_ts);
+            }
         }
 
         /** @var \DBmysql $DB */

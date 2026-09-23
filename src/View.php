@@ -114,6 +114,12 @@ final class View
 
         $buckets = array_fill_keys($order, []);
 
+        // Uma consulta só para todos os usuários visíveis, não uma por
+        // pessoa: com equipe, grupo e compartilhamentos abertos ao mesmo
+        // tempo, `describeActor()` linha a linha já chegou a rodar dezenas
+        // de consultas na mesma barra lateral.
+        $rows_by_id = self::getUserRows(array_map('intval', array_keys($visible)));
+
         foreach ($visible as $actor_id => $access) {
             $reason = $access['reason'];
             if (!isset($buckets[$reason])) {
@@ -123,7 +129,8 @@ final class View
                 (int) $actor_id,
                 $access['level'],
                 $reason,
-                EventProvider::getActorColor((int) $actor_id)
+                EventProvider::getActorColor((int) $actor_id),
+                $rows_by_id[(int) $actor_id] ?? null
             );
         }
 
@@ -149,14 +156,55 @@ final class View
     }
 
     /**
+     * Linhas de `glpi_users` para uma lista de ids, numa consulta só —
+     * usado por `getActorGroups()` para não repetir `getFromDB()` por
+     * pessoa.
+     *
+     * @param array<int, int> $users_ids
+     * @return array<int, array<string, mixed>>
+     */
+    private static function getUserRows(array $users_ids): array
+    {
+        $users_ids = array_values(array_unique(array_filter($users_ids, static fn($id) => $id > 0)));
+        if ($users_ids === []) {
+            return [];
+        }
+
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        $out = [];
+        foreach ($DB->request([
+            'FROM'  => User::getTable(),
+            'WHERE' => ['id' => $users_ids],
+        ]) as $row) {
+            $out[(int) $row['id']] = $row;
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param array<string, mixed>|null $row linha já buscada de `glpi_users`
+     *                                        (ver `getUserRows()`), ou null
+     *                                        se a pessoa não existe mais
      * @return array<string, mixed>
      */
-    private static function describeActor(int $users_id, string $level, string $reason, string $color): array
+    private static function describeActor(int $users_id, string $level, string $reason, string $color, ?array $row): array
     {
-        $user    = new User();
-        $exists  = $user->getFromDB($users_id);
-        $name    = $exists ? $user->getFriendlyName() : sprintf(__('User #%d', 'planner'), $users_id);
-        $picture = $exists ? ($user->fields['picture'] ?? null) : null;
+        $name    = sprintf(__('User #%d', 'planner'), $users_id);
+        $picture = null;
+
+        if ($row !== null) {
+            // `getFriendlyName()` só lê `$this->fields` (formatação de nome
+            // pela configuração ativa) — preenchê-los à mão a partir da linha
+            // já buscada reaproveita a mesma lógica do core sem um
+            // `getFromDB()` extra por pessoa.
+            $user         = new User();
+            $user->fields = $row;
+            $name         = $user->getFriendlyName();
+            $picture      = $row['picture'] ?? null;
+        }
 
         return [
             'id'       => $users_id,

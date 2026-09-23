@@ -9,12 +9,14 @@
  *
  * A permissão não vem do itemtype do compromisso, vem da RELAÇÃO entre quem
  * grava e o dono da agenda onde ele aparece (`AccessPolicy::canManageNoteFor()`
- * — responsável direto, gerente do grupo dele, ou acesso administrativo). O
- * `items_id` só precisa existir de verdade num itemtype de planejamento
- * conhecido; não se reconfere aqui se aquele item específico é mesmo do
- * `users_id_owner` informado — o mesmo grau de confiança que o restante do
- * plugin deposita em quem já tem uma posição de liderança reconhecida sobre
- * a pessoa.
+ * — responsável direto, gerente do grupo dele, ou acesso administrativo).
+ *
+ * O dono é sempre lido DO ITEM já carregado do banco, nunca do `users_id` que
+ * o cliente manda — um `users_id` só de confiança abriria uma brecha real:
+ * qualquer gestor de UM subordinado poderia anexar nota em QUALQUER
+ * item do sistema (um chamado de outra equipe, uma reserva de outra pessoa),
+ * bastando alegar no POST que o dono é o próprio subordinado dele. Lendo do
+ * item, a nota só se grava contra quem de fato é o dono daquele registro.
  */
 
 include('../../../inc/includes.php');
@@ -27,34 +29,46 @@ Session::checkRight(Right::NAME, Right::USE_PLANNER);
 
 header('Content-Type: application/json; charset=UTF-8');
 
-/** Itemtypes reais que este endpoint aceita — os mesmos que alimentam a agenda. */
+/**
+ * Itemtypes reais que este endpoint aceita, com o campo que guarda o DONO em
+ * cada um — é dali, não do POST, que o dono usado na checagem de permissão
+ * vem.
+ */
 const ALLOWED_NOTE_ITEMTYPES = [
-    'TicketTask', 'ChangeTask', 'ProblemTask', 'ProjectTask',
-    'Reminder', 'PlanningExternalEvent', 'Reservation',
+    'TicketTask'            => 'users_id_tech',
+    'ChangeTask'             => 'users_id_tech',
+    'ProblemTask'            => 'users_id_tech',
+    'ProjectTask'            => 'users_id_tech',
+    'Reminder'               => 'users_id',
+    'PlanningExternalEvent'  => 'users_id',
+    'Reservation'            => 'users_id',
 ];
 
-$itemtype       = (string) ($_POST['itemtype'] ?? '');
-$items_id       = (int) ($_POST['items_id'] ?? 0);
-$users_id_owner = (int) ($_POST['users_id'] ?? 0);
-$note           = (string) ($_POST['note'] ?? '');
+$itemtype = (string) ($_POST['itemtype'] ?? '');
+$items_id = (int) ($_POST['items_id'] ?? 0);
+// Teto de tamanho: é um recado curto, não um campo de descrição — sem isto,
+// nada impedia um POST com um valor gigante indo parar na coluna TEXT.
+$note = mb_substr((string) ($_POST['note'] ?? ''), 0, 2000);
 
-$ok = false;
+$ok             = false;
+$users_id_owner = 0;
 
-if (
-    in_array($itemtype, ALLOWED_NOTE_ITEMTYPES, true)
-    && $items_id > 0
-    && AccessPolicy::canManageNoteFor($users_id_owner)
-) {
+if (array_key_exists($itemtype, ALLOWED_NOTE_ITEMTYPES) && $items_id > 0) {
     $item = getItemForItemtype($itemtype);
 
     if ($item !== false && $item->getFromDB($items_id)) {
-        $ok = EventNotes::save(
-            $itemtype,
-            $items_id,
-            $users_id_owner,
-            (int) Session::getLoginUserID(),
-            $note
-        );
+        $owner_field    = ALLOWED_NOTE_ITEMTYPES[$itemtype];
+        $users_id_owner = (int) ($item->fields[$owner_field] ?? 0);
+
+        if ($users_id_owner > 0 && AccessPolicy::canManageNoteFor($users_id_owner)) {
+            $ok = EventNotes::save(
+                $itemtype,
+                $items_id,
+                $users_id_owner,
+                (int) Session::getLoginUserID(),
+                $note
+            );
+        }
     }
 }
 

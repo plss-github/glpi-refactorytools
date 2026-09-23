@@ -87,7 +87,7 @@ final class ReservationProvider
             $where[] = [$res_table . '.end' => ['>=', QueryFunction::now()]];
         }
 
-        $rows = $DB->request([
+        $rows = iterator_to_array($DB->request([
             'SELECT' => [
                 $res_table . '.id',
                 $res_table . '.begin',
@@ -107,7 +107,11 @@ final class ReservationProvider
             ],
             'WHERE' => $where,
             'ORDER' => $res_table . '.begin',
-        ]);
+        ]));
+
+        // Nomes dos itens reservados em lote — uma consulta por ITEMTYPE
+        // presente nas linhas, não uma por reserva (ver `describeReservedItems()`).
+        $names = self::describeReservedItems($rows);
 
         $events = [];
         $now    = date('Y-m-d H:i:s');
@@ -119,14 +123,14 @@ final class ReservationProvider
             // justamente o que se quer esconder ao limpar a agenda.
             $state = ((string) $row['end'] < $now) ? Planning::DONE : Planning::TODO;
 
+            $name_key = $row['reserved_itemtype'] . '|' . $row['reserved_items_id'];
+
             $events[self::ITEMTYPE . '$$' . $row['id']] = [
                 'state'            => $state,
                 'itemtype'         => self::ITEMTYPE,
                 'id'               => (int) $row['id'],
-                'name'             => self::describeReservedItem(
-                    (string) $row['reserved_itemtype'],
-                    (int) $row['reserved_items_id']
-                ),
+                'name'             => $names[$name_key]
+                    ?? sprintf(__('Reserved item #%d', 'planner'), (int) $row['reserved_items_id']),
                 'content'          => (string) ($row['comment'] ?? ''),
                 'begin'            => (string) $row['begin'],
                 'end'              => (string) $row['end'],
@@ -150,19 +154,53 @@ final class ReservationProvider
     }
 
     /**
-     * Título do evento: o nome do item reservado, com o tipo na frente
+     * Título de cada linha: o nome do item reservado, com o tipo na frente
      * ("Computador - NOTE-014"). Sem o tipo, uma agenda com sala, veículo e
      * notebook vira uma lista de nomes soltos sem contexto.
+     *
+     * Reaproveita `ReservationView::getReservableItems()` — já buscado (e
+     * cacheado por requisição) com `getName()` de verdade, não a coluna crua
+     * — indexado aqui por itemtype+id em vez de pelo id da linha de
+     * `ReservationItem`. A versão anterior chamava `getFromDB()` uma vez POR
+     * RESERVA; numa agenda com muitas reservas no período, isso sozinho já
+     * bastava para deixar a tela lenta (o mesmo problema, e a mesma correção,
+     * de `ReservationEventProvider::getEvents()`).
+     *
+     * Um item reservado que não está mais na lista de reserváveis (alguém
+     * desmarcou o aparelho como reservável depois desta reserva existir) cai
+     * na consulta direta de reserva — caso raro, não vale otimizar.
+     *
+     * @param array<int, array<string, mixed>> $rows linhas com `reserved_itemtype`/`reserved_items_id`
+     * @return array<string, string> chave "itemtype|items_id" => nome já formatado
      */
-    private static function describeReservedItem(string $itemtype, int $items_id): string
+    private static function describeReservedItems(array $rows): array
     {
-        $item = getItemForItemtype($itemtype);
-
-        if ($item === false || !$item->getFromDB($items_id)) {
-            // O item pode ter sido excluído sem que a reserva fosse limpa.
-            return sprintf(__('Reserved item #%d', 'planner'), $items_id);
+        $names = [];
+        foreach (ReservationView::getReservableItems() as $item) {
+            $names[$item['itemtype'] . '|' . $item['items_id']] = sprintf('%s - %s', $item['type_name'], $item['name']);
         }
 
-        return sprintf('%s - %s', $item::getTypeName(1), $item->getName());
+        $missing_ids_by_itemtype = [];
+        foreach ($rows as $row) {
+            $key = $row['reserved_itemtype'] . '|' . $row['reserved_items_id'];
+            if (!isset($names[$key])) {
+                $missing_ids_by_itemtype[(string) $row['reserved_itemtype']][(int) $row['reserved_items_id']] = true;
+            }
+        }
+
+        foreach ($missing_ids_by_itemtype as $itemtype => $ids) {
+            $item = getItemForItemtype($itemtype);
+            if ($item === false) {
+                continue;
+            }
+
+            foreach ($ids as $items_id => $_) {
+                if ($item->getFromDB($items_id)) {
+                    $names[$itemtype . '|' . $items_id] = sprintf('%s - %s', $item::getTypeName(1), $item->getName());
+                }
+            }
+        }
+
+        return $names;
     }
 }

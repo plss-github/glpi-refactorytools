@@ -367,6 +367,18 @@ final class AccessPolicy
     }
 
     /**
+     * Cache do processo: `getManagedGroupMembers()` é chamada duas vezes na
+     * mesma requisição sempre que o direito está ligado — direto por
+     * `canUseGroupManagerMode()` e de novo dentro de `getVisibleUsers()` — e
+     * as duas sempre valem para o mesmo `$manager_id` (o usuário da sessão).
+     * Chave por id para continuar correta se um dia for chamada para outro
+     * usuário dentro da mesma requisição.
+     *
+     * @var array<int, array<int, int>>
+     */
+    private static array $managed_group_members_cache = [];
+
+    /**
      * Membros dos grupos que $manager_id gerencia (`glpi_groups_users.is_manager=1`),
      * ativos e não excluídos, sem incluir o próprio gerente.
      *
@@ -374,6 +386,10 @@ final class AccessPolicy
      */
     public static function getManagedGroupMembers(int $manager_id): array
     {
+        if (isset(self::$managed_group_members_cache[$manager_id])) {
+            return self::$managed_group_members_cache[$manager_id];
+        }
+
         /** @var \DBmysql $DB */
         global $DB;
 
@@ -390,7 +406,7 @@ final class AccessPolicy
         }
 
         if ($managed_groups === []) {
-            return [];
+            return self::$managed_group_members_cache[$manager_id] = [];
         }
 
         $rows = $DB->request([
@@ -420,7 +436,7 @@ final class AccessPolicy
             }
         }
 
-        return $out;
+        return self::$managed_group_members_cache[$manager_id] = $out;
     }
 
     /**
