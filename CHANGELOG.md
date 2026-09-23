@@ -3,6 +3,68 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.10.1] - 2026-09-23
+
+### Adicionado
+
+- **Chamados como REQUERENTE agora aparecem no Planejamento.** Um chamado em
+  que a pessoa é só requerente (sem tarefa atribuída em seu nome) nunca
+  aparecia — o planejamento, nativo ou do plugin, só conhecia tarefas de
+  técnico. Novo tipo virtual "Meu chamado como requerente"
+  (`TicketRequesterProvider`): mostra o chamado como uma barra da abertura
+  até a solução (ou até agora, se ainda aberto), com a duração total
+  registrada nele disponível no popover, igual à de um chamado de técnico.
+- **Cor por TIPO de ativo reservável.** Nova seção em Configuração do
+  Plugin: definida a cor de um tipo (ex.: Computador = verde), toda reserva
+  DAQUELE TIPO aparece nessa cor no calendário e na lista da tela de
+  Reservas — antes cada aparelho tinha sua própria cor fixa, sem opção de
+  agrupar visualmente por tipo. Sem customização, cada aparelho continua com
+  a cor de sempre.
+- **Notificação por e-mail quando uma nota é gravada.** Usa o sistema de
+  notificação nativo do GLPI (modelo semeado na instalação, editável em
+  Configuração > Notificações como qualquer outro) — o dono do compromisso
+  recebe um e-mail com o texto da nota, o autor e um link de volta, sempre
+  que alguém que não é ele mesmo grava uma. Anotar o próprio compromisso não
+  dispara nada (a pessoa já sabe o que escreveu). Depende de notificações
+  estarem ligadas na configuração geral do GLPI, como qualquer notificação.
+- Botões da barra superior e da barra de opções (Novo compromisso/Nova
+  reserva, Calendário/Lista/Kanban, Dia/Semana/Mês, navegação…) maiores —
+  eram os controles mais usados da tela com o tamanho mais discreto.
+- Popover de compromisso maior, e o autor da nota agora aparece sempre
+  (antes só em compromissos de outra pessoa — numa nota no próprio
+  compromisso, escrita por um gestor, não dava para saber quem escreveu).
+- **Colometria mais consistente entre Calendário, Lista e Kanban**: cartão do
+  Kanban e linha da Lista agora ganham um tom claro da cor do tipo no fundo
+  inteiro, não só um traço fino na borda. Compromisso de OUTRA pessoa (numa
+  agenda com mais de uma pessoa aberta) ganha borda mais grossa e um selo
+  com as iniciais dela, para não precisar comparar cores para saber de quem
+  é.
+- Indicadores do topo do Planejamento: com tudo marcado (nenhum tipo
+  desmarcado), mostram só horas (planejadas/realizadas/totais); ao desmarcar
+  algum tipo, trocam para contagem (compromissos/a fazer/concluídos) — os
+  dois nunca cabiam ao mesmo tempo sem lotar a barra.
+
+### Alterado
+
+- **Cor de tipo de compromisso deixou de ser personalizável por usuário.**
+  A tela "Personalizar minhas cores" saiu da barra lateral do Planejamento;
+  só o administrador define, em Configuração do Plugin (Super-Admin
+  apenas) — com cada pessoa podendo escolher sua própria cor, "vermelho"
+  parava de significar a mesma coisa para quem olhasse a agenda de outra
+  pessoa, o oposto do que a colometria deveria garantir.
+- Tela de configuração renomeada de "Configuração do Pellissari New
+  Planners" para "Configuração do Plugin".
+- Painel "Chamados como técnico": a duração ao passar o mouse trocou o
+  `title` nativo do navegador (sem estilo, fácil de não notar) por um
+  popover próprio, igual ao do calendário.
+
+### Segurança
+
+Nenhum problema novo encontrado nesta rodada além do já corrigido na 0.9.0;
+a implementação da notificação por e-mail foi verificada conferindo que ela
+grava de fato uma linha em `glpi_queuednotifications`, com destinatário,
+assunto e corpo corretos, antes de ser considerada pronta.
+
 ## [0.9.0] - 2026-09-23
 
 Revisão de segurança, desempenho e bugs sobre o plugin inteiro — nenhuma tela

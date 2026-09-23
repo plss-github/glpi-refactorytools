@@ -25,13 +25,15 @@
  */
 
 use Glpi\Plugin\Hooks;
+use GlpiPlugin\Planner\EventNoteItem;
 use GlpiPlugin\Planner\Menu;
 use GlpiPlugin\Planner\NativeRedirect;
+use GlpiPlugin\Planner\NotificationTargetEventNoteItem;
 use GlpiPlugin\Planner\ProfileRights;
 use GlpiPlugin\Planner\ReservationMenu;
 use GlpiPlugin\Planner\Share;
 
-define('PLUGIN_PLANNER_VERSION', '0.9.0');
+define('PLUGIN_PLANNER_VERSION', '0.10.1');
 
 // Alvo: GLPI 11.0.x. As assinaturas usadas aqui (Planning::$rightname,
 // CFG_GLPI['planning_types'], populatePlanning(), Html::requireJs('fullcalendar'))
@@ -61,6 +63,13 @@ function plugin_init_planner(): void
     // uma aba própria é o caminho usado pelo próprio core.
     Plugin::registerClass(ProfileRights::class, ['addtabon' => Profile::class]);
     Plugin::registerClass(Share::class);
+
+    // Notificação por e-mail quando alguém grava uma nota (ver
+    // `EventNotes::save()` / `NotificationTargetEventNoteItem`). O item
+    // precisa estar registrado para aparecer na tela de administração de
+    // Modelos de notificação — a classe de destino já é resolvida pelo nome
+    // (mesmo namespace do item) independente deste registro.
+    Plugin::registerClass(EventNoteItem::class, ['notificationtemplates_types' => true]);
 
     // Substituição dos itens nativos "Planejamento" (Assistência) e "Reservas"
     // (Ferramentas). O hook aceita um callable só por plugin, então as duas

@@ -15,6 +15,7 @@ include('../../../inc/includes.php');
 use Glpi\Application\View\TemplateRenderer;
 use GlpiPlugin\Planner\EventProvider;
 use GlpiPlugin\Planner\Menu;
+use GlpiPlugin\Planner\ReservationView;
 use GlpiPlugin\Planner\Right;
 use GlpiPlugin\Planner\Settings;
 use GlpiPlugin\Planner\Share;
@@ -34,6 +35,9 @@ if (isset($_POST['update'])) {
     if (isset($_POST['type_color']) && is_array($_POST['type_color'])) {
         Settings::saveTypeColors($_POST['type_color']);
     }
+    if (isset($_POST['reservation_type_color']) && is_array($_POST['reservation_type_color'])) {
+        Settings::saveReservationTypeColors($_POST['reservation_type_color']);
+    }
 
     Session::addMessageAfterRedirect(
         htmlescape(__('Configuration saved.', 'planner')),
@@ -45,7 +49,7 @@ if (isset($_POST['update'])) {
 }
 
 Html::header(
-    __('Pellissari New Planners', 'planner') . ' - ' . __('Configuration', 'planner'),
+    __('Plugin configuration', 'planner'),
     $_SERVER['PHP_SELF'],
     'helpdesk',
     Menu::getMenuItemKey(),
@@ -57,6 +61,7 @@ TemplateRenderer::getInstance()->display('@planner/config.html.twig', [
     'level_labels' => Share::getLevelLabels(),
     'mode_labels'  => Settings::getModeLabels(),
     'types'        => EventProvider::getAvailableTypesForAdmin(),
+    'reservation_types' => ReservationView::getReservableTypesForAdmin(),
     'csrf'         => Session::getNewCSRFToken(),
 ]);
 

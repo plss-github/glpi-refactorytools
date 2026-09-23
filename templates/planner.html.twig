@@ -98,16 +98,35 @@
             </div>
         </div>
 
+        {# Dois conjuntos de indicadores, um visível de cada vez (ver
+           `GlpiPlanner.isEverythingSelected()`): com TUDO marcado na barra
+           lateral (nenhum filtro de fato em uso), horas fazem mais sentido
+           que contagem — é a visão "quanto tempo" da equipe inteira. Assim
+           que a pessoa filtra por alguém ou algum tipo específico, a
+           pergunta vira "quantos, e em que situação", que contagem responde
+           melhor que horas. #}
         <div class="planner-kpis">
-            <div class="planner-kpi">
-                <span class="planner-kpi-value" data-kpi="hours">—</span>
+            <div class="planner-kpi" data-kpi-group="all">
+                <span class="planner-kpi-value" data-kpi="planned_hours">—</span>
                 <span class="planner-kpi-label">{{ __('Planned hours', 'planner') }}</span>
             </div>
-            <div class="planner-kpi">
+            <div class="planner-kpi" data-kpi-group="all">
+                <span class="planner-kpi-value" data-kpi="realised_hours">—</span>
+                <span class="planner-kpi-label">{{ __('Realised hours', 'planner') }}</span>
+            </div>
+            <div class="planner-kpi" data-kpi-group="all">
+                <span class="planner-kpi-value" data-kpi="hours">—</span>
+                <span class="planner-kpi-label">{{ __('Total hours', 'planner') }}</span>
+            </div>
+            <div class="planner-kpi" data-kpi-group="filtered" hidden>
+                <span class="planner-kpi-value" data-kpi="count">—</span>
+                <span class="planner-kpi-label">{{ __('Appointments', 'planner') }}</span>
+            </div>
+            <div class="planner-kpi" data-kpi-group="filtered" hidden>
                 <span class="planner-kpi-value" data-kpi="todo">—</span>
                 <span class="planner-kpi-label">{{ __('To do', 'planner') }}</span>
             </div>
-            <div class="planner-kpi">
+            <div class="planner-kpi" data-kpi-group="filtered" hidden>
                 <span class="planner-kpi-value" data-kpi="done">—</span>
                 <span class="planner-kpi-label">{{ __('Completed', 'planner') }}</span>
             </div>
@@ -166,14 +185,13 @@
                 <div class="planner-section">
                     <div class="planner-section-title">
                         {{ __('Event types', 'planner') }}
-                        {# Cada pessoa pode preferir suas próprias cores, sem
-                           depender do administrador nem afetar a tela de
-                           ninguém mais (ver `UserColors`). O lápis abre o
-                           formulário embutido logo abaixo. #}
-                        <button type="button" class="planner-color-edit-toggle" id="planner-color-edit-toggle"
-                                title="{{ __('Customise my colours', 'planner') }}">
-                            <i class="ti ti-palette"></i>
-                        </button>
+                        {# A cor de cada tipo agora é sempre a do administrador
+                           (ver "Configuração do Plugin"), a mesma para todo
+                           mundo — é o que faz "vermelho" continuar querendo
+                           dizer a mesma coisa para quem está vendo a agenda
+                           de outra pessoa. A personalização por usuário
+                           (`UserColors`) existiu numa versão anterior e foi
+                           desligada por esse motivo. #}
                     </div>
                     <ul class="planner-types" id="planner-type-list">
                         {% for type in types %}
@@ -194,30 +212,6 @@
                         <input type="checkbox" class="form-check-input" id="planner-show-done" checked>
                         <span>{{ __('Show completed', 'planner') }}</span>
                     </label>
-
-                    {# Formulário de cores pessoais: escondido por padrão,
-                       abre com o botão do lápis acima. Um input color por
-                       tipo, exatamente como a tela de configuração do
-                       administrador — só que grava em `UserColors`, não em
-                       `Settings`. #}
-                    <form id="planner-color-form" class="planner-color-grid mt-2" hidden
-                          method="post" action="{{ root_doc }}/plugins/planner/ajax/save_user_colors.php">
-                        <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
-                        {% for type in types %}
-                            <label class="planner-color-row">
-                                <input type="color" name="colors[{{ type.itemtype }}]" value="{{ type.color }}"
-                                       data-planner-default="{{ type.default }}">
-                                <span class="planner-color-name">{{ type.label }}</span>
-                                <button type="button" class="btn btn-sm btn-ghost-secondary planner-color-reset"
-                                        title="{{ __('Back to default', 'planner') }}">
-                                    <i class="ti ti-rotate"></i>
-                                </button>
-                            </label>
-                        {% endfor %}
-                        <button type="submit" class="btn btn-sm btn-primary w-100 mt-1">
-                            {{ __('Save my colours', 'planner') }}
-                        </button>
-                    </form>
                 </div>
 
                 {% if technician_panel and technician_panel.tickets|length > 0 %}
@@ -226,8 +220,11 @@
                        participação, por isso não depende de nenhum direito
                        extra do plugin: é o mesmo recorte que a pessoa já vê em
                        "Meus chamados" na Central. A duração de cada chamado
-                       aparece ao passar o mouse (atributo `title` nativo, sem
-                       JavaScript). #}
+                       aparece ao passar o mouse — um popover próprio (ver
+                       `bindTechTicketHover()` em planner.js), não o atributo
+                       `title` nativo do navegador: sem estilo, com atraso
+                       inconsistente entre navegadores e fácil de passar
+                       despercebido, o que o tornava difícil de notar. #}
                     <div class="planner-section">
                         <div class="planner-section-title">
                             {{ __('My tickets as technician', 'planner') }}
@@ -248,7 +245,7 @@
                         </div>
                         <ul class="planner-tech-tickets">
                             {% for t in technician_panel.tickets %}
-                                <li class="planner-tech-ticket" title="{{ t.duration_label }}">
+                                <li class="planner-tech-ticket" data-duration="{{ t.duration_label }}">
                                     <a href="{{ t.url }}">{{ t.name }}</a>
                                     <span class="badge bg-secondary-lt">{{ t.status_label }}</span>
                                 </li>
@@ -313,7 +310,7 @@
                             <a href="{{ root_doc }}/plugins/planner/front/config.form.php"
                                class="btn btn-sm btn-ghost-secondary w-100 mt-1">
                                 <i class="ti ti-settings"></i>
-                                {{ __('Pellissari New Planners configuration', 'planner') }}
+                                {{ __('Plugin configuration', 'planner') }}
                             </a>
                         {% endif %}
                     </div>
@@ -456,27 +453,6 @@
 
 <script>
     $(function () {
-        // Cores pessoais: abrir/fechar o formulário, pré-visualizar no
-        // marcador enquanto a pessoa escolhe, e "voltar ao padrão" por tipo.
-        // A gravação em si é um POST normal (ver ajax/save_user_colors.php);
-        // a página recarrega depois e os eventos já vêm coloridos do servidor.
-        $('#planner-color-edit-toggle').on('click', function () {
-            $(this).toggleClass('is-active');
-            $('#planner-color-form').prop('hidden', function (_, hidden) { return !hidden; });
-        });
-
-        $('#planner-color-form').on('input', 'input[type=color]', function () {
-            var key = $(this).closest('.planner-color-row').find('input').attr('name')
-                .replace('colors[', '').replace(']', '');
-            $('#planner-type-list .planner-type-swatch[data-type-key="' + key + '"]')
-                .css('--planner-actor-color', $(this).val());
-        });
-
-        $('#planner-color-form').on('click', '.planner-color-reset', function () {
-            $(this).closest('.planner-color-row').find('input[type=color]')
-                .each(function () { $(this).val($(this).data('planner-default')).trigger('input'); });
-        });
-
         GlpiPlanner.init({
             root_doc: {{ root_doc|json_encode|raw }},
             events_url: {{ (root_doc ~ '/plugins/planner/ajax/events.php')|json_encode|raw }},
@@ -502,12 +478,36 @@
                 save_failed: {{ __('Could not save the new time.', 'planner')|json_encode|raw }},
                 manager_note: {{ __('Manager note', 'planner')|json_encode|raw }},
                 own_note: {{ __('Note', 'planner')|json_encode|raw }},
+                note_by: {{ __('By', 'planner')|json_encode|raw }},
                 ticket_duration: {{ __('Total time on this ticket', 'planner')|json_encode|raw }},
                 add_note: {{ __('Add a note', 'planner')|json_encode|raw }},
                 edit_note: {{ __('Edit note', 'planner')|json_encode|raw }},
                 note_saved: {{ __('Note saved.', 'planner')|json_encode|raw }},
                 save: {{ __('Save', 'planner')|json_encode|raw }},
                 cancel: {{ __('Cancel', 'planner')|json_encode|raw }}
+            }
+        });
+
+        // Duração do chamado no painel "Chamados como técnico": popover
+        // próprio, não `title` nativo (ver comentário acima da lista). Fica
+        // aqui, não em planner.js, porque só existe nesta tela.
+        var $techPopover = null;
+        $(document).on('mouseenter', '.planner-tech-ticket[data-duration]', function () {
+            var duration = $(this).data('duration');
+            if (!duration) {
+                return;
+            }
+            $techPopover = $('<div class="planner-popover planner-tech-popover"></div>').text(duration);
+            $techPopover.appendTo('body');
+            var rect = this.getBoundingClientRect();
+            $techPopover.css({
+                top: (rect.top + window.scrollY - $techPopover.outerHeight() - 6) + 'px',
+                left: (rect.left + window.scrollX) + 'px'
+            });
+        }).on('mouseleave', '.planner-tech-ticket[data-duration]', function () {
+            if ($techPopover) {
+                $techPopover.remove();
+                $techPopover = null;
             }
         });
     });

@@ -4,8 +4,8 @@
  * Planner
  * -----------------------------------------------------------------------------
  * Grava a ordem das colunas de SITUAÇÃO do Kanban de Planejamento, DE QUEM
- * ESTÁ LOGADO — mesmo raciocínio de `save_user_colors.php`: sem parâmetro
- * `users_id` na requisição, ninguém reordena a tela de outra pessoa.
+ * ESTÁ LOGADO — sem parâmetro `users_id` na requisição, ninguém reordena a
+ * tela de outra pessoa.
  */
 
 include('../../../inc/includes.php');

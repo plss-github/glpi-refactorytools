@@ -11,7 +11,7 @@
         <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
 
         <div class="card-header">
-            <h3 class="card-title">{{ __('Pellissari New Planners configuration', 'planner') }}</h3>
+            <h3 class="card-title">{{ __('Plugin configuration', 'planner') }}</h3>
         </div>
 
         <div class="card-body">
@@ -107,6 +107,32 @@
                     {% endfor %}
                 </div>
             </div>
+
+            {% if reservation_types is not empty %}
+                <hr>
+
+                <h4 class="mb-2">{{ __('Reservable asset type colours', 'planner') }}</h4>
+
+                <div class="mb-3">
+                    <div class="form-hint mb-2">
+                        {{ __('The colour identifies every reservation of that asset type on the calendar and in the list, regardless of which specific item was reserved. Leave a type untouched to keep each item its own colour.', 'planner') }}
+                    </div>
+                    <div class="planner-color-grid">
+                        {% for type in reservation_types %}
+                            <label class="planner-color-row">
+                                <input type="color" name="reservation_type_color[{{ type.itemtype }}]"
+                                       value="{{ type.color }}"
+                                       data-planner-default="{{ type.default }}">
+                                <span class="planner-color-name">{{ type.label }}</span>
+                                <button type="button" class="btn btn-sm btn-ghost-secondary planner-color-reset"
+                                        title="{{ __('Back to default', 'planner') }}">
+                                    <i class="ti ti-rotate"></i>
+                                </button>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
 
             <hr>
 

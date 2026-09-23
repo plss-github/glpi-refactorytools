@@ -6,6 +6,7 @@
  * Rotinas de instalação e desinstalação.
  */
 
+use GlpiPlugin\Planner\EventNoteItem;
 use GlpiPlugin\Planner\EventNotes;
 use GlpiPlugin\Planner\EventTypes;
 use GlpiPlugin\Planner\KanbanPrefs;
@@ -25,11 +26,19 @@ function plugin_planner_install(): bool
     $migration = new Migration(PLUGIN_PLANNER_VERSION);
 
     Share::install($migration);
-    UserColors::install($migration);
     EventNotes::install($migration);
     KanbanPrefs::install($migration);
 
     $migration->executeMigration();
+
+    // A cor de tipo de compromisso deixou de ser personalizável por usuário
+    // (ver `EventProvider::getTypeColor()`): só o administrador define, para
+    // "vermelho" continuar significando a mesma coisa para quem olha a
+    // agenda de outra pessoa. `uninstall()` aqui, e não mais `install()`
+    // acima, existe para limpar a tabela de quem já tinha o plugin —
+    // idempotente (`DROP TABLE IF EXISTS`), então rodar em toda atualização
+    // não tem efeito depois da primeira vez.
+    UserColors::uninstall();
 
     // `ProfileRight::addProfileRights()` cria a linha do direito com rights=0
     // ("sem acesso") para TODOS os perfis existentes. Sem isso, a matriz de
@@ -70,7 +79,97 @@ function plugin_planner_install(): bool
     // ela lê o ID atual antes de decidir se precisa criar a categoria.
     plugin_planner_seed_event_categories();
 
+    plugin_planner_seed_note_notification();
+
     return true;
+}
+
+/**
+ * Cria o modelo de notificação "nova nota" — sem isto, o administrador
+ * precisaria montar o modelo à mão em Configuração > Notificações antes de
+ * qualquer e-mail sair. Idempotente: só cria se ainda não existir uma
+ * `Notification` para este itemtype+evento (checagem por linha, não por
+ * versão — mais simples e sobrevive a uma reinstalação fora de ordem).
+ */
+function plugin_planner_seed_note_notification(): void
+{
+    /** @var \DBmysql $DB */
+    global $DB;
+
+    $itemtype = EventNoteItem::class;
+    $event    = 'new_note';
+
+    $existing = $DB->request([
+        'FROM'  => Notification::getTable(),
+        'WHERE' => ['itemtype' => $itemtype, 'event' => $event],
+        'LIMIT' => 1,
+    ])->current();
+
+    if ($existing) {
+        return;
+    }
+
+    $template = new NotificationTemplate();
+    $templates_id = $template->add([
+        'name'     => __('Planner: new note', 'planner'),
+        'itemtype' => $itemtype,
+    ]);
+
+    if (!$templates_id) {
+        return;
+    }
+
+    $translation = new NotificationTemplateTranslation();
+    $translation->add([
+        'notificationtemplates_id' => $templates_id,
+        // Vazio = modelo padrão, usado por qualquer idioma sem tradução
+        // própria — é a mesma convenção do core.
+        'language'     => '',
+        'subject'      => __('A note was added to your schedule', 'planner'),
+        'content_text' => "##plannernote.author##\n\n##plannernote.content##\n\n##plannernote.url##",
+        'content_html' => '<p><strong>##plannernote.author##</strong></p>'
+            . '<p>##plannernote.content##</p>'
+            . '<p><a href="##plannernote.url##">##plannernote.url##</a></p>',
+    ]);
+
+    $notification = new Notification();
+    $notifications_id = $notification->add([
+        'name'         => __('Planner: new note', 'planner'),
+        'itemtype'     => $itemtype,
+        'event'        => $event,
+        'is_active'    => 1,
+        // Entidade raiz + recursivo: vale para a instalação inteira, não só
+        // para quem estiver na entidade raiz no momento em que a nota for
+        // gravada.
+        'entities_id'  => 0,
+        'is_recursive' => 1,
+    ]);
+
+    if (!$notifications_id) {
+        return;
+    }
+
+    $link = new Notification_NotificationTemplate();
+    $link->add([
+        'notifications_id'         => $notifications_id,
+        'notificationtemplates_id' => $templates_id,
+        'mode'                     => Notification_NotificationTemplate::MODE_MAIL,
+    ]);
+
+    // Quem recebe: sem esta linha em `glpi_notificationtargets`, a
+    // notificação existiria mas não teria destinatário nenhum — é essa
+    // tabela, não os métodos de `NotificationTarget`, que
+    // `NotificationEventAbstract::raise()` lê para saber para quem mandar
+    // (ver `NotificationTargetEventNoteItem::TARGET_OWNER`). INSERT direto,
+    // e não `(new NotificationTarget())->add()`, porque essa classe também
+    // é a base de toda a lógica de RESOLUÇÃO de destinatário (o que este
+    // arquivo não quer executar aqui) — a tabela é só 4 colunas simples.
+    $DB->insert('glpi_notificationtargets', [
+        'items_id'         => 9999,
+        'type'             => Notification::USER_TYPE,
+        'notifications_id' => $notifications_id,
+        'is_exclusion'     => 0,
+    ]);
 }
 
 /**

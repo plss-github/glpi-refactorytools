@@ -106,6 +106,14 @@ final class EventProvider
                     if ($only_types !== null && array_intersect($only_types, self::externalEventKeys()) === []) {
                         continue;
                     }
+                } elseif ($itemtype === 'Ticket') {
+                    // Mesmo caso de PlanningExternalEvent, só que 1 variante
+                    // em vez de 4: o itemtype REAL ('Ticket') é diferente da
+                    // chave virtual (`TICKET_REQUESTED`), então a comparação
+                    // direta do ramo abaixo nunca bateria.
+                    if ($only_types !== null && !in_array(EventTypes::TICKET_REQUESTED, $only_types, true)) {
+                        continue;
+                    }
                 } elseif ($only_types !== null && !in_array($itemtype, $only_types, true)) {
                     continue;
                 }
@@ -165,27 +173,38 @@ final class EventProvider
         /** @var \DBmysql $DB */
         global $DB;
 
-        $task_ids = [];
+        // Dois jeitos de um evento apontar para um chamado: uma TAREFA dele
+        // (`items_id` é o id da tarefa, precisa de uma volta por
+        // `glpi_tickettasks` para achar o chamado) ou o CHAMADO em si, no
+        // evento "meu chamado como requerente" (`items_id` já É o id do
+        // chamado).
+        $task_ids    = [];
+        $ticket_ids  = [];
         foreach ($events as $event) {
             if ($event['extendedProps']['itemtype'] === EventTypes::TICKET_TASK) {
                 $task_ids[(int) $event['extendedProps']['items_id']] = true;
+            } elseif ($event['extendedProps']['itemtype'] === 'Ticket') {
+                $ticket_ids[(int) $event['extendedProps']['items_id']] = true;
             }
         }
 
-        if ($task_ids === []) {
+        if ($task_ids === [] && $ticket_ids === []) {
             return;
         }
 
         $tickets_by_task = [];
-        foreach ($DB->request([
-            'SELECT' => ['id', 'tickets_id'],
-            'FROM'   => 'glpi_tickettasks',
-            'WHERE'  => ['id' => array_keys($task_ids)],
-        ]) as $row) {
-            $tickets_by_task[(int) $row['id']] = (int) $row['tickets_id'];
+        if ($task_ids !== []) {
+            foreach ($DB->request([
+                'SELECT' => ['id', 'tickets_id'],
+                'FROM'   => 'glpi_tickettasks',
+                'WHERE'  => ['id' => array_keys($task_ids)],
+            ]) as $row) {
+                $tickets_by_task[(int) $row['id']] = (int) $row['tickets_id'];
+                $ticket_ids[(int) $row['tickets_id']] = true;
+            }
         }
 
-        if ($tickets_by_task === []) {
+        if ($ticket_ids === []) {
             return;
         }
 
@@ -193,17 +212,23 @@ final class EventProvider
         foreach ($DB->request([
             'SELECT' => ['id', 'actiontime'],
             'FROM'   => 'glpi_tickets',
-            'WHERE'  => ['id' => array_values(array_unique($tickets_by_task))],
+            'WHERE'  => ['id' => array_keys($ticket_ids)],
         ]) as $row) {
             $duration_by_ticket[(int) $row['id']] = (int) $row['actiontime'];
         }
 
         foreach ($events as $key => $event) {
-            if ($event['extendedProps']['itemtype'] !== EventTypes::TICKET_TASK) {
+            $itemtype = $event['extendedProps']['itemtype'];
+            $items_id = (int) $event['extendedProps']['items_id'];
+
+            if ($itemtype === EventTypes::TICKET_TASK) {
+                $tickets_id = $tickets_by_task[$items_id] ?? null;
+            } elseif ($itemtype === 'Ticket') {
+                $tickets_id = $items_id;
+            } else {
                 continue;
             }
 
-            $tickets_id = $tickets_by_task[(int) $event['extendedProps']['items_id']] ?? null;
             if ($tickets_id === null || !isset($duration_by_ticket[$tickets_id])) {
                 continue;
             }
@@ -307,11 +332,16 @@ final class EventProvider
 
     /**
      * Qual chave virtual (ver `EventTypes`) uma linha do banco representa.
-     * Só `PlanningExternalEvent` tem mais de uma possibilidade — as outras
-     * linhas usam o próprio itemtype como chave.
+     * `PlanningExternalEvent` tem 4 possibilidades e `Ticket` tem 1
+     * (`TICKET_REQUESTED`, sempre) — as outras linhas usam o próprio itemtype
+     * como chave.
      */
     private static function getVirtualKey(string $itemtype, array $row): string
     {
+        if ($itemtype === 'Ticket') {
+            return EventTypes::TICKET_REQUESTED;
+        }
+
         if ($itemtype !== PlanningExternalEvent::class) {
             return $itemtype;
         }
@@ -450,10 +480,17 @@ final class EventProvider
                 // `canManageNote` é a exceção: não depende da nota existir,
                 // só de quem observa ser gestor de quem é dono do
                 // compromisso, então já é conhecido aqui.
+                //
+                // Fora do tipo "Ticket" (chamado como requerente): esse
+                // evento não tem um dono único de verdade — um chamado pode
+                // ter vários requerentes em `glpi_tickets_users`, e
+                // `ajax/save_event_note.php` só sabe gravar contra um campo
+                // de dono fixo por itemtype. Oferecer o botão sem o endpoint
+                // aceitar seria uma ação que sempre falha.
                 'note'          => '',
                 'noteAuthor'    => '',
                 'ticketDuration' => '',
-                'canManageNote' => $is_details && $itemtype !== ''
+                'canManageNote' => $is_details && $itemtype !== '' && $itemtype !== 'Ticket'
                                    ? AccessPolicy::canManageNoteFor($users_id, $viewer_id)
                                    : false,
             ],
@@ -482,6 +519,8 @@ final class EventProvider
     {
         $seconds_by_user = [];
         $total_seconds   = 0;
+        $todo_seconds    = 0;
+        $done_seconds    = 0;
         $done            = 0;
         $todo            = 0;
 
@@ -505,14 +544,23 @@ final class EventProvider
             $state = $event['extendedProps']['state'] ?? null;
             if ($state === Planning::DONE) {
                 $done++;
+                $done_seconds += $duration;
             } elseif ($state === Planning::TODO) {
                 $todo++;
+                $todo_seconds += $duration;
             }
         }
 
         return [
             'events_count'  => count($events),
             'total_hours'   => round($total_seconds / 3600, 1),
+            // Horas planejadas/realizadas: só os compromissos com estado A
+            // FAZER/CONCLUÍDO entram nessas duas — um compromisso em
+            // "Informação" (nem um nem outro) só conta nas horas TOTAIS. É o
+            // par que a barra de indicadores mostra quando nada está
+            // filtrado (ver `GlpiPlanner.isEverythingSelected()`).
+            'planned_hours' => round($todo_seconds / 3600, 1),
+            'realised_hours' => round($done_seconds / 3600, 1),
             'done'          => $done,
             'todo'          => $todo,
             'people'        => count($seconds_by_user),
@@ -555,6 +603,10 @@ final class EventProvider
             $types[] = ReservationProvider::ITEMTYPE;
         }
 
+        if (TicketRequesterProvider::canView()) {
+            $types[] = 'Ticket';
+        }
+
         return $types;
     }
 
@@ -568,9 +620,11 @@ final class EventProvider
      */
     private static function fetchRows(string $itemtype, array $params): array
     {
-        $raw = $itemtype === ReservationProvider::ITEMTYPE
-            ? ReservationProvider::populatePlanning($params)
-            : $itemtype::populatePlanning($params);
+        $raw = match ($itemtype) {
+            ReservationProvider::ITEMTYPE => ReservationProvider::populatePlanning($params),
+            'Ticket'                      => TicketRequesterProvider::populatePlanning($params),
+            default                       => $itemtype::populatePlanning($params),
+        };
 
         $raw = is_array($raw) ? $raw : [];
 
@@ -632,23 +686,28 @@ final class EventProvider
     }
 
     /**
-     * Cor de um tipo de compromisso, na tela DESTE observador.
+     * Cor de um tipo de compromisso — a mesma para todo mundo.
      *
-     * Três camadas, da mais para a menos específica: a cor que a PRÓPRIA
-     * PESSOA escolheu (`UserColors`), a que o administrador definiu para a
-     * instância inteira (`Settings`), e a paleta de fábrica do plugin
-     * (`EventTypes`). Cada camada só precisa guardar o que difere da de
-     * baixo — é por isso que ligar/desligar uma preferência pessoal não exige
-     * "lembrar" a cor administrativa em lugar nenhum.
+     * Só duas camadas: a que o administrador definiu para a instância
+     * inteira (`Settings`, editável em Configuração do Plugin — Super-Admin
+     * apenas) e a paleta de fábrica do plugin (`EventTypes`), para o que o
+     * administrador não customizou.
+     *
+     * Já existiu uma terceira camada, por USUÁRIO (`UserColors`): cada
+     * pessoa podia escolher sua própria cor por tipo. Removida porque
+     * contrariava o próprio propósito da cor — se "vermelho" pode significar
+     * coisas diferentes para cada pessoa que abre a mesma agenda, a cor para
+     * de comunicar nada de confiável para quem está olhando o compromisso de
+     * OUTRA pessoa.
+     *
+     * `$viewer_id` continua sendo parâmetro (não é mais usado aqui) só para
+     * não obrigar os chamadores a mudar de assinatura.
      */
     public static function getTypeColor(string $key, ?int $viewer_id = null): string
     {
-        $viewer_id ??= (int) Session::getLoginUserID();
-
-        $mine  = UserColors::getForUser($viewer_id);
         $admin = Settings::getTypeColors();
 
-        return $mine[$key] ?? $admin[$key] ?? EventTypes::getDefaultColor($key);
+        return $admin[$key] ?? EventTypes::getDefaultColor($key);
     }
 
     public static function getActorColor(int $users_id): string

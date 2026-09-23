@@ -564,8 +564,16 @@ var GlpiPlanner = {
         var props = info.event.extendedProps || {};
         var $el = $(info.el);
         var group_manager = this.groupManagerMode && props.level !== 'busy';
+        var is_other_person = this.isOtherPerson(props);
 
         $el.css('border-left-color', props.actorColor || 'transparent');
+        // Compromisso de outra pessoa: borda mais grossa — a cor sozinha já
+        // identifica QUEM é (é a mesma da barra lateral e do avatar), a
+        // espessura é o que faz o olho notar que este cartão é diferente dos
+        // outros sem precisar comparar cores primeiro.
+        if (is_other_person && !group_manager) {
+            $el.css('border-left-width', '5px');
+        }
 
         // Modo gerente de grupo: a cor de fundo passa a identificar a PESSOA,
         // não o TIPO — sobrescreve o `backgroundColor` que o próprio
@@ -585,6 +593,19 @@ var GlpiPlanner = {
 
         var view = info.view.type;
         var is_compact = view === 'dayGridMonth' || view.indexOf('list') === 0;
+
+        // Avatar com as iniciais da pessoa, só quando o compromisso não é o
+        // meu e mais de uma agenda está aberta — no meu próprio, eu já sei de
+        // quem é. Colocado ANTES do título, é o primeiro coisa que o olho
+        // encontra ao passar pela linha do tempo.
+        if (is_other_person) {
+            $el.find('.fc-content, .fc-title').first().before(
+                $('<span class="planner-event-avatar"></span>')
+                    .css('--planner-actor-color', props.actorColor || '')
+                    .text(this.actorInitials(props))
+                    .attr('title', props.actorName || '')
+            );
+        }
 
         if (!is_compact) {
             var meta = [];
@@ -708,8 +729,13 @@ var GlpiPlanner = {
                     : (self.label('manager_note') || 'Manager note')))
                 .appendTo($note);
             $('<div class="planner-popover-note-text"></div>').text(props.note).appendTo($note);
-            if (props.noteAuthor && !is_own_event) {
-                $('<div class="planner-popover-note-author"></div>').text(props.noteAuthor).appendTo($note);
+            // O autor aparece sempre que o servidor manda um, mesmo no
+            // próprio compromisso: uma nota "minha" pode ter sido escrita por
+            // um gestor que tem `canManageNote` sobre mim, e sem o nome não
+            // dá para saber se foi eu mesmo ou alguém com essa posição.
+            if (props.noteAuthor) {
+                var author_prefix = self.label('note_by') || 'By';
+                $('<div class="planner-popover-note-author"></div>').text(author_prefix + ' ' + props.noteAuthor).appendTo($note);
             }
             $note.appendTo($pop);
         }
@@ -946,7 +972,23 @@ var GlpiPlanner = {
         var props = ev.extendedProps || {};
         var $tr = $('<tr class="planner-list-row"></tr>');
 
-        $('<td class="planner-list-when"></td>').text(this.formatTimeRange(ev)).appendTo($tr);
+        // Colometria: a linha inteira ganha um tom claro da cor do tipo (ou
+        // da pessoa, no modo gerente de grupo) — mesmo tratamento do cartão
+        // do Kanban, para "vermelho" parecer vermelho também na Lista, não
+        // só no ponto colorido de uma célula.
+        var row_color = (this.groupManagerMode && props.level !== 'busy' ? props.actorColor : props.typeColor) || '';
+        if (row_color) {
+            $tr.css('background-color', this.tint(row_color, 0.08));
+        }
+
+        var $when = $('<td class="planner-list-when"></td>').text(this.formatTimeRange(ev));
+        // Borda na primeira célula, não na linha: `<tr>` não renderiza
+        // `border-left` com a tabela em `border-collapse: collapse` (o
+        // Bootstrap usa isso em `.table`), a célula sim.
+        if (this.isOtherPerson(props)) {
+            $when.css('border-left', '3px solid ' + (props.actorColor || 'transparent'));
+        }
+        $when.appendTo($tr);
 
         var $who = $('<td class="planner-list-who"></td>');
         $('<span class="planner-avatar planner-avatar-sm"></span>')
@@ -1242,8 +1284,17 @@ var GlpiPlanner = {
     buildKanbanCard: function (ev, draggable) {
         var props = ev.extendedProps || {};
         var group_manager = this.groupManagerMode && props.level !== 'busy';
+        var card_color = (group_manager ? props.actorColor : props.typeColor) || '';
         var $card = $('<div class="planner-kanban-card"></div>')
-            .css('border-left-color', (group_manager ? props.actorColor : props.typeColor) || 'transparent');
+            .css('border-left-color', card_color || 'transparent');
+
+        // Colometria: se o tipo é vermelho, o cartão precisa PARECER
+        // vermelho de relance, não só ter uma tarja fina na borda — um tom
+        // claro da própria cor no fundo faz isso sem comprometer a leitura
+        // do texto (a borda esquerda continua com a cor cheia).
+        if (card_color) {
+            $card.css('background-color', this.tint(card_color, 0.12));
+        }
 
         if (props.level === 'busy') {
             $card.addClass('planner-event-busy');
@@ -1399,10 +1450,51 @@ var GlpiPlanner = {
     updateKpis: function (stats) {
         $('[data-kpi="count"]').text(stats.events_count !== undefined ? stats.events_count : '—');
         $('[data-kpi="hours"]').text(stats.total_hours !== undefined ? stats.total_hours : '—');
+        $('[data-kpi="planned_hours"]').text(stats.planned_hours !== undefined ? stats.planned_hours : '—');
+        $('[data-kpi="realised_hours"]').text(stats.realised_hours !== undefined ? stats.realised_hours : '—');
         $('[data-kpi="todo"]').text(stats.todo !== undefined ? stats.todo : '—');
         $('[data-kpi="done"]').text(stats.done !== undefined ? stats.done : '—');
         $('[data-kpi="people"]').text(stats.people !== undefined ? stats.people : '—');
         $('[data-kpi="selected"]').text(Object.keys(this.actors).length);
+        this.applyKpiGroup();
+    },
+
+    /**
+     * Alterna qual conjunto de indicadores aparece: horas (planejadas,
+     * realizadas, totais) quando TUDO está marcado na barra lateral — nesse
+     * caso não há filtro de fato, e "quanto tempo" é a pergunta que faz
+     * sentido —, ou contagem (compromissos, a fazer, concluídos) assim que
+     * alguma pessoa ou tipo é desmarcado.
+     *
+     * Só existe onde os dois grupos existem no HTML (Planejamento); a tela
+     * de Reservas não tem `[data-kpi-group]`, então os seletores abaixo
+     * simplesmente não casam com nada e a chamada não faz nada.
+     */
+    applyKpiGroup: function () {
+        var everything = this.isEverythingSelected();
+        $('[data-kpi-group="all"]').prop('hidden', !everything);
+        $('[data-kpi-group="filtered"]').prop('hidden', everything);
+    },
+
+    /**
+     * Verdadeiro quando todo TIPO está marcado — ou seja, a pessoa não
+     * filtrou por tipo de compromisso.
+     */
+    isEverythingSelected: function () {
+        // Só os tipos contam como "filtro" aqui — QUEM aparece (as caixas de
+        // agenda na barra lateral) é outro eixo, não um filtro: a maioria das
+        // pessoas nunca tem 100% das agendas visíveis marcadas ao mesmo
+        // tempo (só "eu" e, se ligado, "minha equipe" vêm marcados por
+        // padrão — grupo, compartilhamentos e gerência de grupo são opt-in),
+        // então exigir isso faria o modo "horas" quase nunca aparecer, nem
+        // na abertura da tela.
+        var $types = $('.planner-type-toggle');
+
+        if ($types.length === 0) {
+            return true;
+        }
+
+        return $types.length === $types.filter(':checked').length;
     },
 
     setLoading: function (on) {
@@ -1560,6 +1652,34 @@ var GlpiPlanner = {
     },
 
     /**
+     * Se este compromisso é de OUTRA pessoa, não da minha própria agenda —
+     * usado para destacar visualmente (borda mais grossa, selo de iniciais)
+     * o que não é meu quando mais de uma agenda está aberta ao mesmo tempo.
+     *
+     * `props.mine` é o campo certo na tela de RESERVAS: lá `users_id` no
+     * payload é o id do ITEM reservável (a faixa), não de uma pessoa — usar
+     * `users_id` ali marcaria toda reserva como "de outra pessoa", sempre.
+     * No Planejamento não existe `mine` e `users_id` É a pessoa da faixa,
+     * então a comparação direta vale.
+     */
+    isOtherPerson: function (props) {
+        if (props.level === 'busy') {
+            return false;
+        }
+
+        // Reservas: `mine` já diz a resposta certa, sem depender de quantas
+        // faixas (tipos de ativo, não pessoas) estão marcadas.
+        if (props.mine !== undefined) {
+            return !props.mine;
+        }
+
+        // Planejamento: só vale destacar quando há mais de uma agenda aberta
+        // — com uma só, é óbvio de quem é tudo, e destacar não ajudaria.
+        return Object.keys(this.actors).length > 1
+            && String(props.users_id) !== String(this.config.me);
+    },
+
+    /**
      * Iniciais do marcador. Quando o servidor manda as dele, usa essas: é o
      * que mantém o marcador do evento igual ao da barra lateral em telas
      * cujo rótulo do evento não é o mesmo texto do item (a de reservas mostra
@@ -1583,5 +1703,22 @@ var GlpiPlanner = {
         }
 
         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    },
+
+    /**
+     * Um tom claro de `hex` (mistura com branco), usado como fundo de
+     * cartão/linha — a cor cheia continua só na borda/ponto, para o texto em
+     * cima permanecer legível.
+     */
+    tint: function (hex, amount) {
+        var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '');
+        if (!m) {
+            return 'transparent';
+        }
+        var r = parseInt(m[1], 16);
+        var g = parseInt(m[2], 16);
+        var b = parseInt(m[3], 16);
+
+        return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + amount + ')';
     }
 };

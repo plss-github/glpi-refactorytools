@@ -33,6 +33,16 @@ final class EventTypes
     public const RESERVATION  = 'Reservation';
     public const REMINDER     = 'Reminder';
 
+    /**
+     * Chamado em que a pessoa é REQUERENTE, não técnico — virtual porque o
+     * itemtype real (`Ticket`) não implementa `populatePlanning()`; é
+     * `TicketRequesterProvider` quem monta as linhas (ver lá o porquê da
+     * âncora de data). Chave própria, separada de `TICKET_TASK`: são
+     * perguntas diferentes ("o que EU preciso fazer" vs. "o que EU pedi"),
+     * cada uma com sua cor e seu filtro na barra lateral.
+     */
+    public const TICKET_REQUESTED = 'TicketRequested';
+
     /** Evento externo "puro": sem categoria, ou com uma categoria que não é nenhuma das três abaixo. */
     public const EVENT_EXTERNAL = 'PlanningExternalEvent';
     public const EVENT_INTERNAL = 'PlanningExternalEvent:internal';
@@ -67,6 +77,7 @@ final class EventTypes
     {
         return [
             self::TICKET_TASK,
+            self::TICKET_REQUESTED,
             self::CHANGE_TASK,
             self::PROBLEM_TASK,
             self::PROJECT_TASK,
@@ -82,7 +93,8 @@ final class EventTypes
     public static function getLabel(string $key): string
     {
         return match ($key) {
-            self::TICKET_TASK  => __('Ticket', 'planner'),
+            self::TICKET_TASK      => __('Ticket', 'planner'),
+            self::TICKET_REQUESTED => __('My requested ticket', 'planner'),
             self::CHANGE_TASK  => __('Change', 'planner'),
             self::PROBLEM_TASK => __('Problem', 'planner'),
             self::PROJECT_TASK => __('Project', 'planner'),
@@ -99,7 +111,8 @@ final class EventTypes
     public static function getIcon(string $key): string
     {
         return match ($key) {
-            self::TICKET_TASK  => 'ti ti-headset',
+            self::TICKET_TASK      => 'ti ti-headset',
+            self::TICKET_REQUESTED => 'ti ti-user-question',
             self::CHANGE_TASK  => 'ti ti-replace',
             self::PROBLEM_TASK => 'ti ti-alert-triangle',
             self::PROJECT_TASK => 'ti ti-briefcase',
@@ -120,7 +133,8 @@ final class EventTypes
     public static function getDefaultColor(string $key): string
     {
         return match ($key) {
-            self::TICKET_TASK  => '#2f6df6',
+            self::TICKET_TASK      => '#2f6df6',
+            self::TICKET_REQUESTED => '#0d9488',
             self::CHANGE_TASK  => '#8b5cf6',
             self::PROBLEM_TASK => '#e8833a',
             self::PROJECT_TASK => '#12a594',
@@ -149,7 +163,14 @@ final class EventTypes
      */
     public static function realItemtype(string $key): string
     {
-        return self::isExternalEventVariant($key) ? PlanningExternalEvent::class : $key;
+        if (self::isExternalEventVariant($key)) {
+            return PlanningExternalEvent::class;
+        }
+        if ($key === self::TICKET_REQUESTED) {
+            return 'Ticket';
+        }
+
+        return $key;
     }
 
     /**

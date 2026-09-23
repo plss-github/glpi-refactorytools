@@ -186,6 +186,34 @@ final class ReservationView
     }
 
     /**
+     * Mesma lista de `getReservableTypes()`, para a tela de CONFIGURAÇÃO do
+     * administrador definir a cor de cada tipo (ver
+     * `Settings::getReservationTypeColors()`) — inclui o campo `default`
+     * (a cor calculada por hash, a mesma que o tipo já tinha antes de
+     * qualquer customização) para o botão "voltar ao padrão" do formulário.
+     *
+     * @return array<int, array{itemtype: string, label: string, color: string, default: string}>
+     */
+    public static function getReservableTypesForAdmin(): array
+    {
+        $admin_colors = Settings::getReservationTypeColors();
+
+        return array_map(
+            static function (array $type) use ($admin_colors): array {
+                $default = EventProvider::getActorColor(crc32($type['itemtype']));
+
+                return [
+                    'itemtype' => $type['itemtype'],
+                    'label'    => $type['label'],
+                    'color'    => $admin_colors[$type['itemtype']] ?? $default,
+                    'default'  => $default,
+                ];
+            },
+            self::getReservableTypes()
+        );
+    }
+
+    /**
      * Cache do processo (uma requisição PHP), não persistente entre
      * requisições. Existe porque `getReservableItems()` é chamada VÁRIAS
      * vezes na mesma requisição — a tela pede a lista direto e de novo via

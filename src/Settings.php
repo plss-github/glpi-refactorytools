@@ -60,6 +60,9 @@ final class Settings
             // foi alterado deixa os tipos não customizados acompanharem uma
             // eventual mudança de paleta numa versão futura do plugin.
             'type_colors'        => '',
+            // Mapa itemtype de ativo reservável => cor, em JSON. Vazio =
+            // cada aparelho mantém sua cor calculada (ver `getActorColor()`).
+            'reservation_type_colors' => '',
             // IDs das 3 categorias (PlanningEventCategory) semeadas na
             // instalação, que distinguem Evento Interno / Viagem / Reunião de
             // um Evento Externo genérico. Guardados por ID, nunca pelo nome —
@@ -149,6 +152,57 @@ final class Settings
     private static function isHexColor(string $value): bool
     {
         return preg_match('/^#[0-9a-fA-F]{6}$/', $value) === 1;
+    }
+
+    /**
+     * Cores por TIPO DE ATIVO reservável, definidas pelo administrador —
+     * "se Computador é verde, toda reserva de computador aparece verde".
+     * Sem entrada aqui, o item continua com a cor calculada por aparelho
+     * (ver `EventProvider::getActorColor()`), o comportamento de sempre.
+     *
+     * @return array<string, string> itemtype => cor hexadecimal
+     */
+    public static function getReservationTypeColors(): array
+    {
+        $raw = self::get('reservation_type_colors');
+        if ($raw === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($decoded as $itemtype => $color) {
+            if (is_string($itemtype) && self::isHexColor((string) $color)) {
+                $out[$itemtype] = strtolower((string) $color);
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param array<string, string> $colors itemtype => cor; valor vazio ou
+     *                                      inválido remove a customização
+     *                                      daquele tipo (volta à cor por
+     *                                      aparelho)
+     */
+    public static function saveReservationTypeColors(array $colors): void
+    {
+        $clean = [];
+        foreach ($colors as $itemtype => $color) {
+            $color = trim((string) $color);
+            if ($color !== '' && self::isHexColor($color)) {
+                $clean[(string) $itemtype] = strtolower($color);
+            }
+        }
+
+        Config::setConfigurationValues(self::CONTEXT, [
+            'reservation_type_colors' => $clean === [] ? '' : json_encode($clean),
+        ]);
     }
 
     /** Modos de visualização da tela principal. */

@@ -15,6 +15,7 @@
 namespace GlpiPlugin\Planner;
 
 use Migration;
+use NotificationEvent;
 
 final class EventNotes
 {
@@ -140,9 +141,37 @@ final class EventNotes
         ];
 
         if ($existing) {
-            return $DB->update(self::getTable(), $fields, ['id' => $existing['id']]);
+            $ok = (bool) $DB->update(self::getTable(), $fields, ['id' => $existing['id']]);
+            $note_id = (int) $existing['id'];
+        } else {
+            $ok = (bool) $DB->insert(self::getTable(), $fields);
+            $note_id = (int) $DB->insertId();
         }
 
-        return (bool) $DB->insert(self::getTable(), $fields);
+        // Dono anotando a própria agenda não recebe e-mail sobre si mesmo —
+        // `NotificationTargetEventNoteItem::addAdditionalTargets()` manda
+        // para `users_id_owner`, e ele já sabe o que escreveu.
+        if ($ok && $note_id > 0 && $users_id_owner !== $users_id_author) {
+            self::notify($note_id, $fields);
+        }
+
+        return $ok;
+    }
+
+    /**
+     * Dispara a notificação (ver `NotificationTargetEventNoteItem`), num
+     * `EventNoteItem` montado à mão com os campos já gravados — não é preciso
+     * reconsultar o banco, e o disparo não passa pelo ciclo de
+     * add()/update() de um `CommonDBTM` de verdade (direito por entidade,
+     * histórico…), que não fazem sentido para esta tabela simples.
+     *
+     * @param array<string, mixed> $fields
+     */
+    private static function notify(int $note_id, array $fields): void
+    {
+        $item = new EventNoteItem();
+        $item->fields = ['id' => $note_id] + $fields;
+
+        NotificationEvent::raiseEvent('new_note', $item);
     }
 }
