@@ -15,9 +15,7 @@
 namespace GlpiPlugin\Planner;
 
 use Reservation;
-use ReservationItem;
 use Session;
-use User;
 
 final class ReservationEventProvider
 {
@@ -73,56 +71,46 @@ final class ReservationEventProvider
             }
         }
 
-        $items_ids = array_map(
-            static fn(array $item) => (int) $item['id'],
-            ReservationView::getItemsForTypes($itemtypes)
-        );
-
-        if ($items_ids === []) {
+        // `getItemsForTypes()` já buscou nome, tipo e rótulo de cada aparelho
+        // reservável — uma consulta POR TIPO de ativo, não uma por aparelho
+        // (ver `ReservationView::getReservableItems()`). Indexar pelo id da
+        // linha de `ReservationItem` (o mesmo valor de `reservationitems_id`
+        // que cada reserva grava) reaproveita esse resultado no laço abaixo,
+        // em vez de reconsultar o aparelho reserva por reserva.
+        $items = ReservationView::getItemsForTypes($itemtypes);
+        if ($items === []) {
             return [];
         }
 
-        $res_table  = Reservation::getTable();
-        $item_table = ReservationItem::getTable();
-        $me         = (int) Session::getLoginUserID();
+        $items_by_resid = [];
+        foreach ($items as $item) {
+            $items_by_resid[(int) $item['id']] = $item;
+        }
+        $items_ids = array_keys($items_by_resid);
+
+        $res_table = Reservation::getTable();
+        $me        = (int) Session::getLoginUserID();
 
         $where = [
-            $res_table . '.reservationitems_id' => $items_ids,
-            $res_table . '.begin'               => ['<=', $end],
-            $res_table . '.end'                 => ['>=', $begin],
+            'reservationitems_id' => $items_ids,
+            'begin'               => ['<=', $end],
+            'end'                 => ['>=', $begin],
         ];
 
         if ($only_mine) {
-            $where[$res_table . '.users_id'] = $me;
+            $where['users_id'] = $me;
         }
 
-        // O recorte por entidade é do ITEM, não da reserva: `glpi_reservations`
-        // não tem `entities_id`. Sem este critério, um id de item de outra
-        // entidade montado na requisição devolveria as reservas dele.
-        $where += getEntitiesRestrictCriteria($item_table, '', '', true);
-
+        // Sem JOIN com `ReservationItem` aqui: o recorte por entidade já
+        // aconteceu dentro de `getItemsForTypes()` (que só devolve itens da
+        // entidade ativa), então `$items_ids` já vem filtrado — refazer o
+        // JOIN só para reconferir a mesma coisa seria uma junção a mais por
+        // busca, sem checar nada de novo.
         $rows = $DB->request([
-            'SELECT' => [
-                $res_table . '.id',
-                $res_table . '.begin',
-                $res_table . '.end',
-                $res_table . '.comment',
-                $res_table . '.users_id',
-                $res_table . '.reservationitems_id',
-                $item_table . '.itemtype AS reserved_itemtype',
-                $item_table . '.items_id AS reserved_items_id',
-            ],
-            'FROM'       => $res_table,
-            'INNER JOIN' => [
-                $item_table => [
-                    'ON' => [
-                        $item_table => 'id',
-                        $res_table  => 'reservationitems_id',
-                    ],
-                ],
-            ],
-            'WHERE' => $where,
-            'ORDER' => $res_table . '.begin',
+            'SELECT' => ['id', 'begin', 'end', 'comment', 'users_id', 'reservationitems_id'],
+            'FROM'   => $res_table,
+            'WHERE'  => $where,
+            'ORDER'  => 'begin',
         ]);
 
         $now    = date('Y-m-d H:i:s');
@@ -138,10 +126,11 @@ final class ReservationEventProvider
             $color = EventProvider::getActorColor($res_item_id);
             $mine  = $users_id === $me;
 
-            [$item_label, $item_name] = self::describeItem(
-                (string) $row['reserved_itemtype'],
-                (int) $row['reserved_items_id']
-            );
+            $item_info  = $items_by_resid[$res_item_id] ?? null;
+            $item_name  = $item_info['name'] ?? sprintf(__('Reserved item #%d', 'planner'), $res_item_id);
+            $item_label = $item_info !== null
+                ? sprintf('%s - %s', $item_info['type_name'], $item_info['name'])
+                : $item_name;
 
             // Como os campos são preenchidos, e por quê:
             //
@@ -223,24 +212,5 @@ final class ReservationEventProvider
         }
 
         return ReservationView::STATE_UPCOMING;
-    }
-
-    /**
-     * @return array{0: string, 1: string} rótulo completo ("Computador - X")
-     *                                     e o nome cru do ativo ("X")
-     */
-    private static function describeItem(string $itemtype, int $items_id): array
-    {
-        $item = getItemForItemtype($itemtype);
-
-        if ($item === false || !$item->getFromDB($items_id)) {
-            $fallback = sprintf(__('Reserved item #%d', 'planner'), $items_id);
-
-            return [$fallback, $fallback];
-        }
-
-        $name = $item->getName();
-
-        return [sprintf('%s - %s', $item::getTypeName(1), $name), $name];
     }
 }

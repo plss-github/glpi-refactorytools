@@ -123,7 +123,7 @@ function plugin_planner_seed_event_categories(): void
         $category = new PlanningEventCategory();
         $new_id   = $category->add([
             'name'    => EventTypes::seedCategoryName($variant),
-            'comment' => __('Created by the Planner plugin to tell this event type apart.', 'planner'),
+            'comment' => __('Created by the Pellissari New Planners plugin to tell this event type apart.', 'planner'),
         ]);
 
         if ($new_id) {
@@ -140,6 +140,6 @@ function plugin_planner_seed_event_categories(): void
 function plugin_planner_getrights(): array
 {
     return [
-        Right::NAME => __('Planning (Planner)', 'planner'),
+        Right::NAME => __('Planning (Pellissari New Planners)', 'planner'),
     ];
 }

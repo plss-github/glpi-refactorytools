@@ -186,17 +186,36 @@ final class ReservationView
     }
 
     /**
+     * Cache do processo (uma requisição PHP), não persistente entre
+     * requisições. Existe porque `getReservableItems()` é chamada VÁRIAS
+     * vezes na mesma requisição — a tela pede a lista direto e de novo via
+     * `getReservableTypes()`, e o endpoint de eventos pede de novo via
+     * `getEvents()` e `getResources()` — e cada chamada fazia uma consulta
+     * SEPARADA por aparelho reservável (`getFromDB()` um a um). Numa
+     * instalação com algumas dezenas de itens reserváveis, isso multiplicava
+     * por 4 uma lista que já era cara de montar — a causa mais provável da
+     * lentidão relatada ao abrir a tela de Reservas.
+     *
+     * @var array<int, array<string, mixed>>|null
+     */
+    private static ?array $items_cache = null;
+
+    /**
      * Itens reserváveis visíveis, em lista única.
      *
      * @return array<int, array<string, mixed>>
      */
     public static function getReservableItems(): array
     {
+        if (self::$items_cache !== null) {
+            return self::$items_cache;
+        }
+
         /** @var \DBmysql $DB */
         global $DB;
 
         if (!self::canView()) {
-            return [];
+            return self::$items_cache = [];
         }
 
         $table = ReservationItem::getTable();
@@ -239,7 +258,7 @@ final class ReservationView
             return [$a['type_label'], $a['name']] <=> [$b['type_label'], $b['name']];
         });
 
-        return $items;
+        return self::$items_cache = $items;
     }
 
     /**

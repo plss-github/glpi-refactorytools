@@ -85,9 +85,11 @@
                 {% else %}
                     {# Uma seção só, "Filtros": os tipos de ativo e as duas
                        caixas booleanas mexem na mesma coisa — o que aparece
-                       no calendário/lista agora — e antes ficavam em duas
-                       seções separadas, sem nada que dissesse que os tipos
-                       também eram um filtro.
+                       no calendário/lista agora. As duas caixas vêm PRIMEIRO
+                       (são a última opção de filtro antes da lista de tipos,
+                       por pedido explícito) e os tipos de ativo, que são uma
+                       lista mais longa e variável conforme a instalação,
+                       ficam por último.
                        A barra lateral marca TIPOS de ativo, não aparelhos.
                        Marcar "Computador" traz todos os computadores
                        reserváveis; cada aparelho vira uma faixa na visão Por
@@ -95,6 +97,21 @@
                        se quer quase sempre é "ver os computadores". #}
                     <div class="planner-section">
                         <div class="planner-section-title">{{ __('Filters', 'planner') }}</div>
+
+                        <label class="planner-type-label">
+                            {# `data-planner-flag` faz o JavaScript mandar esta
+                               caixa como parâmetro na busca de eventos, sem
+                               precisar de código específico desta tela.
+                               Marcada por padrão: o uso mais comum da tela é
+                               conferir as próprias reservas. #}
+                            <input type="checkbox" class="form-check-input planner-type-toggle"
+                                   id="planner-only-mine" data-planner-flag="only_mine" checked>
+                            <span>{{ __('Only my reservations', 'planner') }}</span>
+                        </label>
+                        <label class="planner-type-label">
+                            <input type="checkbox" class="form-check-input" id="planner-show-done" checked>
+                            <span>{{ __('Show finished', 'planner') }}</span>
+                        </label>
 
                         <div class="planner-section-subtitle">{{ __('Asset types', 'planner') }}</div>
                         <ul class="planner-actors">
@@ -115,21 +132,6 @@
                                 </li>
                             {% endfor %}
                         </ul>
-
-                        <label class="planner-type-label">
-                            {# `data-planner-flag` faz o JavaScript mandar esta
-                               caixa como parâmetro na busca de eventos, sem
-                               precisar de código específico desta tela.
-                               Marcada por padrão: o uso mais comum da tela é
-                               conferir as próprias reservas. #}
-                            <input type="checkbox" class="form-check-input planner-type-toggle"
-                                   id="planner-only-mine" data-planner-flag="only_mine" checked>
-                            <span>{{ __('Only my reservations', 'planner') }}</span>
-                        </label>
-                        <label class="planner-type-label">
-                            <input type="checkbox" class="form-check-input" id="planner-show-done" checked>
-                            <span>{{ __('Show finished', 'planner') }}</span>
-                        </label>
                     </div>
                 {% endif %}
 

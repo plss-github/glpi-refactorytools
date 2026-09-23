@@ -45,7 +45,7 @@ if (isset($_POST['update'])) {
 }
 
 Html::header(
-    __('Planner', 'planner') . ' - ' . __('Configuration', 'planner'),
+    __('Pellissari New Planners', 'planner') . ' - ' . __('Configuration', 'planner'),
     $_SERVER['PHP_SELF'],
     'helpdesk',
     Menu::getMenuItemKey(),

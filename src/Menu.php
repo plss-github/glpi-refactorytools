@@ -39,7 +39,7 @@ class Menu extends CommonGLPI
 
     public static function getTypeName($nb = 0)
     {
-        return __('Planner', 'planner');
+        return __('Pellissari New Planners', 'planner');
     }
 
     public static function getMenuName()

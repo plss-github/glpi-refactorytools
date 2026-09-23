@@ -1,13 +1,17 @@
-# Planner
+# Pellissari New Planners
 
 Plugin para GLPI 11.0.x que remodela a tela de planejamento e resolve o que o
 planejamento nativo não cobre: **um supervisor enxergar a agenda da equipe**,
 e **uma pessoa liberar a própria agenda para outra, com aceite**.
 
 Por padrão ele **substitui** o item *Planejamento* de Assistência: o rótulo do
-menu continua o mesmo, só o destino muda. "Planner" é o nome do plugin, não do
-item de menu. A substituição pode ser desligada na configuração, e aí as duas
-telas convivem lado a lado.
+menu continua o mesmo, só o destino muda. "Pellissari New Planners" é o nome
+do plugin, não do item de menu. A substituição pode ser desligada na
+configuração, e aí as duas telas convivem lado a lado.
+
+O diretório e o namespace internos continuam `planner`/`GlpiPlugin\Planner` —
+são identificadores técnicos (nome de tabela, autoload, direito no banco), não
+o nome exibido. Só o nome exibido mudou.
 
 ---
 
@@ -166,7 +170,8 @@ conjunto completo ao(s) perfil(is) Super-Admin — sem isso, nem quem instalou
 conseguiria abrir a tela.
 
 Depois, libere os direitos aos demais perfis em **Administração > Perfis >
-Planner** e revise **Assistência > Planner > Configuração**.
+Pellissari New Planners** e revise **Assistência > Pellissari New Planners >
+Configuração**.
 
 ### Requisitos
 

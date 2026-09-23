@@ -31,7 +31,7 @@ use GlpiPlugin\Planner\ProfileRights;
 use GlpiPlugin\Planner\ReservationMenu;
 use GlpiPlugin\Planner\Share;
 
-define('PLUGIN_PLANNER_VERSION', '0.8.0');
+define('PLUGIN_PLANNER_VERSION', '0.8.1');
 
 // Alvo: GLPI 11.0.x. As assinaturas usadas aqui (Planning::$rightname,
 // CFG_GLPI['planning_types'], populatePlanning(), Html::requireJs('fullcalendar'))
@@ -133,7 +133,7 @@ function plugin_planner_redefine_menus(array $menu): array
 function plugin_version_planner(): array
 {
     return [
-        'name'         => 'Planner',
+        'name'         => 'Pellissari New Planners',
         'version'      => PLUGIN_PLANNER_VERSION,
         'author'       => 'Pellissari',
         'license'      => 'AGPL-3.0',
@@ -200,7 +200,7 @@ function plugin_planner_check_config($verbose = false): bool
 
     if ($missing !== []) {
         if ($verbose) {
-            echo __('Planner: GLPI dependencies not found or incompatible:', 'planner')
+            echo __('Pellissari New Planners: GLPI dependencies not found or incompatible:', 'planner')
                 . ' ' . implode(', ', $missing);
         }
         return false;

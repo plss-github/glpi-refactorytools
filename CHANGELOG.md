@@ -3,6 +3,40 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.8.1] - 2026-09-23
+
+### Alterado
+
+- **Renomeado para "Pellissari New Planners"** — nome exibido na lista de
+  plugins, no menu (quando a substituição do nativo está desligada), na aba
+  de direitos de perfil, no título da tela de configuração e no rodapé da
+  barra lateral. O diretório (`planner`), o namespace
+  (`GlpiPlugin\Planner`), o nome das tabelas e o direito no banco
+  (`plugin_planner_planning`) continuam os mesmos — são identificadores
+  técnicos, não o nome exibido, e renomeá-los exigiria reinstalar o plugin
+  do zero. O autor já estava correto (Pellissari).
+- Reservas: os tipos de ativo, dentro de "Filtros", passaram para DEPOIS de
+  "Somente as minhas reservas" e "Mostrar encerradas" — antes vinham primeiro.
+
+### Corrigido
+
+- **Lentidão ao abrir a tela de Reservas.** Duas causas, as duas resolvidas:
+  - `ReservationEventProvider::getEvents()` fazia uma consulta ao banco POR
+    RESERVA para descobrir o nome do aparelho (`getFromDB()` num laço) — com
+    muitas reservas no período, isso sozinho já bastava para travar a tela.
+    Trocado por reaproveitar a lista de itens reserváveis, que já tem essa
+    informação, sem nenhuma consulta extra por reserva.
+  - `ReservationView::getReservableItems()` monta a lista de aparelhos
+    reserváveis com uma consulta por APARELHO (nome, tipo…), e era chamada
+    QUATRO VEZES na mesma requisição (a tela pede direto e de novo via
+    `getReservableTypes()`; o endpoint de eventos pede de novo via
+    `getEvents()` e `getResources()`) — multiplicando por 4 uma lista que já
+    era cara de montar. Agora é calculada uma vez por requisição e
+    reaproveitada nas chamadas seguintes.
+  - Medido depois da correção com uma carga de teste (33 aparelhos
+    reserváveis, 120 reservas na semana): abertura da tela e busca de
+    eventos completam em bem menos de meio segundo no servidor.
+
 ## [0.8.0] - 2026-09-22
 
 ### Corrigido
