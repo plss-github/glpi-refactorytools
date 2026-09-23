@@ -107,8 +107,8 @@ final class ReservationView
                 [Settings::MODE_CALENDAR, Settings::MODE_LIST],
                 true
             ) ? Settings::get('default_mode') : Settings::MODE_CALENDAR,
-            'default_begin' => date('Y-m-d\TH:00', strtotime('+1 hour')),
-            'default_end'   => date('Y-m-d\TH:00', strtotime('+2 hours')),
+            'default_begin' => date('Y-m-d H:00:00', strtotime('+1 hour')),
+            'default_end'   => date('Y-m-d H:00:00', strtotime('+2 hours')),
             'csrf'          => Session::getNewCSRFToken(),
         ]);
     }

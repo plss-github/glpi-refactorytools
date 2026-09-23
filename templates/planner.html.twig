@@ -387,17 +387,18 @@
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-sm-6">
                             <label class="form-label required" for="planner-event-begin">{{ __('Start', 'planner') }}</label>
-                            <input type="datetime-local" class="form-control" id="planner-event-begin"
-                                   value="{{ default_event_begin }}" required>
+                            {# flatpickr, não `type="datetime-local"`: ver o
+                               mesmo comentário no modal de nova reserva
+                               (templates/reservations.html.twig). #}
+                            <input type="text" class="form-control" id="planner-event-begin"
+                                   name="begin" value="{{ default_event_begin }}" required autocomplete="off">
                         </div>
                         <div class="col-12 col-sm-6">
                             <label class="form-label required" for="planner-event-end">{{ __('End', 'planner') }}</label>
-                            <input type="datetime-local" class="form-control" id="planner-event-end"
-                                   value="{{ default_event_end }}" required>
+                            <input type="text" class="form-control" id="planner-event-end"
+                                   name="end" value="{{ default_event_end }}" required autocomplete="off">
                         </div>
                     </div>
-                    <input type="hidden" name="begin" id="planner-event-begin-raw">
-                    <input type="hidden" name="end" id="planner-event-end-raw">
 
                     <div class="mb-3">
                         <label class="form-label" for="planner-event-text">{{ __('Description', 'planner') }}</label>
@@ -431,8 +432,13 @@
             var $kindSelect = $('#planner-event-kind');
             var $rrule = $('#planner-event-rrule');
 
-            function toSql(value) {
-                return value ? value.replace('T', ' ') + ':00' : '';
+            if ($.fn.flatpickr) {
+                $('#planner-event-begin, #planner-event-end').flatpickr({
+                    enableTime: true,
+                    time_24hr: true,
+                    dateFormat: 'Y-m-d H:i:S',
+                    allowInput: true
+                });
             }
 
             function toggleRrule() {
@@ -444,11 +450,6 @@
 
             $kindSelect.on('change', toggleRrule);
             toggleRrule();
-
-            $('#planner-new-event-form').on('submit', function () {
-                $('#planner-event-begin-raw').val(toSql($('#planner-event-begin').val()));
-                $('#planner-event-end-raw').val(toSql($('#planner-event-end').val()));
-            });
         });
     </script>
 {% endif %}
@@ -481,6 +482,7 @@
             events_url: {{ (root_doc ~ '/plugins/planner/ajax/events.php')|json_encode|raw }},
             me: {{ me }},
             default_mode: {{ default_mode|json_encode|raw }},
+            kanban_state_order: {{ kanban_state_order|json_encode|raw }},
             labels: {
                 busy: {{ __('Busy', 'planner')|json_encode|raw }},
                 no_actor: {{ __('Select at least one schedule in the sidebar.', 'planner')|json_encode|raw }},
@@ -499,6 +501,8 @@
                 save_denied: {{ __('You are not allowed to move this event.', 'planner')|json_encode|raw }},
                 save_failed: {{ __('Could not save the new time.', 'planner')|json_encode|raw }},
                 manager_note: {{ __('Manager note', 'planner')|json_encode|raw }},
+                own_note: {{ __('Note', 'planner')|json_encode|raw }},
+                ticket_duration: {{ __('Total time on this ticket', 'planner')|json_encode|raw }},
                 add_note: {{ __('Add a note', 'planner')|json_encode|raw }},
                 edit_note: {{ __('Edit note', 'planner')|json_encode|raw }},
                 note_saved: {{ __('Note saved.', 'planner')|json_encode|raw }},

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GLPI Planner plugin\n"
 "Report-Msgid-Bugs-To: suporte@pellissari.com.br\n"
-"POT-Creation-Date: 2026-09-22 23:22+0000\n"
+"POT-Creation-Date: 2026-09-23 01:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -131,11 +131,11 @@ msgstr ""
 msgid "Configuration"
 msgstr ""
 
-#: hook.php:123
+#: hook.php:126
 msgid "Created by the Planner plugin to tell this event type apart."
 msgstr ""
 
-#: hook.php:140 src/ProfileRights.php:57
+#: hook.php:143 src/ProfileRights.php:57
 msgid "Planning (Planner)"
 msgstr ""
 
@@ -143,48 +143,53 @@ msgstr ""
 msgid "Planner: GLPI dependencies not found or incompatible:"
 msgstr ""
 
-#: src/AccessPolicy.php:489
+#: src/AccessPolicy.php:498
 msgid "My schedule"
 msgstr ""
 
-#: src/AccessPolicy.php:490
+#: src/AccessPolicy.php:499
 msgid "Administrative access"
 msgstr ""
 
-#: src/AccessPolicy.php:491
+#: src/AccessPolicy.php:500
 msgid "My team"
 msgstr ""
 
-#: src/AccessPolicy.php:492
+#: src/AccessPolicy.php:501
 msgid "My group"
 msgstr ""
 
-#: src/AccessPolicy.php:493
+#: src/AccessPolicy.php:502
 msgid "Group I manage"
 msgstr ""
 
-#: src/AccessPolicy.php:494
+#: src/AccessPolicy.php:503
 msgid "Shared with me"
 msgstr ""
 
-#: src/EventProvider.php:323
-#: templates/planner.html.twig:485
+#: src/EventProvider.php:219 src/TechnicianStats.php:171
+#, php-format
+msgid "%1$dh%2$02dmin"
+msgstr ""
+
+#: src/EventProvider.php:399
+#: templates/planner.html.twig:487
 msgid "Busy"
 msgstr ""
 
-#: src/EventProvider.php:659
+#: src/EventProvider.php:736
 #: templates/planner.html.twig:108
-#: templates/planner.html.twig:491
+#: templates/planner.html.twig:493
 msgid "To do"
 msgstr ""
 
-#: src/EventProvider.php:660
-#: templates/planner.html.twig:492
+#: src/EventProvider.php:737
+#: templates/planner.html.twig:494
 msgid "Done"
 msgstr ""
 
-#: src/EventProvider.php:661
-#: templates/planner.html.twig:490
+#: src/EventProvider.php:738
+#: templates/planner.html.twig:492
 msgid "Information"
 msgstr ""
 
@@ -330,12 +335,7 @@ msgstr ""
 msgid "Ticket #%d"
 msgstr ""
 
-#: src/TechnicianStats.php:171
-#, php-format
-msgid "%1$dh%2$02dmin"
-msgstr ""
-
-#: src/View.php:157 src/View.php:185
+#: src/View.php:158 src/View.php:186
 #, php-format
 msgid "User #%d"
 msgstr ""
@@ -435,7 +435,7 @@ msgid "Open the schedule with the team already selected"
 msgstr ""
 
 #: templates/config.html.twig:170
-#: templates/planner.html.twig:505
+#: templates/planner.html.twig:509
 msgid "Save"
 msgstr ""
 
@@ -500,14 +500,14 @@ msgid "Group by"
 msgstr ""
 
 #: templates/planner.html.twig:95
-#: templates/planner.html.twig:497
-#: templates/reservations.html.twig:452
+#: templates/planner.html.twig:499
+#: templates/reservations.html.twig:464
 msgid "Status"
 msgstr ""
 
 #: templates/planner.html.twig:96
-#: templates/planner.html.twig:488
-#: templates/planner.html.twig:494
+#: templates/planner.html.twig:490
+#: templates/planner.html.twig:496
 msgid "Person"
 msgstr ""
 
@@ -579,12 +579,12 @@ msgid "Loading schedule…"
 msgstr ""
 
 #: templates/planner.html.twig:369
-#: templates/reservations.html.twig:189
+#: templates/reservations.html.twig:193
 msgid "Close"
 msgstr ""
 
 #: templates/planner.html.twig:374
-#: templates/planner.html.twig:495
+#: templates/planner.html.twig:497
 msgid "Type"
 msgstr ""
 
@@ -593,81 +593,90 @@ msgid "Title"
 msgstr ""
 
 #: templates/planner.html.twig:389
-#: templates/reservations.html.twig:195
+#: templates/reservations.html.twig:199
 msgid "Start"
 msgstr ""
 
-#: templates/planner.html.twig:394
-#: templates/reservations.html.twig:200
+#: templates/planner.html.twig:397
+#: templates/reservations.html.twig:210
 msgid "End"
 msgstr ""
 
-#: templates/planner.html.twig:403
+#: templates/planner.html.twig:404
 msgid "Description"
 msgstr ""
 
-#: templates/planner.html.twig:419
-#: templates/planner.html.twig:506
-#: templates/reservations.html.twig:289
+#: templates/planner.html.twig:420
+#: templates/planner.html.twig:510
+#: templates/reservations.html.twig:293
 msgid "Cancel"
 msgstr ""
 
-#: templates/planner.html.twig:422
+#: templates/planner.html.twig:423
 msgid "Create"
 msgstr ""
 
-#: templates/planner.html.twig:486
+#: templates/planner.html.twig:488
 msgid "Select at least one schedule in the sidebar."
 msgstr ""
 
-#: templates/planner.html.twig:487
+#: templates/planner.html.twig:489
 msgid "No events in this period."
 msgstr ""
 
-#: templates/planner.html.twig:489
-#: templates/reservations.html.twig:447
+#: templates/planner.html.twig:491
+#: templates/reservations.html.twig:459
 msgid "All day"
 msgstr ""
 
-#: templates/planner.html.twig:493
-#: templates/reservations.html.twig:448
+#: templates/planner.html.twig:495
+#: templates/reservations.html.twig:460
 msgid "When"
 msgstr ""
 
-#: templates/planner.html.twig:496
+#: templates/planner.html.twig:498
 msgid "Event"
 msgstr ""
 
-#: templates/planner.html.twig:498
+#: templates/planner.html.twig:500
 msgid "Schedule updated."
 msgstr ""
 
-#: templates/planner.html.twig:499
+#: templates/planner.html.twig:501
 msgid "You are not allowed to move this event."
 msgstr ""
 
-#: templates/planner.html.twig:500
+#: templates/planner.html.twig:502
 msgid "Could not save the new time."
 msgstr ""
 
-#: templates/planner.html.twig:501
+#: templates/planner.html.twig:503
 msgid "Manager note"
 msgstr ""
 
-#: templates/planner.html.twig:502
+#: templates/planner.html.twig:504
+#: templates/reservations.html.twig:462
+msgid "Note"
+msgstr ""
+
+#: templates/planner.html.twig:505
+msgid "Total time on this ticket"
+msgstr ""
+
+#: templates/planner.html.twig:506
 msgid "Add a note"
 msgstr ""
 
-#: templates/planner.html.twig:503
+#: templates/planner.html.twig:507
 msgid "Edit note"
 msgstr ""
 
-#: templates/planner.html.twig:504
+#: templates/planner.html.twig:508
 msgid "Note saved."
 msgstr ""
 
 #: templates/reservations.html.twig:39
-#: templates/reservations.html.twig:187
+#: templates/reservations.html.twig:191
 msgid "New reservation"
 msgstr ""
 
@@ -687,157 +696,153 @@ msgstr ""
 msgid "No reservable item is available in this entity. An item becomes reservable from its own form, under the Reservations tab."
 msgstr ""
 
-#: templates/reservations.html.twig:92
-msgid "Asset types"
-msgstr ""
-
-#: templates/reservations.html.twig:114
+#: templates/reservations.html.twig:97
 msgid "Filters"
 msgstr ""
 
-#: templates/reservations.html.twig:123
-msgid "Only my reservations"
+#: templates/reservations.html.twig:99
+msgid "Asset types"
 msgstr ""
 
 #: templates/reservations.html.twig:127
+msgid "Only my reservations"
+msgstr ""
+
+#: templates/reservations.html.twig:131
 msgid "Show finished"
 msgstr ""
 
-#: templates/reservations.html.twig:137
+#: templates/reservations.html.twig:141
 msgid "Manage reservable items"
 msgstr ""
 
-#: templates/reservations.html.twig:147
+#: templates/reservations.html.twig:151
 msgid "Loading reservations…"
 msgstr ""
 
-#: templates/reservations.html.twig:213
+#: templates/reservations.html.twig:217
 msgid "Asset type"
 msgstr ""
 
-#: templates/reservations.html.twig:215
-#: templates/reservations.html.twig:314
+#: templates/reservations.html.twig:219
+#: templates/reservations.html.twig:318
 msgid "Fill in the dates above first"
 msgstr ""
 
-#: templates/reservations.html.twig:221
+#: templates/reservations.html.twig:225
 msgid "Reservable item"
 msgstr ""
 
-#: templates/reservations.html.twig:231
+#: templates/reservations.html.twig:235
 msgid "Reservation justification"
 msgstr ""
 
-#: templates/reservations.html.twig:234
+#: templates/reservations.html.twig:238
 msgid "What is it for?"
 msgstr ""
 
-#: templates/reservations.html.twig:241
+#: templates/reservations.html.twig:245
 msgid "Repeat"
 msgstr ""
 
-#: templates/reservations.html.twig:243
+#: templates/reservations.html.twig:247
 msgid "Does not repeat"
 msgstr ""
 
-#: templates/reservations.html.twig:244
+#: templates/reservations.html.twig:248
 msgid "Every day"
 msgstr ""
 
-#: templates/reservations.html.twig:245
+#: templates/reservations.html.twig:249
 msgid "Every week"
 msgstr ""
 
-#: templates/reservations.html.twig:246
+#: templates/reservations.html.twig:250
 msgid "Every month"
 msgstr ""
 
-#: templates/reservations.html.twig:253
+#: templates/reservations.html.twig:257
 msgid "Repeat until"
 msgstr ""
 
-#: templates/reservations.html.twig:258
+#: templates/reservations.html.twig:262
 msgid "Monthly pattern"
 msgstr ""
 
-#: templates/reservations.html.twig:260
+#: templates/reservations.html.twig:264
 msgid "Same date every month"
 msgstr ""
 
-#: templates/reservations.html.twig:261
+#: templates/reservations.html.twig:265
 msgid "Same weekday every month"
 msgstr ""
 
-#: templates/reservations.html.twig:266
+#: templates/reservations.html.twig:270
 msgid "On these days"
 msgstr ""
 
-#: templates/reservations.html.twig:268
+#: templates/reservations.html.twig:272
 msgid "Mon"
 msgstr ""
 
-#: templates/reservations.html.twig:268
+#: templates/reservations.html.twig:272
 msgid "Tue"
 msgstr ""
 
-#: templates/reservations.html.twig:268
+#: templates/reservations.html.twig:272
 msgid "Wed"
 msgstr ""
 
-#: templates/reservations.html.twig:268
+#: templates/reservations.html.twig:272
 msgid "Thu"
 msgstr ""
 
-#: templates/reservations.html.twig:268
+#: templates/reservations.html.twig:272
 msgid "Fri"
 msgstr ""
 
-#: templates/reservations.html.twig:268
+#: templates/reservations.html.twig:272
 msgid "Sat"
 msgstr ""
 
-#: templates/reservations.html.twig:268
+#: templates/reservations.html.twig:272
 msgid "Sun"
 msgstr ""
 
-#: templates/reservations.html.twig:283
+#: templates/reservations.html.twig:287
 msgid "The item is held only for you during this period. If someone has already reserved it, we will tell you and nothing is saved."
 msgstr ""
 
-#: templates/reservations.html.twig:292
+#: templates/reservations.html.twig:296
 msgid "Reserve"
 msgstr ""
 
-#: templates/reservations.html.twig:312
+#: templates/reservations.html.twig:316
 msgid "Choose an asset type"
 msgstr ""
 
-#: templates/reservations.html.twig:313
+#: templates/reservations.html.twig:317
 msgid "Choose an item"
 msgstr ""
 
-#: templates/reservations.html.twig:315
+#: templates/reservations.html.twig:319
 msgid "Nothing is free for this period."
 msgstr ""
 
-#: templates/reservations.html.twig:444
+#: templates/reservations.html.twig:456
 msgid "Select at least one asset type in the sidebar."
 msgstr ""
 
-#: templates/reservations.html.twig:445
+#: templates/reservations.html.twig:457
 msgid "No reservation in this period."
 msgstr ""
 
-#: templates/reservations.html.twig:446
-#: templates/reservations.html.twig:449
+#: templates/reservations.html.twig:458
+#: templates/reservations.html.twig:461
 msgid "Item"
 msgstr ""
 
-#: templates/reservations.html.twig:450
-msgid "Note"
-msgstr ""
-
-#: templates/reservations.html.twig:451
+#: templates/reservations.html.twig:463
 msgid "Reserved by"
 msgstr ""
 

@@ -151,25 +151,34 @@ final class AccessPolicy
     }
 
     /**
-     * Se o observador pode escrever a nota de gestor num compromisso de
-     * $owner_id (dono da agenda onde o compromisso aparece).
+     * Se o observador pode escrever a nota num compromisso de $owner_id (dono
+     * da agenda onde o compromisso aparece).
      *
-     * Deliberadamente mais estrito que "pode ver a agenda": um colega do
-     * mesmo grupo (REASON_GROUP) ou alguém que recebeu compartilhamento
-     * (REASON_SHARE) não é gestor de ninguém, só tem visão. Só quem realmente
-     * ocupa uma posição de liderança sobre o dono — responsável direto
-     * (REASON_TEAM), gerente do grupo dele (REASON_GROUP_MANAGER), ou acesso
-     * administrativo — pode deixar um recado que o dono vê destacado.
+     * A própria agenda é sempre permitida: a nota também serve como
+     * lembrete/instrução pessoal ("nota de instrução"), não só como recado de
+     * um gestor — sem isso o popover de um compromisso próprio ficava
+     * meramente informativo, sem nada para interagir.
+     *
+     * Para a agenda de OUTRA pessoa, é mais estrito que "pode ver a agenda":
+     * um colega do mesmo grupo (REASON_GROUP) ou alguém que recebeu
+     * compartilhamento (REASON_SHARE) não é gestor de ninguém, só tem visão.
+     * Só quem realmente ocupa uma posição de liderança sobre o dono —
+     * responsável direto (REASON_TEAM), gerente do grupo dele
+     * (REASON_GROUP_MANAGER), ou acesso administrativo — pode deixar um
+     * recado que o dono vê destacado.
      */
     public static function canManageNoteFor(int $owner_id, ?int $viewer_id = null): bool
     {
         $viewer_id ??= (int) Session::getLoginUserID();
 
-        if ($owner_id <= 0 || $viewer_id <= 0 || $owner_id === $viewer_id) {
+        if ($owner_id <= 0 || $viewer_id <= 0) {
             return false;
         }
         if (!Right::canUse()) {
             return false;
+        }
+        if ($owner_id === $viewer_id) {
+            return true;
         }
         if (Right::has(Right::READ_ALL)) {
             return true;

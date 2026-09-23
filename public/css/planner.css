@@ -218,6 +218,15 @@
     margin-bottom: 0.5rem;
 }
 
+/* Subdivisão dentro de UMA seção (ex.: "Tipos de ativo" dentro de
+   "Filtros") — mais discreta que `.planner-section-title`, que já marca o
+   início de um bloco novo. */
+.planner-section-subtitle {
+    font-size: 0.6875rem;
+    color: var(--tblr-secondary);
+    margin: 0.5rem 0 0.25rem;
+}
+
 .planner-actors,
 .planner-types {
     list-style: none;
@@ -684,6 +693,14 @@
 }
 
 .planner-kanban-card.is-dragging {
+    opacity: 0.4;
+}
+
+.planner-kanban-head-draggable {
+    cursor: grab;
+}
+
+.planner-kanban-col.is-dragging {
     opacity: 0.4;
 }
 

@@ -3,6 +3,63 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.8.0] - 2026-09-22
+
+### Corrigido
+
+- **Editor de nota do popover nunca abria de verdade.** O popover é anexado
+  fora do elemento do compromisso (direto em `body`); o cursor saindo do
+  compromisso a caminho do próprio popover disparava `mouseleave` e fechava
+  tudo ANTES de o clique em "Adicionar nota" registrar. Corrigido com um
+  atraso no fechamento, cancelado se o cursor entrar no popover a tempo —
+  achado e confirmado testando o fluxo completo num navegador de verdade, não
+  só lendo o código.
+- **Datas/horas do formulário de reserva e do "+ Novo compromisso" não
+  aceitavam digitação.** Eram `<input type="datetime-local">` nativo, cujo
+  comportamento de edição varia (e em vários casos trava) conforme
+  navegador/SO. Trocado pelo mesmo flatpickr que o resto do GLPI usa, com
+  `allowInput: true` — sem essa opção o texto visível do flatpickr também
+  fica só de leitura, mesmo problema por outro caminho.
+- Uma proteção foi acrescentada contra o calendário não repintar as reservas
+  ao voltar para a aba pelo botão Voltar do navegador quando ele é restaurado
+  do "bfcache" em vez de recarregado (`window.pageshow` com
+  `event.persisted`). Testado repetidamente (F5, navegar e voltar, botão
+  Voltar) sem conseguir reproduzir o desaparecimento relatado — se persistir
+  depois desta versão, precisamos dos passos exatos (navegador, SO, se é no
+  modo Calendário ou Lista) para investigar mais a fundo.
+
+### Adicionado
+
+- **Nota de qualquer compromisso, inclusive o PRÓPRIO.** `canManageNoteFor()`
+  não bloqueia mais dono=observador — a nota também serve como lembrete
+  pessoal ("nota de instrução"), não só como recado de um gestor para um
+  subordinado. O rótulo no popover muda conforme o caso ("Nota" vs. "Nota do
+  gestor").
+- **Ordem das colunas do Kanban de Planejamento, arrastável.** O cabeçalho de
+  cada coluna de situação (A fazer/Informação/Concluído) agora se arrasta
+  para outra posição; a preferência é gravada por usuário
+  (`glpi_plugin_planner_kanban_prefs`) e volta a valer em qualquer sessão
+  futura.
+- **Duração do chamado no popover do calendário.** Passar o mouse num
+  compromisso de tipo Chamado mostra o tempo total já registrado naquele
+  chamado (`glpi_tickets.actiontime`, a mesma soma que o core mantém) — é a
+  pergunta original ("quanto tempo esse chamado já tomou"), respondida no
+  próprio evento do calendário, não só na lista lateral de chamados como
+  técnico.
+- Confirmado (com um cenário de teste de 2 grupos sobrepostos) que ser gerente
+  de N grupos combina os membros de todos eles sem duplicar entradas na barra
+  lateral e sem confundir a origem do acesso quando alguém é, ao mesmo tempo,
+  liderado direto e membro de um grupo gerenciado — o mais forte
+  (responsável direto) sempre vence.
+
+### Alterado
+
+- Reservas: os tipos de ativo entraram para dentro da seção "Filtros" na
+  barra lateral, junto com "Somente as minhas reservas" e "Mostrar
+  encerradas" — os três mexem na mesma coisa (o que aparece no
+  calendário/lista) e antes ficavam em seções separadas sem nada que
+  dissesse isso.
+
 ## [0.7.0] - 2026-09-22
 
 Entrega os três itens adiados na 0.6.0.

@@ -45,12 +45,13 @@ final class View
             'auto_load_team' => Settings::isTrue('auto_load_team'),
             'can_group_manager_mode' => AccessPolicy::canUseGroupManagerMode($me),
             'technician_panel' => TechnicianStats::getPanelForUser($me),
+            'kanban_state_order' => KanbanPrefs::getStateOrder($me),
             'me'             => $me,
             'today'          => date('Y-m-d'),
             'level_busy'     => Settings::LEVEL_BUSY,
             'creatable_kinds'    => self::getCreatableKinds(),
-            'default_event_begin' => date('Y-m-d\TH:00', strtotime('+1 hour')),
-            'default_event_end'   => date('Y-m-d\TH:00', strtotime('+2 hours')),
+            'default_event_begin' => date('Y-m-d H:00:00', strtotime('+1 hour')),
+            'default_event_end'   => date('Y-m-d H:00:00', strtotime('+2 hours')),
             'csrf'           => Session::getNewCSRFToken(),
         ]);
     }

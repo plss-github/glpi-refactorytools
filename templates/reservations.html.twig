@@ -83,13 +83,20 @@
                         {{ __('No reservable item is available in this entity. An item becomes reservable from its own form, under the Reservations tab.', 'planner') }}
                     </div>
                 {% else %}
-                    {# A barra lateral marca TIPOS de ativo, não aparelhos.
+                    {# Uma seção só, "Filtros": os tipos de ativo e as duas
+                       caixas booleanas mexem na mesma coisa — o que aparece
+                       no calendário/lista agora — e antes ficavam em duas
+                       seções separadas, sem nada que dissesse que os tipos
+                       também eram um filtro.
+                       A barra lateral marca TIPOS de ativo, não aparelhos.
                        Marcar "Computador" traz todos os computadores
                        reserváveis; cada aparelho vira uma faixa na visão Por
                        item. Uma lista aparelho a aparelho não escala, e o que
                        se quer quase sempre é "ver os computadores". #}
                     <div class="planner-section">
-                        <div class="planner-section-title">{{ __('Asset types', 'planner') }}</div>
+                        <div class="planner-section-title">{{ __('Filters', 'planner') }}</div>
+
+                        <div class="planner-section-subtitle">{{ __('Asset types', 'planner') }}</div>
                         <ul class="planner-actors">
                             {% for type in types %}
                                 <li class="planner-actor" data-actor="{{ type.itemtype }}">
@@ -108,10 +115,7 @@
                                 </li>
                             {% endfor %}
                         </ul>
-                    </div>
 
-                    <div class="planner-section">
-                        <div class="planner-section-title">{{ __('Filters', 'planner') }}</div>
                         <label class="planner-type-label">
                             {# `data-planner-flag` faz o JavaScript mandar esta
                                caixa como parâmetro na busca de eventos, sem
@@ -193,21 +197,21 @@
                     <div class="row g-3 mb-3">
                         <div class="col-12 col-sm-6">
                             <label class="form-label required" for="planner-res-begin">{{ __('Start', 'planner') }}</label>
-                            <input type="datetime-local" class="form-control" id="planner-res-begin"
-                                   value="{{ default_begin }}" required>
+                            {# Texto simples + flatpickr, não `type="datetime-local"`:
+                               o widget nativo do navegador para esse tipo de
+                               campo varia demais de um SO/navegador para outro
+                               e em vários deles não dá pra digitar a hora
+                               direto, só clicar nas setinhas. flatpickr é o
+                               que o resto do GLPI já usa para isso. #}
+                            <input type="text" class="form-control" id="planner-res-begin"
+                                   name="resa[begin]" value="{{ default_begin }}" required autocomplete="off">
                         </div>
                         <div class="col-12 col-sm-6">
                             <label class="form-label required" for="planner-res-end">{{ __('End', 'planner') }}</label>
-                            <input type="datetime-local" class="form-control" id="planner-res-end"
-                                   value="{{ default_end }}" required>
+                            <input type="text" class="form-control" id="planner-res-end"
+                                   name="resa[end]" value="{{ default_end }}" required autocomplete="off">
                         </div>
                     </div>
-
-                    {# O core espera 'Y-m-d H:i:s'; o input datetime-local
-                       entrega 'Y-m-dTH:i'. A conversão acontece no envio e vai
-                       nestes campos ocultos. #}
-                    <input type="hidden" name="resa[begin]" id="planner-res-begin-raw">
-                    <input type="hidden" name="resa[end]" id="planner-res-end-raw">
 
                     <div class="mb-3">
                         <label class="form-label required" for="planner-res-type">{{ __('Asset type', 'planner') }}</label>
@@ -317,9 +321,24 @@
             var availableItems = [];
             var fetchToken = 0;
 
-            function toSql(value) {
-                return value ? value.replace('T', ' ') + ':00' : '';
+            // flatpickr, não o `type="datetime-local"` nativo: dá pra digitar
+            // a data inteira direto no campo (`allowInput: true` — sem isso o
+            // texto visível fica só de leitura, e só o clique no calendário
+            // funcionaria), e o formato batido ('Y-m-d H:i:S') já é o que o
+            // core espera, sem conversão nenhuma no envio.
+            function initDateTime($el) {
+                if ($.fn.flatpickr) {
+                    $el.flatpickr({
+                        enableTime: true,
+                        time_24hr: true,
+                        dateFormat: 'Y-m-d H:i:S',
+                        allowInput: true,
+                        onClose: function () { $el.trigger('change'); }
+                    });
+                }
             }
+            initDateTime($begin);
+            initDateTime($end);
 
             // Select2 dentro de um modal Bootstrap precisa de `dropdownParent`
             // apontando para o próprio modal — sem isso, o painel da lista
@@ -368,8 +387,8 @@
                 var token = ++fetchToken;
 
                 $.getJSON({{ (root_doc ~ '/plugins/planner/ajax/reservation_availability.php')|json_encode|raw }}, {
-                    begin: toSql(begin),
-                    end: toSql(end)
+                    begin: begin,
+                    end: end
                 }).done(function (data) {
                     // Uma resposta antiga (a pessoa mudou a data de novo antes
                     // desta voltar) não deve sobrescrever um resultado mais
@@ -416,13 +435,6 @@
                 $('.planner-res-periodicity-month').prop('hidden', type !== 'month');
             });
 
-            $('#planner-new-reservation-form').on('submit', function () {
-                // 'Y-m-dTH:i' -> 'Y-m-d H:i:s'. Sem os segundos o MySQL até
-                // aceita, mas o valor gravado fica diferente do que o resto do
-                // GLPI escreve nessas colunas.
-                $('#planner-res-begin-raw').val(toSql($begin.val()));
-                $('#planner-res-end-raw').val(toSql($end.val()));
-            });
         });
     </script>
 {% endif %}

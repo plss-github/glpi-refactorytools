@@ -142,8 +142,84 @@ final class EventProvider
         }
 
         self::attachNotes($events, $viewer_id);
+        self::attachTicketDurations($events);
 
         return $events;
+    }
+
+    /**
+     * Duração total já registrada no CHAMADO por trás de um compromisso de
+     * tipo Chamado — é o que aparece ao passar o mouse no evento, a
+     * pergunta original era "quanto tempo esse chamado já tomou", não
+     * "quanto tempo esta tarefa específica levou".
+     *
+     * `glpi_tickets.actiontime` já é a soma mantida pelo próprio core sobre
+     * TODAS as tarefas do chamado (qualquer técnico) — não há necessidade de
+     * somar `glpi_tickettasks` aqui. Duas consultas em lote (tarefa -> chamado,
+     * chamado -> actiontime), nunca uma por evento.
+     *
+     * @param array<int, array<string, mixed>> $events
+     */
+    private static function attachTicketDurations(array &$events): void
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        $task_ids = [];
+        foreach ($events as $event) {
+            if ($event['extendedProps']['itemtype'] === EventTypes::TICKET_TASK) {
+                $task_ids[(int) $event['extendedProps']['items_id']] = true;
+            }
+        }
+
+        if ($task_ids === []) {
+            return;
+        }
+
+        $tickets_by_task = [];
+        foreach ($DB->request([
+            'SELECT' => ['id', 'tickets_id'],
+            'FROM'   => 'glpi_tickettasks',
+            'WHERE'  => ['id' => array_keys($task_ids)],
+        ]) as $row) {
+            $tickets_by_task[(int) $row['id']] = (int) $row['tickets_id'];
+        }
+
+        if ($tickets_by_task === []) {
+            return;
+        }
+
+        $duration_by_ticket = [];
+        foreach ($DB->request([
+            'SELECT' => ['id', 'actiontime'],
+            'FROM'   => 'glpi_tickets',
+            'WHERE'  => ['id' => array_values(array_unique($tickets_by_task))],
+        ]) as $row) {
+            $duration_by_ticket[(int) $row['id']] = (int) $row['actiontime'];
+        }
+
+        foreach ($events as $key => $event) {
+            if ($event['extendedProps']['itemtype'] !== EventTypes::TICKET_TASK) {
+                continue;
+            }
+
+            $tickets_id = $tickets_by_task[(int) $event['extendedProps']['items_id']] ?? null;
+            if ($tickets_id === null || !isset($duration_by_ticket[$tickets_id])) {
+                continue;
+            }
+
+            $events[$key]['extendedProps']['ticketDuration'] = self::formatHoursMinutes($duration_by_ticket[$tickets_id]);
+        }
+    }
+
+    /** "3h05min" — mesmo formato usado por `TechnicianStats::formatDuration()`. */
+    private static function formatHoursMinutes(int $seconds): string
+    {
+        return sprintf(
+            __('%1$dh%2$02dmin', 'planner'),
+            intdiv($seconds, 3600),
+            intdiv($seconds % 3600, 60)
+        );
     }
 
     /**
@@ -376,6 +452,7 @@ final class EventProvider
                 // compromisso, então já é conhecido aqui.
                 'note'          => '',
                 'noteAuthor'    => '',
+                'ticketDuration' => '',
                 'canManageNote' => $is_details && $itemtype !== ''
                                    ? AccessPolicy::canManageNoteFor($users_id, $viewer_id)
                                    : false,

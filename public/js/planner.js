@@ -31,6 +31,13 @@ var GlpiPlanner = {
     /** Agrupamento das colunas do Kanban: 'state' | 'actor' */
     kanbanGroup: 'state',
 
+    /**
+     * Ordem das colunas de SITUAÇÃO, arrastável pelo cabeçalho — ver
+     * `bindKanbanColumnReorder()`. Vem do servidor (preferência gravada em
+     * `KanbanPrefs`); [1, 0, 2] é o mesmo default de lá.
+     */
+    kanbanStateOrder: [1, 0, 2],
+
     /** Período exibido: 'day' | 'week' | 'month'. Vale para os três modos. */
     range: 'week',
 
@@ -47,6 +54,9 @@ var GlpiPlanner = {
 
     /** Popover travado aberto porque um editor de nota está em uso nele. */
     notePinned: false,
+
+    /** Id do `setTimeout` de fechamento adiado do popover — ver `schedulePopoverHide()`. */
+    popoverHideTimer: null,
 
     /** ids das agendas atualmente marcadas na barra lateral */
     actors: {},
@@ -68,6 +78,9 @@ var GlpiPlanner = {
 
         this.config = config || {};
         this.mode = this.config.default_mode || 'calendar';
+        if (Array.isArray(this.config.kanban_state_order) && this.config.kanban_state_order.length === 3) {
+            this.kanbanStateOrder = this.config.kanban_state_order.map(Number);
+        }
 
         this.readSidebar();
         this.render();
@@ -75,7 +88,30 @@ var GlpiPlanner = {
         this.bindToolbar();
         this.bindUserPicker();
         this.bindPopoverDismiss();
+        this.bindBfcacheRestore();
         this.applyMode();
+    },
+
+    /**
+     * Ao voltar para a página pelo botão Voltar do navegador (ou por uma aba
+     * restaurada), o Chrome/Firefox podem reexibir o DOM congelado do
+     * "bfcache" em vez de recarregar — o `evento.persisted` é o sinal disso.
+     * Nesse caso o FullCalendar volta a aparecer com o layout que tinha ANTES
+     * de a aba ser congelada (calculado com o painel possivelmente de outro
+     * tamanho, ou simplesmente stale), e às vezes sem repintar as reservas.
+     * `refetchEvents()` + `updateSize()` refazem a busca e o layout do zero,
+     * sem precisar de F5.
+     */
+    bindBfcacheRestore: function () {
+        var self = this;
+        window.addEventListener('pageshow', function (e) {
+            if (!e.persisted || !self.calendar) {
+                return;
+            }
+            self.calendar.updateSize();
+            self.calendar.refetchEvents();
+            self.renderPanes();
+        });
     },
 
     // -----------------------------------------------------------------
@@ -591,14 +627,38 @@ var GlpiPlanner = {
             if (self.notePinned) {
                 return;
             }
+            self.cancelPopoverHide();
             self.hidePopover();
             self.renderPopover(this, event, props);
         }).on('mouseleave', function () {
             if (self.notePinned) {
                 return;
             }
-            self.hidePopover();
+            // Atraso, não fechamento imediato: o popover é um elemento à
+            // parte no DOM (anexado a `body`, não filho de `$el`), então o
+            // cursor SAI de `$el` antes de conseguir alcançá-lo — um
+            // `mouseleave` sem atraso fechava o popover no meio do caminho, e
+            // um clique no botão "Adicionar nota" nunca chegava a registrar
+            // porque o botão já tinha sido removido do DOM. O atraso dá tempo
+            // de o cursor chegar ao popover, que cancela o fechamento ao
+            // receber o próprio `mouseenter` (ver `renderPopover()`).
+            self.schedulePopoverHide();
         });
+    },
+
+    schedulePopoverHide: function () {
+        var self = this;
+        self.cancelPopoverHide();
+        self.popoverHideTimer = setTimeout(function () {
+            self.hidePopover();
+        }, 250);
+    },
+
+    cancelPopoverHide: function () {
+        if (this.popoverHideTimer) {
+            clearTimeout(this.popoverHideTimer);
+            this.popoverHideTimer = null;
+        }
     },
 
     renderPopover: function (anchorEl, event, props) {
@@ -624,17 +684,31 @@ var GlpiPlanner = {
             $('<div class="planner-popover-content"></div>').html(props.content).appendTo($pop);
         }
 
-        // Nota do gestor: visível para o dono do compromisso e para quem
-        // tem `canManageNote` (ver `AccessPolicy::canManageNoteFor()`) — o
+        // Duração total já registrada no CHAMADO (soma de todas as tarefas,
+        // não só desta) — só existe em eventos de tipo Chamado.
+        if (props.ticketDuration) {
+            $('<div class="planner-popover-meta"></div>')
+                .html('<i class="ti ti-clock-hour-4"></i> ' + (self.label('ticket_duration') || 'Total time') + ': ' + props.ticketDuration)
+                .appendTo($pop);
+        }
+
+        // Nota do compromisso: visível para o dono e para quem tem
+        // `canManageNote` (ver `AccessPolicy::canManageNoteFor()`) — o
         // servidor já decidiu isso antes de mandar `props.note`, aqui só se
-        // desenha o que chegou.
+        // desenha o que chegou. O rótulo muda conforme quem escreveu: no
+        // próprio compromisso é só "Nota" (uma instrução pessoal); na agenda
+        // de outra pessoa é "Nota do gestor" (deixa claro que veio de quem
+        // tem posição de liderança sobre o dono, não de um colega qualquer).
+        var is_own_event = String(props.users_id) === String(self.config.me);
         if (props.note) {
             var $note = $('<div class="planner-popover-note"></div>');
             $('<div class="planner-popover-note-label"></div>')
-                .html('<i class="ti ti-message-2"></i> ' + (self.label('manager_note') || 'Manager note'))
+                .html('<i class="ti ti-message-2"></i> ' + (is_own_event
+                    ? (self.label('own_note') || 'Note')
+                    : (self.label('manager_note') || 'Manager note')))
                 .appendTo($note);
             $('<div class="planner-popover-note-text"></div>').text(props.note).appendTo($note);
-            if (props.noteAuthor) {
+            if (props.noteAuthor && !is_own_event) {
                 $('<div class="planner-popover-note-author"></div>').text(props.noteAuthor).appendTo($note);
             }
             $note.appendTo($pop);
@@ -651,6 +725,19 @@ var GlpiPlanner = {
                 })
                 .appendTo($pop);
         }
+
+        // O popover é anexado a `body`, fora de `$el` — sem isto, o cursor
+        // saindo de `$el` a caminho do próprio popover (para clicar em
+        // "Adicionar nota", por exemplo) fecharia tudo antes de chegar lá.
+        // Entrar aqui cancela o fechamento agendado por `$el`; sair daqui
+        // reagenda, para o popover não ficar aberto para sempre.
+        $pop.on('mouseenter', function () {
+            self.cancelPopoverHide();
+        }).on('mouseleave', function () {
+            if (!self.notePinned) {
+                self.schedulePopoverHide();
+            }
+        });
 
         $pop.appendTo('body');
 
@@ -738,6 +825,7 @@ var GlpiPlanner = {
     },
 
     hidePopover: function () {
+        this.cancelPopoverHide();
         this.notePinned = false;
         $('.planner-popover').remove();
     },
@@ -949,6 +1037,13 @@ var GlpiPlanner = {
             }
 
             var $head = $('<div class="planner-kanban-head"></div>');
+            if (draggable) {
+                // Cabeçalho arrastável para reordenar as PRÓPRIAS colunas —
+                // gesto diferente de arrastar um cartão (ver
+                // `bindKanbanDragDrop()`, que distingue os dois pelo formato
+                // do payload solto).
+                $head.attr('draggable', 'true').addClass('planner-kanban-head-draggable');
+            }
             $('<span class="planner-kanban-dot"></span>').css('background', col.color).appendTo($head);
             $('<span class="planner-kanban-title"></span>').text(col.title).appendTo($head);
             $('<span class="planner-kanban-count"></span>').text(col.events.length).appendTo($head);
@@ -997,6 +1092,20 @@ var GlpiPlanner = {
             $(this).removeClass('is-dragging');
         });
 
+        // Cabeçalho: arrasta a COLUNA inteira, para reordenar livremente
+        // (ver `reorderKanbanColumn()`). Um payload com `reorderState` no
+        // lugar de `itemtype`/`items_id` é o que distingue este arrasto do
+        // de um cartão no handler de 'drop' abaixo, que os dois
+        // compartilham.
+        $kanban.find('.planner-kanban-head-draggable').on('dragstart', function (e) {
+            var state = $(this).closest('.planner-kanban-col').data('state');
+            $(this).closest('.planner-kanban-col').addClass('is-dragging');
+            e.originalEvent.dataTransfer.effectAllowed = 'move';
+            e.originalEvent.dataTransfer.setData('text/plain', JSON.stringify({ reorderState: state }));
+        }).on('dragend', function () {
+            $(this).closest('.planner-kanban-col').removeClass('is-dragging');
+        });
+
         $kanban.find('.planner-kanban-col').on('dragover', function (e) {
             e.preventDefault();
             e.originalEvent.dataTransfer.dropEffect = 'move';
@@ -1006,7 +1115,6 @@ var GlpiPlanner = {
         }).on('drop', function (e) {
             e.preventDefault();
             var $col = $(this).removeClass('is-drop-target');
-            var newState = parseInt($col.data('state'), 10);
 
             var raw;
             try {
@@ -1014,9 +1122,20 @@ var GlpiPlanner = {
             } catch (err) {
                 return;
             }
-            if (!raw || !raw.itemtype || !raw.items_id) {
+            if (!raw) {
                 return;
             }
+
+            if (raw.reorderState !== undefined) {
+                self.reorderKanbanColumn(parseInt(raw.reorderState, 10), parseInt($col.data('state'), 10));
+                return;
+            }
+
+            if (!raw.itemtype || !raw.items_id) {
+                return;
+            }
+
+            var newState = parseInt($col.data('state'), 10);
 
             $.post(self.config.update_state_url || (self.config.root_doc + '/plugins/planner/ajax/update_event_state.php'), {
                 itemtype: raw.itemtype,
@@ -1035,6 +1154,33 @@ var GlpiPlanner = {
                 self.notify('error', self.label('save_failed'));
             });
         });
+    },
+
+    /**
+     * Move a coluna `fromState` para a posição de `toState` em
+     * `kanbanStateOrder`, redesenha na hora (não espera o servidor) e grava a
+     * preferência em segundo plano — uma reordenação de colunas é só
+     * apresentação, não precisa da mesma re-confirmação que gravar um
+     * arrasto de cartão.
+     */
+    reorderKanbanColumn: function (fromState, toState) {
+        if (isNaN(fromState) || isNaN(toState) || fromState === toState) {
+            return;
+        }
+
+        var order   = this.kanbanStateOrder.slice();
+        var fromIdx = order.indexOf(fromState);
+        var toIdx   = order.indexOf(toState);
+        if (fromIdx === -1 || toIdx === -1) {
+            return;
+        }
+
+        order.splice(fromIdx, 1);
+        order.splice(toIdx, 0, fromState);
+        this.kanbanStateOrder = order;
+        this.renderKanban();
+
+        $.post((this.config.root_doc || '') + '/plugins/planner/ajax/save_kanban_order.php', { states: order });
     },
 
     /**
@@ -1059,12 +1205,24 @@ var GlpiPlanner = {
             return out;
         }
 
-        // Planning::INFO / TODO / DONE no core valem 0 / 1 / 2.
-        return {
-            's1': { title: labels.state_todo || 'To do', color: '#2f6df6', events: [] },
-            's0': { title: labels.state_info || 'Information', color: '#6b7a90', events: [] },
-            's2': { title: labels.state_done || 'Done', color: '#12a594', events: [] }
+        // Planning::INFO / TODO / DONE no core valem 0 / 1 / 2. A ORDEM vem de
+        // `this.kanbanStateOrder` (arrastável pelo próprio usuário, ver
+        // `bindKanbanColumnReorder()`) — os defaults abaixo só entram quando
+        // não há preferência gravada.
+        var defs = {
+            0: { title: labels.state_info || 'Information', color: '#6b7a90' },
+            1: { title: labels.state_todo || 'To do', color: '#2f6df6' },
+            2: { title: labels.state_done || 'Done', color: '#12a594' }
         };
+
+        var ordered = {};
+        (this.kanbanStateOrder || [1, 0, 2]).forEach(function (state) {
+            if (defs[state]) {
+                ordered['s' + state] = { title: defs[state].title, color: defs[state].color, events: [] };
+            }
+        });
+
+        return ordered;
     },
 
     buildActorColumns: function () {

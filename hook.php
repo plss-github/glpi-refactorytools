@@ -8,6 +8,7 @@
 
 use GlpiPlugin\Planner\EventNotes;
 use GlpiPlugin\Planner\EventTypes;
+use GlpiPlugin\Planner\KanbanPrefs;
 use GlpiPlugin\Planner\Right;
 use GlpiPlugin\Planner\Settings;
 use GlpiPlugin\Planner\Share;
@@ -26,6 +27,7 @@ function plugin_planner_install(): bool
     Share::install($migration);
     UserColors::install($migration);
     EventNotes::install($migration);
+    KanbanPrefs::install($migration);
 
     $migration->executeMigration();
 
@@ -83,6 +85,7 @@ function plugin_planner_uninstall(): bool
     Share::uninstall();
     UserColors::uninstall();
     EventNotes::uninstall();
+    KanbanPrefs::uninstall();
 
     ProfileRight::deleteProfileRights([Right::NAME]);
 
