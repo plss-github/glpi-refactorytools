@@ -10,8 +10,9 @@
  * o mesmo recorte que "Meus chamados" na Central já mostra. Não precisa de
  * `AccessPolicy`: não é a agenda de outra pessoa.
  *
- * Duas contagens de tempo, somadas das tarefas (`TicketTask`) que ESTE
- * técnico registrou nos chamados em que está designado:
+ * Duas contagens de tempo do MÊS CORRENTE, somadas das tarefas
+ * (`TicketTask`) que ESTE técnico registrou nos chamados em que está
+ * designado:
  *   planejado   janela `begin`/`end` da tarefa (quando ela tem hora marcada).
  *   realizado   `actiontime`, o campo que o core já usa para "tempo passado".
  * "Total" é a soma das duas — não é uma terceira medição independente.
@@ -113,6 +114,10 @@ final class TechnicianStats
     }
 
     /**
+     * Só as tarefas do MÊS CORRENTE (pelo campo `date` da tarefa, o mesmo
+     * que o core usa para os relatórios de tempo passado) — o painel é "meu
+     * mês", não a carreira inteira do técnico no chamado.
+     *
      * @param array<int, int> $ticket_ids
      * @return array{0: int, 1: int} [planejado total, realizado total]
      */
@@ -124,12 +129,17 @@ final class TechnicianStats
         $planned_total  = 0;
         $realized_total = 0;
 
+        $month_start = date('Y-m-01 00:00:00');
+        $month_end   = date('Y-m-t 23:59:59');
+
         foreach ($DB->request([
             'SELECT' => ['begin', 'end', 'actiontime'],
             'FROM'   => TicketTask::getTable(),
             'WHERE'  => [
                 'tickets_id'    => $ticket_ids,
                 'users_id_tech' => $users_id,
+                ['date' => ['>=', $month_start]],
+                ['date' => ['<=', $month_end]],
             ],
         ]) as $row) {
             $realized_total += (int) $row['actiontime'];

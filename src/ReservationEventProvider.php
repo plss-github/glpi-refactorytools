@@ -116,12 +116,15 @@ final class ReservationEventProvider
         $now    = date('Y-m-d H:i:s');
         $events = [];
 
-        // Cor por TIPO de ativo, quando o administrador definiu uma (ver
-        // `Settings::getReservationTypeColors()`, editável em Configuração do
-        // Plugin) — "se Computador é verde, toda reserva de computador
-        // aparece verde". Sem customização, cada aparelho mantém a cor
-        // calculada por hash de sempre, para itens do mesmo tipo continuarem
-        // distinguíveis entre si na visão Por item.
+        // Cor por TIPO de ativo — sempre, mesmo sem o administrador ter
+        // definido uma em `Settings::getReservationTypeColors()`
+        // (Configuração do Plugin): "se Computador é azul, toda reserva de
+        // computador aparece azul", nunca uma cor por aparelho individual —
+        // é a cor calculada por hash do TIPO (`crc32($itemtype)`, a mesma
+        // usada em `ReservationView::reduceItemsToTypes()`) que serve de
+        // padrão até o administrador escolher outra. A distinção por
+        // aparelho continua existindo, só que noutro lugar: a visão Por
+        // item, cujas faixas (`getResources()`) usam a cor por dispositivo.
         $type_colors = Settings::getReservationTypeColors();
 
         foreach ($rows as $row) {
@@ -134,9 +137,10 @@ final class ReservationEventProvider
             $mine  = $users_id === $me;
 
             $item_info  = $items_by_resid[$res_item_id] ?? null;
-            $color      = ($item_info !== null && isset($type_colors[$item_info['itemtype']]))
-                ? $type_colors[$item_info['itemtype']]
-                : EventProvider::getActorColor($res_item_id);
+            $itemtype   = $item_info['itemtype'] ?? null;
+            $color      = ($itemtype !== null && isset($type_colors[$itemtype]))
+                ? $type_colors[$itemtype]
+                : EventProvider::getActorColor(crc32($itemtype ?? Reservation::class));
             $item_name  = $item_info['name'] ?? sprintf(__('Reserved item #%d', 'planner'), $res_item_id);
             $item_label = $item_info !== null
                 ? sprintf('%s - %s', $item_info['type_name'], $item_info['name'])

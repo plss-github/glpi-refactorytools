@@ -3,6 +3,21 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.2] - 2026-09-23
+
+### Corrigido
+
+- **Reservas com uma cor diferente por aparelho.** Sem cor customizada pelo
+  administrador, o padrão passou a ser calculado por TIPO de ativo
+  (`crc32($itemtype)`), a mesma conta usada na tela de Configuração — antes
+  era por aparelho individual, então reservas do mesmo tipo apareciam em
+  cores diferentes no calendário e na lista.
+- **Evento de duração zero quase invisível no calendário.** Uma tarefa
+  registrada com `begin` === `end` (sem tempo marcado) renderizava como uma
+  linha fininha, sem título legível. Agora tem duração mínima de 15 minutos.
+- **Painel "Chamados como técnico" somava a carreira inteira, não o mês.**
+  As horas planejada/realizada agora são só do mês corrente.
+
 ## [0.11.1] - 2026-09-23
 
 ### Removido

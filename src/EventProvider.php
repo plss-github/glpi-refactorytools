@@ -367,6 +367,15 @@ final class EventProvider
             return null;
         }
 
+        // Duração zero (tarefa registrada sem tempo, `begin` === `end`)
+        // renderiza como uma linha quase invisível no calendário — sem
+        // título legível nem área para passar o mouse. 15 minutos é a
+        // mesma granularidade mínima que os slots do próprio calendário já
+        // usam, então o bloco fica alinhado à grade.
+        if (strtotime($end) <= strtotime($begin)) {
+            $end = date('Y-m-d H:i:s', strtotime($begin) + 15 * 60);
+        }
+
         $real_itemtype = EventTypes::realItemtype($virtual_key);
         $items_id      = (int) ($row['id'] ?? 0);
         $is_details    = $level === Settings::LEVEL_DETAILS;
