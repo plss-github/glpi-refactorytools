@@ -1,4 +1,4 @@
-# Pellissari New Planners
+# Pellissari RefactoryTools
 
 Plugin para GLPI 11.0.x que remodela a tela de planejamento e resolve o que o
 planejamento nativo não cobre: **um supervisor enxergar a agenda da equipe**,
