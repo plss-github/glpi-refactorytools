@@ -251,6 +251,15 @@
                                 </li>
                             {% endfor %}
                         </ul>
+                        {# Link para a busca nativa de chamados, já filtrada
+                           por "Técnico designado = eu" — a lista acima é só
+                           um resumo (no máximo 25, os mais recentes), este
+                           link é para quando a pessoa quer a lista de
+                           verdade, com os filtros e colunas da Central. #}
+                        <a href="{{ technician_panel.search_url }}" class="planner-tech-seeall">
+                            {{ __('See all my tickets', 'planner') }}
+                            <i class="ti ti-arrow-right"></i>
+                        </a>
                     </div>
                 {% endif %}
 

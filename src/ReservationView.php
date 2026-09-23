@@ -157,9 +157,24 @@ final class ReservationView
      */
     public static function getReservableTypes(): array
     {
+        return self::reduceItemsToTypes(self::getReservableItems());
+    }
+
+    /**
+     * Agrupa uma lista de itens (no formato de `getReservableItems()`) por
+     * TIPO — a parte que `getReservableTypes()` e `getReservableTypesForAdmin()`
+     * têm em comum, extraída para que a segunda possa operar sobre uma lista
+     * de itens que NÃO passou pelo `canView()` de `getReservableItems()` (ver
+     * o comentário longo em `queryReservableItems()`).
+     *
+     * @param array<int, array<string, mixed>> $items
+     * @return array<int, array{itemtype: string, label: string, count: int, color: string, icon: string}>
+     */
+    private static function reduceItemsToTypes(array $items): array
+    {
         $types = [];
 
-        foreach (self::getReservableItems() as $item) {
+        foreach ($items as $item) {
             $itemtype = $item['itemtype'];
 
             if (!isset($types[$itemtype])) {
@@ -192,6 +207,10 @@ final class ReservationView
      * (a cor calculada por hash, a mesma que o tipo já tinha antes de
      * qualquer customização) para o botão "voltar ao padrão" do formulário.
      *
+     * Usa `queryReservableItems()`, não `getReservableItems()`: ver o
+     * comentário lá sobre por que a tela de configuração não deve depender
+     * do direito PESSOAL de reserva de quem está configurando.
+     *
      * @return array<int, array{itemtype: string, label: string, color: string, default: string}>
      */
     public static function getReservableTypesForAdmin(): array
@@ -209,7 +228,7 @@ final class ReservationView
                     'default'  => $default,
                 ];
             },
-            self::getReservableTypes()
+            self::reduceItemsToTypes(self::queryReservableItems())
         );
     }
 
@@ -239,12 +258,34 @@ final class ReservationView
             return self::$items_cache;
         }
 
-        /** @var \DBmysql $DB */
-        global $DB;
-
         if (!self::canView()) {
             return self::$items_cache = [];
         }
+
+        return self::$items_cache = self::queryReservableItems();
+    }
+
+    /**
+     * O mesmo levantamento de `getReservableItems()`, sem o `canView()` —
+     * usado só por `getReservableTypesForAdmin()`. A tela de Configuração já
+     * está atrás de `Right::READ_ALL` (o direito administrativo do PLUGIN,
+     * checado em `front/config.form.php`) antes de chegar aqui; exigir
+     * TAMBÉM o direito nativo `reservation` faria um Super-Admin sem esse
+     * direito pessoal nunca ver a seção de cores por tipo — ela simplesmente
+     * sumia da tela de configuração, sem aviso nenhum de por quê. Configurar
+     * a cor de um tipo não é a mesma ação que reservar um item dele, e não
+     * deveria precisar da mesma permissão.
+     *
+     * Sem cache própria: só é chamada uma vez por carregamento da tela de
+     * configuração, não vale a complexidade de uma segunda chave de cache
+     * para não confundir com o resultado (filtrado) de `getReservableItems()`.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private static function queryReservableItems(): array
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
 
         $table = ReservationItem::getTable();
 
@@ -292,7 +333,7 @@ final class ReservationView
             return [$a['type_label'], $a['name']] <=> [$b['type_label'], $b['name']];
         });
 
-        return self::$items_cache = $items;
+        return $items;
     }
 
     /**

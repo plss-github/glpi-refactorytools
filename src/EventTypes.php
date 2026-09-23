@@ -33,16 +33,6 @@ final class EventTypes
     public const RESERVATION  = 'Reservation';
     public const REMINDER     = 'Reminder';
 
-    /**
-     * Chamado em que a pessoa é REQUERENTE, não técnico — virtual porque o
-     * itemtype real (`Ticket`) não implementa `populatePlanning()`; é
-     * `TicketRequesterProvider` quem monta as linhas (ver lá o porquê da
-     * âncora de data). Chave própria, separada de `TICKET_TASK`: são
-     * perguntas diferentes ("o que EU preciso fazer" vs. "o que EU pedi"),
-     * cada uma com sua cor e seu filtro na barra lateral.
-     */
-    public const TICKET_REQUESTED = 'TicketRequested';
-
     /** Evento externo "puro": sem categoria, ou com uma categoria que não é nenhuma das três abaixo. */
     public const EVENT_EXTERNAL = 'PlanningExternalEvent';
     public const EVENT_INTERNAL = 'PlanningExternalEvent:internal';
@@ -77,7 +67,6 @@ final class EventTypes
     {
         return [
             self::TICKET_TASK,
-            self::TICKET_REQUESTED,
             self::CHANGE_TASK,
             self::PROBLEM_TASK,
             self::PROJECT_TASK,
@@ -93,8 +82,7 @@ final class EventTypes
     public static function getLabel(string $key): string
     {
         return match ($key) {
-            self::TICKET_TASK      => __('Ticket', 'planner'),
-            self::TICKET_REQUESTED => __('My requested ticket', 'planner'),
+            self::TICKET_TASK  => __('Ticket', 'planner'),
             self::CHANGE_TASK  => __('Change', 'planner'),
             self::PROBLEM_TASK => __('Problem', 'planner'),
             self::PROJECT_TASK => __('Project', 'planner'),
@@ -111,8 +99,7 @@ final class EventTypes
     public static function getIcon(string $key): string
     {
         return match ($key) {
-            self::TICKET_TASK      => 'ti ti-headset',
-            self::TICKET_REQUESTED => 'ti ti-user-question',
+            self::TICKET_TASK  => 'ti ti-headset',
             self::CHANGE_TASK  => 'ti ti-replace',
             self::PROBLEM_TASK => 'ti ti-alert-triangle',
             self::PROJECT_TASK => 'ti ti-briefcase',
@@ -127,24 +114,29 @@ final class EventTypes
     }
 
     /**
-     * Paleta de fábrica. Dez tons distintos, um por tipo — o botão "voltar ao
-     * padrão" da configuração de cores (de administrador ou pessoal) usa isto.
+     * Paleta de fábrica. Nove tons espalhados pela roda de cor (mais o cinza
+     * neutro do Lembrete), escolhidos por matiz — não só "parecem
+     * diferentes" lado a lado, tinham matizes vizinhos que colidiam de
+     * relance num calendário cheio (Mudança e Evento Interno, dois roxos;
+     * Problema e Viagem, dois laranjas; Projeto e Reunião, dois
+     * verde-água). Chamado volta a ser vermelho, como era antes da
+     * reorganização anterior — é o tipo mais comum na tela, e "vermelho =
+     * chamado" já tinha virado a associação de quem usa.
      */
     public static function getDefaultColor(string $key): string
     {
         return match ($key) {
-            self::TICKET_TASK      => '#2f6df6',
-            self::TICKET_REQUESTED => '#0d9488',
-            self::CHANGE_TASK  => '#8b5cf6',
-            self::PROBLEM_TASK => '#e8833a',
-            self::PROJECT_TASK => '#12a594',
-            self::RESERVATION  => '#0891b2',
-            self::REMINDER     => '#6b7a90',
-            self::EVENT_EXTERNAL => '#d6336c',
-            self::EVENT_INTERNAL => '#7c3aed',
-            self::EVENT_TRAVEL   => '#f59e0b',
-            self::EVENT_MEETING  => '#059669',
-            default => '#6b7a90',
+            self::TICKET_TASK    => '#dc2626', // vermelho
+            self::PROBLEM_TASK   => '#f97316', // laranja
+            self::EVENT_TRAVEL   => '#ca8a04', // âmbar
+            self::EVENT_MEETING  => '#16a34a', // verde
+            self::PROJECT_TASK   => '#0d9488', // verde-água
+            self::RESERVATION    => '#0891b2', // ciano
+            self::EVENT_INTERNAL => '#2563eb', // azul
+            self::CHANGE_TASK    => '#7c3aed', // roxo
+            self::EVENT_EXTERNAL => '#db2777', // rosa
+            self::REMINDER       => '#64748b', // cinza neutro
+            default => '#64748b',
         };
     }
 
@@ -163,14 +155,7 @@ final class EventTypes
      */
     public static function realItemtype(string $key): string
     {
-        if (self::isExternalEventVariant($key)) {
-            return PlanningExternalEvent::class;
-        }
-        if ($key === self::TICKET_REQUESTED) {
-            return 'Ticket';
-        }
-
-        return $key;
+        return self::isExternalEventVariant($key) ? PlanningExternalEvent::class : $key;
     }
 
     /**

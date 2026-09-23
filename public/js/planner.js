@@ -767,13 +767,20 @@ var GlpiPlanner = {
 
         $pop.appendTo('body');
 
-        var rect = anchorEl.getBoundingClientRect();
-        var top = rect.bottom + window.scrollY + 6;
-        var left = Math.min(
-            rect.left + window.scrollX,
-            window.innerWidth + window.scrollX - $pop.outerWidth() - 12
-        );
-        $pop.css({ top: top + 'px', left: Math.max(8, left) + 'px' });
+        // No lado DIREITO do item, não embaixo: com várias linhas seguidas
+        // (Lista) ou cartões lado a lado (Kanban), um popover abrindo para
+        // baixo cobria o próprio item de cima/do lado ou o próximo. Se não
+        // couber à direita (item já perto da borda direita da tela), cai
+        // para a esquerda do item em vez de sair da tela.
+        var rect        = anchorEl.getBoundingClientRect();
+        var pop_width   = $pop.outerWidth();
+        var fits_right  = rect.right + 8 + pop_width <= window.innerWidth;
+        var left        = fits_right
+            ? rect.right + window.scrollX + 8
+            : Math.max(8, rect.left + window.scrollX - pop_width - 8);
+        var top = rect.top + window.scrollY;
+        var max_top = window.scrollY + window.innerHeight - $pop.outerHeight() - 8;
+        $pop.css({ top: Math.max(8, Math.min(top, max_top)) + 'px', left: left + 'px' });
 
         return $pop;
     },
@@ -1343,6 +1350,11 @@ var GlpiPlanner = {
                 .text(props.typeLabel).appendTo($foot);
         }
         $foot.appendTo($card);
+
+        // Mesmo popover do calendário (nota, autor, duração do chamado…) —
+        // faltava aqui, então a nota de um compromisso nunca aparecia para
+        // quem só olhava o Kanban.
+        this.bindPopover($card, ev);
 
         return $card;
     },

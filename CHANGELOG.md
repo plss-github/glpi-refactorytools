@@ -3,6 +3,49 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.0] - 2026-09-23
+
+### Removido
+
+- **"Meu chamado como requerente" (0.10.1) foi revertido.** Não era um
+  pedido original — voltar sobre esse tipo virtual, sua consulta
+  (`TicketRequesterProvider`) e todas as referências em `EventTypes`/
+  `EventProvider`.
+
+### Corrigido
+
+- **Chamado voltou a ser vermelho.** A cor padrão de fábrica estava azul;
+  vermelho é o que os usuários já associavam ao tipo mais comum da tela.
+- **Paleta de cores com tons vizinhos demais.** Mudança e Evento Interno
+  eram os dois roxos quase iguais; Problema e Viagem, os dois laranjas;
+  Projeto e Reunião, os dois verde-água. A paleta de fábrica inteira
+  (`EventTypes::getDefaultColor()`) foi refeita com 9 matizes espalhados
+  pela roda de cor (mais o cinza neutro do Lembrete), então nenhum tipo
+  fica parecido com o vizinho num calendário cheio.
+- **Notas não apareciam no Kanban.** O popover de compromisso (nota, autor,
+  duração do chamado) só era montado no Calendário — o Kanban nunca tinha
+  chamado o código que o monta. Cartão do Kanban agora abre o mesmo
+  popover ao passar o mouse.
+- **Seção de cores de ativo reservável sumia da tela de Configuração para
+  quem não tinha o direito NATIVO `reservation`**, mesmo sendo Super-Admin
+  com o direito administrativo do PLUGIN. A lista de tipos reserváveis
+  usada ali dependia de `ReservationProvider::canView()` — o direito
+  PESSOAL de fazer reserva, uma checagem que nunca deveria valer para quem
+  só está CONFIGURANDO a cor, não reservando nada. Confirmado revogando o
+  direito nativo do perfil Super-Admin de teste e vendo a seção sumir;
+  corrigido e reconfirmado que ela volta a aparecer.
+
+### Alterado
+
+- Popover de compromisso (Calendário e Kanban) agora abre no lado DIREITO
+  do item, não embaixo — embaixo cobria a linha/cartão seguinte numa Lista
+  ou Kanban cheios. Cai para a esquerda se não couber à direita.
+- Painel "Chamados como técnico" ganhou um link "Ver todos os meus
+  chamados", que leva para a busca nativa de chamados já filtrada por
+  "Técnico designado = eu" (o mesmo filtro que a Central usa para o link
+  "Meus chamados em andamento") — a lista do painel é só um resumo dos 25
+  mais recentes.
+
 ## [0.10.1] - 2026-09-23
 
 ### Adicionado

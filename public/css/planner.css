@@ -952,6 +952,15 @@
     white-space: nowrap;
 }
 
+.planner-tech-seeall {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    margin-top: 0.375rem;
+    font-size: 0.75rem;
+}
+
 /* --------------------------------------------------------------------- */
 /* Configuração: cores por tipo                                           */
 /* --------------------------------------------------------------------- */

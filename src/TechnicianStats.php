@@ -23,6 +23,7 @@ use CommonITILActor;
 use Ticket;
 use TicketTask;
 use Ticket_User;
+use Toolbox;
 
 final class TechnicianStats
 {
@@ -38,12 +39,19 @@ final class TechnicianStats
      *     tickets: array<int, array{id: int, name: string, status_label: string, url: string, duration_label: string}>,
      *     planned_hours: float,
      *     realized_hours: float,
-     *     total_hours: float
+     *     total_hours: float,
+     *     search_url: string
      * }
      */
     public static function getPanelForUser(int $users_id): array
     {
-        $empty = ['tickets' => [], 'planned_hours' => 0.0, 'realized_hours' => 0.0, 'total_hours' => 0.0];
+        $empty = [
+            'tickets'        => [],
+            'planned_hours'  => 0.0,
+            'realized_hours' => 0.0,
+            'total_hours'    => 0.0,
+            'search_url'     => self::getAssignedSearchUrl(),
+        ];
 
         if ($users_id <= 0) {
             return $empty;
@@ -75,7 +83,32 @@ final class TechnicianStats
             'planned_hours'  => round($planned_seconds / 3600, 1),
             'realized_hours' => round($realized_seconds / 3600, 1),
             'total_hours'    => round(($planned_seconds + $realized_seconds) / 3600, 1),
+            'search_url'     => self::getAssignedSearchUrl(),
         ];
+    }
+
+    /**
+     * Link para a busca NATIVA de chamados, já filtrada por "Técnico
+     * designado = eu" — o campo 5 (`users_id_assign`) é o mesmo que o
+     * próprio core usa para montar o link "Meus chamados em andamento" da
+     * Central (conferido lendo `Ticket::getDefaultSearchRequest()`), e o
+     * valor especial `'myself'` deixa o link correto para QUALQUER pessoa
+     * que o abrir, sem cravar um id de usuário na URL.
+     */
+    private static function getAssignedSearchUrl(): string
+    {
+        $params = [
+            'criteria' => [
+                [
+                    'field'      => 5,
+                    'searchtype' => 'equals',
+                    'value'      => 'myself',
+                    'link'       => 'AND',
+                ],
+            ],
+        ];
+
+        return Ticket::getSearchURL() . '?' . Toolbox::append_params($params);
     }
 
     /** @return array<int, int> */

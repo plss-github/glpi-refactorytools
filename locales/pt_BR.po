@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GLPI Planner plugin\n"
 "Report-Msgid-Bugs-To: suporte@pellissari.com.br\n"
-"POT-Creation-Date: 2026-09-23 16:04+0000\n"
+"POT-Creation-Date: 2026-09-23 16:49+0000\n"
 "PO-Revision-Date: 2026-09-22 14:00+0000\n"
 "Last-Translator: Pellissari <suporte@pellissari.com.br>\n"
 "Language-Team: Pellissari <suporte@pellissari.com.br>\n"
@@ -114,7 +114,7 @@ msgid "Configuration saved."
 msgstr "Configuração salva."
 
 #: front/config.form.php:52 .locales-shadow/templates/config.html.twig:14
-#: templates/planner.html.twig:313
+#: templates/planner.html.twig:322
 msgid "Plugin configuration"
 msgstr "Configuração do Plugin"
 
@@ -162,74 +162,70 @@ msgstr "Grupo que eu gerencio"
 msgid "Shared with me"
 msgstr "Compartilhada comigo"
 
-#: src/EventNoteItem.php:32 .locales-shadow/templates/planner.html.twig:480
+#: src/EventNoteItem.php:32 .locales-shadow/templates/planner.html.twig:489
 #: templates/reservations.html.twig:464
 msgid "Note"
 msgstr "Observação"
 
-#: src/EventProvider.php:244 src/TechnicianStats.php:171
+#: src/EventProvider.php:219 src/TechnicianStats.php:204
 #, php-format
 msgid "%1$dh%2$02dmin"
 msgstr "%1$dh%2$02dmin"
 
-#: src/EventProvider.php:429 templates/planner.html.twig:463
+#: src/EventProvider.php:399 templates/planner.html.twig:472
 msgid "Busy"
 msgstr "Ocupado"
 
-#: src/EventProvider.php:795 templates/planner.html.twig:127
-#: templates/planner.html.twig:469
+#: src/EventProvider.php:752 templates/planner.html.twig:127
+#: templates/planner.html.twig:478
 msgid "To do"
 msgstr "A fazer"
 
-#: src/EventProvider.php:796 templates/planner.html.twig:470
+#: src/EventProvider.php:753 templates/planner.html.twig:479
 msgid "Done"
 msgstr "Concluído"
 
-#: src/EventProvider.php:797 templates/planner.html.twig:468
+#: src/EventProvider.php:754 templates/planner.html.twig:477
 msgid "Information"
 msgstr "Informação"
 
-#: src/EventTypes.php:96
+#: src/EventTypes.php:85
 msgid "Ticket"
 msgstr "Chamado"
 
-#: src/EventTypes.php:97
-msgid "My requested ticket"
-msgstr "Meu chamado como requerente"
-
-#: src/EventTypes.php:98
+#: src/EventTypes.php:86
 msgid "Change"
 msgstr "Mudança"
 
-#: src/EventTypes.php:99
+#: src/EventTypes.php:87
 msgid "Problem"
 msgstr "Problema"
 
-#: src/EventTypes.php:100
+#: src/EventTypes.php:88
 msgid "Project"
 msgstr "Projeto"
 
-#: src/EventTypes.php:101
+#: src/EventTypes.php:89
 msgid "Reservation"
 msgstr "Reserva"
 
-#: src/EventTypes.php:102
+#: src/EventTypes.php:90
 msgid "Reminder"
 msgstr "Lembrete"
 
-#: src/EventTypes.php:103
+#: src/EventTypes.php:91
 msgid "External event"
 msgstr "Evento externo"
 
-#: src/EventTypes.php:104 src/EventTypes.php:201
+#: src/EventTypes.php:92 src/EventTypes.php:186
 msgid "Internal event"
 msgstr "Evento interno"
 
-#: src/EventTypes.php:105 src/EventTypes.php:202
+#: src/EventTypes.php:93 src/EventTypes.php:187
 msgid "Travel"
 msgstr "Viagem"
 
-#: src/EventTypes.php:106 src/EventTypes.php:203
+#: src/EventTypes.php:94 src/EventTypes.php:188
 msgid "Meeting"
 msgstr "Reunião"
 
@@ -298,7 +294,7 @@ msgstr "Ver todas as agendas"
 msgid "Share own schedule"
 msgstr "Compartilhar a própria agenda"
 
-#: src/Right.php:75 .locales-shadow/templates/planner.html.twig:295
+#: src/Right.php:75 .locales-shadow/templates/planner.html.twig:304
 msgid "Request access to a schedule"
 msgstr "Solicitar acesso a uma agenda"
 
@@ -346,7 +342,7 @@ msgstr "Detalhes dos compromissos"
 msgid "Free/busy only"
 msgstr "Apenas livre/ocupado"
 
-#: src/TechnicianStats.php:66
+#: src/TechnicianStats.php:74
 #, php-format
 msgid "Ticket #%d"
 msgstr "Chamado #%d"
@@ -452,7 +448,7 @@ msgstr "Como a tela abre. O usuário pode trocar a qualquer momento entre Calend
 msgid "Open the schedule with the team already selected"
 msgstr "Abrir a agenda já com a equipe marcada"
 
-#: templates/config.html.twig:196 templates/planner.html.twig:486
+#: templates/config.html.twig:196 templates/planner.html.twig:495
 msgid "Save"
 msgstr "Salvar"
 
@@ -468,7 +464,7 @@ msgstr "Hoje"
 msgid "Next"
 msgstr "Próximo"
 
-#: templates/planner.html.twig:42 templates/planner.html.twig:364
+#: templates/planner.html.twig:42 templates/planner.html.twig:373
 msgid "New event"
 msgstr "Novo compromisso"
 
@@ -508,13 +504,13 @@ msgstr "Visão de gerente de grupo"
 msgid "Group by"
 msgstr "Agrupar por"
 
-#: templates/planner.html.twig:95 templates/planner.html.twig:475
+#: templates/planner.html.twig:95 templates/planner.html.twig:484
 #: templates/reservations.html.twig:466
 msgid "Status"
 msgstr "Situação"
 
-#: templates/planner.html.twig:96 templates/planner.html.twig:466
-#: templates/planner.html.twig:472
+#: templates/planner.html.twig:96 templates/planner.html.twig:475
+#: templates/planner.html.twig:481
 msgid "Person"
 msgstr "Pessoa"
 
@@ -563,108 +559,112 @@ msgstr "Mostrar concluídos"
 msgid "My tickets as technician"
 msgstr "Meus chamados como técnico"
 
-#: templates/planner.html.twig:268 templates/planner.html.twig:291
+#: templates/planner.html.twig:260
+msgid "See all my tickets"
+msgstr "Ver todos os meus chamados"
+
+#: templates/planner.html.twig:277 templates/planner.html.twig:300
 msgid "Open another schedule"
 msgstr "Abrir outra agenda"
 
-#: templates/planner.html.twig:272
+#: templates/planner.html.twig:281
 msgid "Your profile has \"See all schedules\": you can open any user schedule, without depending on team, group or sharing."
 msgstr "Seu perfil tem \"Ver todas as agendas\": você pode abrir a agenda de qualquer usuário, sem depender de equipe, grupo ou compartilhamento."
 
-#: templates/planner.html.twig:306
+#: templates/planner.html.twig:315
 msgid "Manage shares"
 msgstr "Gerenciar compartilhamentos"
 
-#: templates/planner.html.twig:327
+#: templates/planner.html.twig:336
 msgid "Loading schedule…"
 msgstr "Carregando agenda…"
 
-#: templates/planner.html.twig:366 templates/reservations.html.twig:195
+#: templates/planner.html.twig:375 templates/reservations.html.twig:195
 msgid "Close"
 msgstr "Fechar"
 
-#: templates/planner.html.twig:371 templates/planner.html.twig:473
+#: templates/planner.html.twig:380 templates/planner.html.twig:482
 msgid "Type"
 msgstr "Tipo"
 
-#: templates/planner.html.twig:380
+#: templates/planner.html.twig:389
 msgid "Title"
 msgstr "Título"
 
-#: templates/planner.html.twig:386 templates/reservations.html.twig:201
+#: templates/planner.html.twig:395 templates/reservations.html.twig:201
 msgid "Start"
 msgstr "Início"
 
-#: templates/planner.html.twig:394 templates/reservations.html.twig:212
+#: templates/planner.html.twig:403 templates/reservations.html.twig:212
 msgid "End"
 msgstr "Fim"
 
-#: templates/planner.html.twig:401
+#: templates/planner.html.twig:410
 msgid "Description"
 msgstr "Descrição"
 
-#: templates/planner.html.twig:417 templates/planner.html.twig:487
+#: templates/planner.html.twig:426 templates/planner.html.twig:496
 #: templates/reservations.html.twig:295
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: templates/planner.html.twig:420
+#: templates/planner.html.twig:429
 msgid "Create"
 msgstr "Criar"
 
-#: templates/planner.html.twig:464
+#: templates/planner.html.twig:473
 msgid "Select at least one schedule in the sidebar."
 msgstr "Selecione ao menos uma agenda na barra lateral."
 
-#: templates/planner.html.twig:465
+#: templates/planner.html.twig:474
 msgid "No events in this period."
 msgstr "Nenhum compromisso neste período."
 
-#: templates/planner.html.twig:467 templates/reservations.html.twig:461
+#: templates/planner.html.twig:476 templates/reservations.html.twig:461
 msgid "All day"
 msgstr "Dia inteiro"
 
-#: templates/planner.html.twig:471 templates/reservations.html.twig:462
+#: templates/planner.html.twig:480 templates/reservations.html.twig:462
 msgid "When"
 msgstr "Quando"
 
-#: templates/planner.html.twig:474
+#: templates/planner.html.twig:483
 msgid "Event"
 msgstr "Compromisso"
 
-#: templates/planner.html.twig:476
+#: templates/planner.html.twig:485
 msgid "Schedule updated."
 msgstr "Agenda atualizada."
 
-#: templates/planner.html.twig:477
+#: templates/planner.html.twig:486
 msgid "You are not allowed to move this event."
 msgstr "Você não tem permissão para mover este compromisso."
 
-#: templates/planner.html.twig:478
+#: templates/planner.html.twig:487
 msgid "Could not save the new time."
 msgstr "Não foi possível salvar o novo horário."
 
-#: templates/planner.html.twig:479
+#: templates/planner.html.twig:488
 msgid "Manager note"
 msgstr "Nota do gestor"
 
-#: templates/planner.html.twig:481
+#: templates/planner.html.twig:490
 msgid "By"
 msgstr "Por"
 
-#: templates/planner.html.twig:482
+#: templates/planner.html.twig:491
 msgid "Total time on this ticket"
 msgstr "Tempo total neste chamado"
 
-#: templates/planner.html.twig:483
+#: templates/planner.html.twig:492
 msgid "Add a note"
 msgstr "Adicionar nota"
 
-#: templates/planner.html.twig:484
+#: templates/planner.html.twig:493
 msgid "Edit note"
 msgstr "Editar nota"
 
-#: templates/planner.html.twig:485
+#: templates/planner.html.twig:494
 msgid "Note saved."
 msgstr "Nota salva."
 
@@ -903,6 +903,9 @@ msgstr "Nenhuma agenda foi compartilhada com você."
 #: templates/shares.html.twig:227
 msgid "Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > Planner."
 msgstr "Compartilhamento é só uma das formas de acesso. Sua equipe (pelo campo Supervisor do usuário), seus grupos e o acesso administrativo são liberados pelo perfil, em Administração > Perfis > Planner."
+
+#~ msgid "My requested ticket"
+#~ msgstr "Meu chamado como requerente"
 
 #~ msgid "Your colours were saved."
 #~ msgstr "Suas cores foram salvas."
