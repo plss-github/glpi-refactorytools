@@ -66,7 +66,7 @@ final class Right
     public static function getAll(): array
     {
         return [
-            self::USE_PLANNER       => __('Use Pellissari New Planners', 'planner'),
+            self::USE_PLANNER       => __('Use Pellissari RefactoryTools', 'planner'),
             self::READ_TEAM         => __('See my team schedules', 'planner'),
             self::READ_GROUP        => __('See my group schedules', 'planner'),
             self::READ_MANAGED_GROUP => __('See the schedules of groups I manage', 'planner'),

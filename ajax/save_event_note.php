@@ -46,6 +46,9 @@ const ALLOWED_NOTE_ITEMTYPES = [
 
 $itemtype = (string) ($_POST['itemtype'] ?? '');
 $items_id = (int) ($_POST['items_id'] ?? 0);
+// Presente só ao editar uma nota já existente; ausente (ou 0), o save()
+// sempre acrescenta uma nova ao histórico do compromisso.
+$note_id  = (int) ($_POST['note_id'] ?? 0);
 // Teto de tamanho: é um recado curto, não um campo de descrição — sem isto,
 // nada impedia um POST com um valor gigante indo parar na coluna TEXT.
 $note = mb_substr((string) ($_POST['note'] ?? ''), 0, 2000);
@@ -66,7 +69,8 @@ if (array_key_exists($itemtype, ALLOWED_NOTE_ITEMTYPES) && $items_id > 0) {
                 $items_id,
                 $users_id_owner,
                 (int) Session::getLoginUserID(),
-                $note
+                $note,
+                $note_id
             );
         }
     }

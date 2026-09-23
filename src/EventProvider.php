@@ -267,8 +267,8 @@ final class EventProvider
             }
 
             $note_key = $props['itemtype'] . '|' . $props['items_id'];
-            $note     = $notes[$note_key] ?? null;
-            if ($note === null) {
+            $item_notes = $notes[$note_key] ?? null;
+            if ($item_notes === null) {
                 continue;
             }
 
@@ -280,8 +280,14 @@ final class EventProvider
                 continue;
             }
 
-            $events[$key]['extendedProps']['note']       = $note['note'];
-            $events[$key]['extendedProps']['noteAuthor'] = $note['author_name'];
+            $events[$key]['extendedProps']['notes'] = array_map(
+                static fn (array $n): array => [
+                    'id'     => $n['id'],
+                    'note'   => $n['note'],
+                    'author' => $n['author_name'],
+                ],
+                $item_notes
+            );
         }
     }
 
@@ -459,8 +465,7 @@ final class EventProvider
                 // `canManageNote` é a exceção: não depende da nota existir,
                 // só de quem observa ser gestor de quem é dono do
                 // compromisso, então já é conhecido aqui.
-                'note'          => '',
-                'noteAuthor'    => '',
+                'notes'          => [],
                 'ticketDuration' => '',
                 'canManageNote' => $is_details && $itemtype !== ''
                                    ? AccessPolicy::canManageNoteFor($users_id, $viewer_id)

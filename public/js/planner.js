@@ -714,41 +714,57 @@ var GlpiPlanner = {
                 .appendTo($pop);
         }
 
-        // Nota do compromisso: visível para o dono e para quem tem
-        // `canManageNote` (ver `AccessPolicy::canManageNoteFor()`) — o
-        // servidor já decidiu isso antes de mandar `props.note`, aqui só se
-        // desenha o que chegou. O rótulo muda conforme quem escreveu: no
-        // próprio compromisso é só "Nota" (uma instrução pessoal); na agenda
-        // de outra pessoa é "Nota do gestor" (deixa claro que veio de quem
-        // tem posição de liderança sobre o dono, não de um colega qualquer).
+        // Notas do compromisso: histórico, não um campo só — várias pessoas
+        // com `canManageNote` (ver `AccessPolicy::canManageNoteFor()`) podem
+        // ter deixado uma cada, ou a mesma pessoa várias ao longo do tempo. O
+        // servidor já decidiu quem pode VER (`props.notes` só chega
+        // preenchido para quem pode), aqui só se desenha o que chegou. O
+        // rótulo muda conforme quem escreveu: no próprio compromisso é só
+        // "Nota" (uma instrução pessoal); na agenda de outra pessoa é "Nota
+        // do gestor" (deixa claro que veio de quem tem posição de liderança
+        // sobre o dono, não de um colega qualquer).
         var is_own_event = String(props.users_id) === String(self.config.me);
-        if (props.note) {
-            var $note = $('<div class="planner-popover-note"></div>');
-            $('<div class="planner-popover-note-label"></div>')
-                .html('<i class="ti ti-message-2"></i> ' + (is_own_event
-                    ? (self.label('own_note') || 'Note')
-                    : (self.label('manager_note') || 'Manager note')))
-                .appendTo($note);
-            $('<div class="planner-popover-note-text"></div>').text(props.note).appendTo($note);
-            // O autor aparece sempre que o servidor manda um, mesmo no
-            // próprio compromisso: uma nota "minha" pode ter sido escrita por
-            // um gestor que tem `canManageNote` sobre mim, e sem o nome não
-            // dá para saber se foi eu mesmo ou alguém com essa posição.
-            if (props.noteAuthor) {
-                var author_prefix = self.label('note_by') || 'By';
-                $('<div class="planner-popover-note-author"></div>').text(author_prefix + ' ' + props.noteAuthor).appendTo($note);
-            }
-            $note.appendTo($pop);
+        var notes = props.notes || [];
+        if (notes.length) {
+            var $notes = $('<div class="planner-popover-notes"></div>');
+            notes.forEach(function (note) {
+                var $note = $('<div class="planner-popover-note"></div>');
+                var $label = $('<div class="planner-popover-note-label"></div>')
+                    .html('<i class="ti ti-message-2"></i> ' + (is_own_event
+                        ? (self.label('own_note') || 'Note')
+                        : (self.label('manager_note') || 'Manager note')));
+
+                if (props.canManageNote) {
+                    $('<button type="button" class="btn btn-icon btn-sm btn-ghost-secondary planner-popover-note-edit-one" title="' + (self.label('edit_note') || 'Edit note') + '"><i class="ti ti-pencil"></i></button>')
+                        .on('click', function (e) {
+                            e.stopPropagation();
+                            self.showNoteEditor($pop, event, props, note);
+                        })
+                        .appendTo($label);
+                }
+
+                $label.appendTo($note);
+                $('<div class="planner-popover-note-text"></div>').text(note.note).appendTo($note);
+                // O autor aparece sempre que o servidor manda um, mesmo no
+                // próprio compromisso: uma nota "minha" pode ter sido escrita
+                // por um gestor que tem `canManageNote` sobre mim, e sem o
+                // nome não dá para saber se foi eu mesmo ou alguém com essa
+                // posição.
+                if (note.author) {
+                    var author_prefix = self.label('note_by') || 'By';
+                    $('<div class="planner-popover-note-author"></div>').text(author_prefix + ' ' + note.author).appendTo($note);
+                }
+                $note.appendTo($notes);
+            });
+            $notes.appendTo($pop);
         }
 
         if (props.canManageNote) {
             $('<button type="button" class="btn btn-sm btn-ghost-secondary planner-popover-note-edit"></button>')
-                .html('<i class="ti ti-note"></i> ' + (props.note
-                    ? (self.label('edit_note') || 'Edit note')
-                    : (self.label('add_note') || 'Add a note')))
+                .html('<i class="ti ti-note"></i> ' + (self.label('add_note') || 'Add a note'))
                 .on('click', function (e) {
                     e.stopPropagation();
-                    self.showNoteEditor($pop, event, props);
+                    self.showNoteEditor($pop, event, props, null);
                 })
                 .appendTo($pop);
         }
@@ -787,20 +803,21 @@ var GlpiPlanner = {
     },
 
     /**
-     * Substitui o conteúdo do popover por um formulário de uma nota só.
-     * Pina o popover (`notePinned`) enquanto o formulário está aberto, para
-     * que passar o mouse do cartão até a área de texto não o feche antes de
-     * a pessoa conseguir digitar.
+     * Substitui o conteúdo do popover por um formulário de uma nota só —
+     * uma nova (histórico acrescentado, `note` null/undefined) ou a edição de
+     * uma já existente (`note.id` vai no POST). Pina o popover (`notePinned`)
+     * enquanto o formulário está aberto, para que passar o mouse do cartão
+     * até a área de texto não o feche antes de a pessoa conseguir digitar.
      */
-    showNoteEditor: function ($pop, event, props) {
+    showNoteEditor: function ($pop, event, props, note) {
         var self = this;
         self.notePinned = true;
 
-        $pop.find('.planner-popover-note, .planner-popover-note-edit').remove();
+        $pop.find('.planner-popover-notes, .planner-popover-note-edit').remove();
 
         var $form = $('<div class="planner-popover-note-form"></div>');
         var $textarea = $('<textarea class="form-control form-control-sm" rows="3"></textarea>')
-            .val(props.note || '')
+            .val((note && note.note) || '')
             .appendTo($form);
 
         var $actions = $('<div class="planner-popover-note-actions"></div>');
@@ -826,6 +843,7 @@ var GlpiPlanner = {
                     itemtype: props.itemtype,
                     items_id: props.items_id,
                     users_id: props.users_id,
+                    note_id: note ? note.id : 0,
                     note: $textarea.val()
                 }
             ).done(function (response) {

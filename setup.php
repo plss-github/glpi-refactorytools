@@ -142,7 +142,7 @@ function plugin_planner_redefine_menus(array $menu): array
 function plugin_version_planner(): array
 {
     return [
-        'name'         => 'Pellissari New Planners',
+        'name'         => 'Pellissari RefactoryTools',
         'version'      => PLUGIN_PLANNER_VERSION,
         'author'       => 'Pellissari',
         'license'      => 'AGPL-3.0',
@@ -209,7 +209,7 @@ function plugin_planner_check_config($verbose = false): bool
 
     if ($missing !== []) {
         if ($verbose) {
-            echo __('Pellissari New Planners: GLPI dependencies not found or incompatible:', 'planner')
+            echo __('Pellissari RefactoryTools: GLPI dependencies not found or incompatible:', 'planner')
                 . ' ' . implode(', ', $missing);
         }
         return false;

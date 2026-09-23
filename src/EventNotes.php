@@ -6,8 +6,9 @@
  * Nota do gestor sobre UM compromisso do calendário, independente do
  * itemtype real por trás dele (Chamado, Reserva, Lembrete...).
  *
- * Uma linha por compromisso (chave única itemtype+items_id): a nota é sobre
- * o EVENTO, não sobre uma relação gestor-subordinado guardada à parte — quem
+ * Várias linhas por compromisso (itemtype+items_id): um histórico de notas,
+ * não um campo único que a próxima edição sobrescreve. A nota é sobre o
+ * EVENTO, não sobre uma relação gestor-subordinado guardada à parte — quem
  * pode gravá-la é decidido a cada chamada por `AccessPolicy::canManageNoteFor()`,
  * nunca lido de volta desta tabela.
  */
@@ -42,11 +43,32 @@ final class EventNotes
                     `note` TEXT NOT NULL,
                     `date_mod` TIMESTAMP NULL DEFAULT NULL,
                     PRIMARY KEY (`id`),
-                    UNIQUE KEY `unicity` (`itemtype`, `items_id`),
+                    KEY `pair` (`itemtype`, `items_id`),
                     KEY `users_id_owner` (`users_id_owner`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             ");
+
+            return;
         }
+
+        // Instalações existentes vinham com uma linha só por compromisso
+        // (`UNIQUE KEY unicity`), que travava em uma nota só. Trocar por um
+        // índice comum de leitura libera múltiplas notas por compromisso sem
+        // perder as já gravadas.
+        if ($DB->fieldExists($table, 'itemtype') && self::hasUniqueIndex($table, 'unicity')) {
+            $DB->doQuery("ALTER TABLE `{$table}` DROP INDEX `unicity`");
+            $DB->doQuery("ALTER TABLE `{$table}` ADD INDEX `pair` (`itemtype`, `items_id`)");
+        }
+    }
+
+    private static function hasUniqueIndex(string $table, string $index_name): bool
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        $result = $DB->doQuery("SHOW INDEX FROM `{$table}` WHERE Key_name = '{$index_name}'");
+
+        return $result !== false && $DB->numrows($result) > 0;
     }
 
     public static function uninstall(): void
@@ -63,12 +85,12 @@ final class EventNotes
     /**
      * Uma consulta só, pelos pares (itemtype, items_id) já presentes na
      * resposta — nunca uma consulta por evento. Faz um leve sobre-fetch (o
-     * WHERE combina IN/IN em vez de pares exatos), aceitável porque a tabela
-     * só tem uma linha por compromisso que alguém decidiu anotar.
+     * WHERE combina IN/IN em vez de pares exatos), aceitável porque a lista
+     * de eventos de uma tela é sempre pequena.
      *
      * @param array<int, string> $itemtypes
      * @param array<int, int>    $items_ids
-     * @return array<string, array{note: string, author_name: string, users_id_owner: int}> chave "itemtype|items_id"
+     * @return array<string, array<int, array{id: int, note: string, author_name: string, users_id_owner: int, date_mod: string}>> chave "itemtype|items_id", notas mais recentes primeiro
      */
     public static function getForPairs(array $itemtypes, array $items_ids): array
     {
@@ -80,11 +102,12 @@ final class EventNotes
         }
 
         $rows = $DB->request([
-            'FROM'  => self::getTable(),
-            'WHERE' => [
+            'FROM'    => self::getTable(),
+            'WHERE'   => [
                 'itemtype' => array_values($itemtypes),
                 'items_id' => array_values($items_ids),
             ],
+            'ORDER' => 'date_mod DESC',
         ]);
 
         $out = [];
@@ -93,10 +116,12 @@ final class EventNotes
                 continue;
             }
             $key = $row['itemtype'] . '|' . $row['items_id'];
-            $out[$key] = [
+            $out[$key][] = [
+                'id'             => (int) $row['id'],
                 'note'           => (string) $row['note'],
                 'author_name'    => EventProvider::getUserName((int) $row['users_id_author']),
                 'users_id_owner' => (int) $row['users_id_owner'],
+                'date_mod'       => (string) $row['date_mod'],
             ];
         }
 
@@ -104,15 +129,20 @@ final class EventNotes
     }
 
     /**
-     * Grava ou apaga a nota de um compromisso. Nota vazia remove a linha —
-     * não faz sentido guardar uma linha "sem nota" à espera de reuso.
+     * Grava uma nota de um compromisso. Sem `$note_id`, sempre acrescenta uma
+     * linha nova ao histórico — não sobrescreve a anterior, é assim que várias
+     * notas convivem no mesmo compromisso. Com `$note_id`, edita aquela nota
+     * específica no lugar (o chamador já confirmou que ela pertence a este
+     * par itemtype/items_id antes de chegar aqui). Nota vazia só é aceita em
+     * conjunto com `$note_id`, e apaga a linha em vez de gravar texto vazio.
      */
     public static function save(
         string $itemtype,
         int $items_id,
         int $users_id_owner,
         int $users_id_author,
-        string $note
+        string $note,
+        int $note_id = 0
     ): bool {
         /** @var \DBmysql $DB */
         global $DB;
@@ -120,16 +150,16 @@ final class EventNotes
         $note = trim($note);
 
         if ($note === '') {
+            if ($note_id <= 0) {
+                return false;
+            }
+
             return $DB->delete(self::getTable(), [
+                'id'       => $note_id,
                 'itemtype' => $itemtype,
                 'items_id' => $items_id,
             ]);
         }
-
-        $existing = $DB->request([
-            'FROM'  => self::getTable(),
-            'WHERE' => ['itemtype' => $itemtype, 'items_id' => $items_id],
-        ])->current();
 
         $fields = [
             'itemtype'        => $itemtype,
@@ -140,11 +170,14 @@ final class EventNotes
             'date_mod'        => date('Y-m-d H:i:s'),
         ];
 
-        if ($existing) {
-            $ok = (bool) $DB->update(self::getTable(), $fields, ['id' => $existing['id']]);
-            $note_id = (int) $existing['id'];
+        if ($note_id > 0) {
+            $ok = (bool) $DB->update(self::getTable(), $fields, [
+                'id'       => $note_id,
+                'itemtype' => $itemtype,
+                'items_id' => $items_id,
+            ]);
         } else {
-            $ok = (bool) $DB->insert(self::getTable(), $fields);
+            $ok      = (bool) $DB->insert(self::getTable(), $fields);
             $note_id = (int) $DB->insertId();
         }
 

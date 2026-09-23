@@ -549,11 +549,29 @@
     color: var(--tblr-warning);
 }
 
+/* Várias notas empilhadas (histórico) usam a mesma margem que uma nota só
+   tinha entre si e o conteúdo acima; entre elas próprias já é a margem de
+   `.planner-popover-note`. */
+.planner-popover-notes .planner-popover-note:first-child {
+    margin-top: 0.5rem;
+}
+
 .planner-popover-note-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.375rem;
     font-size: 0.6875rem;
     font-weight: 600;
     text-transform: uppercase;
     margin-bottom: 0.125rem;
+}
+
+.planner-popover-note-edit-one {
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    text-transform: none;
 }
 
 .planner-popover-note-text {

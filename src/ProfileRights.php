@@ -27,7 +27,7 @@ class ProfileRights extends CommonGLPI
 {
     public static function getTypeName($nb = 0)
     {
-        return __('Pellissari New Planners', 'planner');
+        return __('Pellissari RefactoryTools', 'planner');
     }
 
     public static function getIcon()
@@ -54,7 +54,7 @@ class ProfileRights extends CommonGLPI
             [
                 [
                     'rights' => Right::getAll(),
-                    'label'  => __('Planning (Pellissari New Planners)', 'planner'),
+                    'label'  => __('Planning (Pellissari RefactoryTools)', 'planner'),
                     'field'  => Right::NAME,
                 ],
             ],
@@ -64,7 +64,7 @@ class ProfileRights extends CommonGLPI
         );
 
         echo '<p class="text-muted mt-2 mb-0 small">'
-            . htmlescape(__('Someone else schedule can also be granted individually, with the owner approval, under Pellissari New Planners > Shares. That path does not depend on the rights above, except for "Use Pellissari New Planners".',
+            . htmlescape(__('Someone else schedule can also be granted individually, with the owner approval, under Pellissari RefactoryTools > Shares. That path does not depend on the rights above, except for "Use Pellissari RefactoryTools".',
                 'planner'
             ))
             . '</p>';
