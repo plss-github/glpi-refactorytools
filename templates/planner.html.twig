@@ -214,17 +214,13 @@
                     </label>
                 </div>
 
-                {% if technician_panel and technician_panel.tickets|length > 0 %}
-                    {# Chamados em que o usuário logado participa como TÉCNICO
-                       (`Ticket_User.type = ASSIGN`) — sempre sobre a PRÓPRIA
-                       participação, por isso não depende de nenhum direito
-                       extra do plugin: é o mesmo recorte que a pessoa já vê em
-                       "Meus chamados" na Central. A duração de cada chamado
-                       aparece ao passar o mouse — um popover próprio (ver
-                       `bindTechTicketHover()` em planner.js), não o atributo
-                       `title` nativo do navegador: sem estilo, com atraso
-                       inconsistente entre navegadores e fácil de passar
-                       despercebido, o que o tornava difícil de notar. #}
+                {% if technician_panel %}
+                    {# KPIs de horas dos chamados em que o usuário logado
+                       participa como TÉCNICO (`Ticket_User.type = ASSIGN`) —
+                       sempre sobre a PRÓPRIA participação, por isso não
+                       depende de nenhum direito extra do plugin. Sem lista de
+                       chamados individual: só os totais e um link para a
+                       busca nativa, já filtrada. #}
                     <div class="planner-section">
                         <div class="planner-section-title">
                             {{ __('My tickets as technician', 'planner') }}
@@ -243,19 +239,6 @@
                                 <span class="planner-tech-kpi-label">{{ __('Total hours', 'planner') }}</span>
                             </div>
                         </div>
-                        <ul class="planner-tech-tickets">
-                            {% for t in technician_panel.tickets %}
-                                <li class="planner-tech-ticket" data-duration="{{ t.duration_label }}">
-                                    <a href="{{ t.url }}">{{ t.name }}</a>
-                                    <span class="badge bg-secondary-lt">{{ t.status_label }}</span>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                        {# Link para a busca nativa de chamados, já filtrada
-                           por "Técnico designado = eu" — a lista acima é só
-                           um resumo (no máximo 25, os mais recentes), este
-                           link é para quando a pessoa quer a lista de
-                           verdade, com os filtros e colunas da Central. #}
                         <a href="{{ technician_panel.search_url }}" class="planner-tech-seeall">
                             {{ __('See all my tickets', 'planner') }}
                             <i class="ti ti-arrow-right"></i>
@@ -494,29 +477,6 @@
                 note_saved: {{ __('Note saved.', 'planner')|json_encode|raw }},
                 save: {{ __('Save', 'planner')|json_encode|raw }},
                 cancel: {{ __('Cancel', 'planner')|json_encode|raw }}
-            }
-        });
-
-        // Duração do chamado no painel "Chamados como técnico": popover
-        // próprio, não `title` nativo (ver comentário acima da lista). Fica
-        // aqui, não em planner.js, porque só existe nesta tela.
-        var $techPopover = null;
-        $(document).on('mouseenter', '.planner-tech-ticket[data-duration]', function () {
-            var duration = $(this).data('duration');
-            if (!duration) {
-                return;
-            }
-            $techPopover = $('<div class="planner-popover planner-tech-popover"></div>').text(duration);
-            $techPopover.appendTo('body');
-            var rect = this.getBoundingClientRect();
-            $techPopover.css({
-                top: (rect.top + window.scrollY - $techPopover.outerHeight() - 6) + 'px',
-                left: (rect.left + window.scrollX) + 'px'
-            });
-        }).on('mouseleave', '.planner-tech-ticket[data-duration]', function () {
-            if ($techPopover) {
-                $techPopover.remove();
-                $techPopover = null;
             }
         });
     });

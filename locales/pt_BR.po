@@ -342,11 +342,6 @@ msgstr "Detalhes dos compromissos"
 msgid "Free/busy only"
 msgstr "Apenas livre/ocupado"
 
-#: src/TechnicianStats.php:74
-#, php-format
-msgid "Ticket #%d"
-msgstr "Chamado #%d"
-
 #: src/View.php:195 src/View.php:234
 #, php-format
 msgid "User #%d"

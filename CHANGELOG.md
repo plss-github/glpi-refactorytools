@@ -3,6 +3,22 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.1] - 2026-09-23
+
+### Removido
+
+- **Lista de chamados no painel "Chamados como técnico".** Ficou só com os
+  três totais (planejado, realizado, total) e o link "Ver todos os meus
+  chamados" — sem a lista individual, que não era mais desejada.
+
+### Corrigido
+
+- **Texto da nota invisível em alguns temas (ex.: "Auror").** O popover de
+  nota usava um fundo claro (`--tblr-warning-lt`) sem declarar a cor de
+  texto correspondente, então herdava a cor geral do tema — quase branca
+  em temas escuros, texto branco em fundo claro. Agora a cor do texto é
+  declarada no próprio contêiner da nota.
+
 ## [0.11.0] - 2026-09-23
 
 ### Removido
