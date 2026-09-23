@@ -3,6 +3,17 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.3] - 2026-09-23
+
+### Corrigido
+
+- **Texto da nota ainda invisível.** A correção anterior (0.11.1) usou
+  `--tblr-warning-fg`, achando que era o par de texto do fundo claro
+  `--tblr-warning-lt` — na verdade esse token é o par da cor SÓLIDA
+  `--tblr-warning` e resolve para quase-branco no Tabler do GLPI 11.
+  Corrigido para usar a própria `--tblr-warning` (âmbar escuro) como cor
+  de texto sobre o fundo claro, reproduzindo mesmo sem tema escuro.
+
 ## [0.11.2] - 2026-09-23
 
 ### Corrigido

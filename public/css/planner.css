@@ -536,15 +536,17 @@
     border-left: 3px solid var(--tblr-warning);
     background: var(--tblr-warning-lt);
     border-radius: 0 var(--tblr-border-radius) var(--tblr-border-radius) 0;
-    /* `--tblr-warning-lt` é um fundo CLARO pensado para ir com
-       `--tblr-warning-fg` (o par de texto que o próprio Tabler define para
-       ele) — não com a cor de texto geral da página. Sem isto, o texto da
-       nota herdava `--tblr-body-color`, que em alguns temas do GLPI (o
-       "Auror" da captura de tela que revelou o bug, entre outros escuros)
-       é quase branco — texto branco em fundo claro, invisível. Declarado
-       aqui, no contêiner, para cascatear para TODOS os filhos (rótulo,
-       texto, autor), sem precisar repetir em cada um. */
-    color: var(--tblr-warning-fg, #664d03);
+    /* NÃO usar `--tblr-warning-fg`: esse token é o texto para cima da cor
+       SÓLIDA `--tblr-warning` (no Tabler do GLPI 11 ele resolve para
+       `--tblr-light`, quase branco) — pareado com o fundo CLARO `-lt`
+       (creme) dá texto quase branco em fundo claro, invisível (o bug
+       reportado, em qualquer tema, não só o "Auror" que apareceu na
+       primeira captura). O par certo do fundo `-lt` é a própria cor
+       sólida `--tblr-warning` (um âmbar escuro o bastante para contraste),
+       a mesma lógica de `.text-warning` sobre `.bg-warning-lt` no Tabler.
+       Declarado aqui, no contêiner, para cascatear para TODOS os filhos
+       (rótulo, texto, autor), sem precisar repetir em cada um. */
+    color: var(--tblr-warning);
 }
 
 .planner-popover-note-label {
