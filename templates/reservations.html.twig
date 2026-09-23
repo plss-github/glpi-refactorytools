@@ -295,7 +295,7 @@
                         {{ __('Cancel', 'planner') }}
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="ti ti-calendar-plus me-1"></i>{{ __('Reserve', 'planner') }}
+                        <i class="ti ti-calendar-plus"></i>{{ __('Reserve', 'planner') }}
                     </button>
                 </div>
             </form>
@@ -326,14 +326,20 @@
             // flatpickr, não o `type="datetime-local"` nativo: dá pra digitar
             // a data inteira direto no campo (`allowInput: true` — sem isso o
             // texto visível fica só de leitura, e só o clique no calendário
-            // funcionaria), e o formato batido ('Y-m-d H:i:S') já é o que o
-            // core espera, sem conversão nenhuma no envio.
+            // funcionaria), e o formato batido ('Y-m-d H:i:s') já é o que o
+            // core espera, sem conversão nenhuma no envio. Atenção ao 's'
+            // minúsculo: em maiúscula (`S`) o flatpickr entende como o
+            // sufixo ordinal do DIA ("rd", "th"...), não segundos — com
+            // maiúscula, ao inicializar sobre o valor pré-preenchido pelo
+            // servidor, o campo virava algo como "2026-09-23 20:00rd" e a
+            // consulta de disponibilidade abaixo falhava silenciosamente,
+            // deixando os dois selects sempre vazios/inválidos.
             function initDateTime($el) {
                 if ($.fn.flatpickr) {
                     $el.flatpickr({
                         enableTime: true,
                         time_24hr: true,
-                        dateFormat: 'Y-m-d H:i:S',
+                        dateFormat: 'Y-m-d H:i:s',
                         allowInput: true,
                         onClose: function () { $el.trigger('change'); }
                     });

@@ -206,6 +206,34 @@
     vertical-align: -0.15em;
 }
 
+/* Ícone + texto nos botões de planejamento/reserva: o HTML só tem um espaço
+   de verdade entre o `<i>` e o texto, que alguns navegadores colapsam bem
+   rente ao glyph do ícone (mais perceptível em ícones largos, como o "+").
+   Uma margem explícita garante a mesma respiração em qualquer navegador, sem
+   depender de espaço em branco no markup — inclusive nos botões da barra
+   lateral e dos modais, que não passam pelos seletores de tamanho acima.
+   `:last-child` não serve para distinguir "ícone com texto" de "só ícone"
+   (o `<i>` é sempre o único filho ELEMENTO do botão, texto ao lado é nó de
+   texto, não conta) — por isso a exceção abaixo, pelas classes dos botões
+   que são só o ícone (navegação de período). */
+.planner-topbar .btn .ti,
+.planner-subbar .btn .ti,
+#planner-group-manager-toggle .ti,
+.planner-sidebar .btn .ti,
+.modal .btn .ti {
+    margin-right: 0.375rem;
+}
+
+.planner-prev .ti,
+.planner-next .ti {
+    margin-right: 0;
+}
+
+/* Aqui o ícone vem DEPOIS do texto ("See all my tickets →"), não antes. */
+.planner-tech-seeall .ti {
+    margin-left: 0.375rem;
+}
+
 .planner-modes .btn.active,
 .planner-ranges .btn.active,
 .planner-kanban-opts .btn.active {
@@ -591,6 +619,10 @@
 
 .planner-popover-note-edit {
     margin-top: 0.5rem;
+}
+
+.planner-popover-note-edit .ti {
+    margin-right: 0.375rem;
 }
 
 .planner-popover-note-form {

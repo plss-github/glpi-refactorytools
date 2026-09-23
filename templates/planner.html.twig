@@ -409,7 +409,7 @@
                         {{ __('Cancel', 'planner') }}
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="ti ti-calendar-plus me-1"></i>{{ __('Create', 'planner') }}
+                        <i class="ti ti-calendar-plus"></i>{{ __('Create', 'planner') }}
                     </button>
                 </div>
             </form>
@@ -425,7 +425,7 @@
                 $('#planner-event-begin, #planner-event-end').flatpickr({
                     enableTime: true,
                     time_24hr: true,
-                    dateFormat: 'Y-m-d H:i:S',
+                    dateFormat: 'Y-m-d H:i:s',
                     allowInput: true
                 });
             }
