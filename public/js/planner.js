@@ -386,6 +386,7 @@ var GlpiPlanner = {
             data: payload
         }).done(function (response) {
             self.updateKpis(response.stats || {});
+            self.updateTechnicianPanel(response.technician);
 
             // Faixas novas só valem depois de guardadas; refetchResources()
             // volta a chamar getResources(), que agora devolve estas.
@@ -1469,6 +1470,23 @@ var GlpiPlanner = {
         $('[data-kpi="people"]').text(stats.people !== undefined ? stats.people : '—');
         $('[data-kpi="selected"]').text(Object.keys(this.actors).length);
         this.applyKpiGroup();
+    },
+
+    /**
+     * Painel "Chamados como técnico": os totais vêm no MESMO payload de
+     * `events.php` que já é buscado a cada troca de período, com o mesmo
+     * `begin`/`end` — trocar de Dia/Semana/Mês atualiza os números para o
+     * período visível, em vez de sempre mostrar o mês corrente (ver
+     * `TechnicianStats::getPanelForUser()`). Sem-op quando o painel não
+     * existe na tela (Reservas não tem um).
+     */
+    updateTechnicianPanel: function (technician) {
+        if (!technician) {
+            return;
+        }
+        $('[data-tech-kpi="planned_hours"]').text(technician.planned_hours + 'h');
+        $('[data-tech-kpi="realized_hours"]').text(technician.realized_hours + 'h');
+        $('[data-tech-kpi="total_hours"]').text(technician.total_hours + 'h');
     },
 
     /**

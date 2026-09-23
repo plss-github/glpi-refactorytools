@@ -10,12 +10,19 @@
  * o mesmo recorte que "Meus chamados" na Central já mostra. Não precisa de
  * `AccessPolicy`: não é a agenda de outra pessoa.
  *
- * Duas contagens de tempo do MÊS CORRENTE, somadas das tarefas
- * (`TicketTask`) que ESTE técnico registrou nos chamados em que está
- * designado:
+ * Duas contagens de tempo, somadas das tarefas (`TicketTask`) que ESTE
+ * técnico registrou nos chamados em que está designado, dentro de um
+ * intervalo:
  *   planejado   janela `begin`/`end` da tarefa (quando ela tem hora marcada).
  *   realizado   `actiontime`, o campo que o core já usa para "tempo passado".
  * "Total" é a soma das duas — não é uma terceira medição independente.
+ *
+ * O intervalo acompanha o período visível no calendário (Dia/Semana/Mês) —
+ * `ajax/events.php` chama `getPanelForUser()` com o MESMO `begin`/`end` que
+ * usa para buscar os eventos daquela view, então trocar de período também
+ * atualiza este painel (ver `GlpiPlanner.fetch()` em planner.js). Sem
+ * intervalo (o render inicial da página, em Twig), o padrão é o mês
+ * corrente.
  *
  * Só os totais: nenhuma lista de chamados individual (essa lista já existe
  * na Central, via o link de `search_url`).
@@ -39,7 +46,7 @@ final class TechnicianStats
      *     search_url: string
      * }
      */
-    public static function getPanelForUser(int $users_id): array
+    public static function getPanelForUser(int $users_id, ?string $begin = null, ?string $end = null): array
     {
         $empty = [
             'planned_hours'  => 0.0,
@@ -57,7 +64,10 @@ final class TechnicianStats
             return $empty;
         }
 
-        [$planned_seconds, $realized_seconds] = self::getTaskDurations($ticket_ids, $users_id);
+        $begin ??= date('Y-m-01 00:00:00');
+        $end   ??= date('Y-m-t 23:59:59');
+
+        [$planned_seconds, $realized_seconds] = self::getTaskDurations($ticket_ids, $users_id, $begin, $end);
 
         return [
             'planned_hours'  => round($planned_seconds / 3600, 1),
@@ -114,14 +124,13 @@ final class TechnicianStats
     }
 
     /**
-     * Só as tarefas do MÊS CORRENTE (pelo campo `date` da tarefa, o mesmo
-     * que o core usa para os relatórios de tempo passado) — o painel é "meu
-     * mês", não a carreira inteira do técnico no chamado.
+     * Só as tarefas dentro de [$begin, $end] (pelo campo `date` da tarefa, o
+     * mesmo que o core usa para os relatórios de tempo passado).
      *
      * @param array<int, int> $ticket_ids
      * @return array{0: int, 1: int} [planejado total, realizado total]
      */
-    private static function getTaskDurations(array $ticket_ids, int $users_id): array
+    private static function getTaskDurations(array $ticket_ids, int $users_id, string $begin, string $end): array
     {
         /** @var \DBmysql $DB */
         global $DB;
@@ -129,17 +138,14 @@ final class TechnicianStats
         $planned_total  = 0;
         $realized_total = 0;
 
-        $month_start = date('Y-m-01 00:00:00');
-        $month_end   = date('Y-m-t 23:59:59');
-
         foreach ($DB->request([
             'SELECT' => ['begin', 'end', 'actiontime'],
             'FROM'   => TicketTask::getTable(),
             'WHERE'  => [
                 'tickets_id'    => $ticket_ids,
                 'users_id_tech' => $users_id,
-                ['date' => ['>=', $month_start]],
-                ['date' => ['<=', $month_end]],
+                ['date' => ['>=', $begin]],
+                ['date' => ['<=', $end]],
             ],
         ]) as $row) {
             $realized_total += (int) $row['actiontime'];

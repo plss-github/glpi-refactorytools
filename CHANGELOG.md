@@ -3,6 +3,16 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.4] - 2026-09-23
+
+### Corrigido
+
+- **Painel "Chamados como técnico" não seguia o período do calendário.**
+  Sempre mostrava o mês corrente, mesmo trocando para Dia ou Semana. Agora
+  usa o mesmo `begin`/`end` que o calendário já busca a cada troca de
+  período (`ajax/events.php`), então Dia mostra o dia, Semana a semana, Mês
+  o mês.
+
 ## [0.11.3] - 2026-09-23
 
 ### Corrigido

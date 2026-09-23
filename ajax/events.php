@@ -19,6 +19,7 @@ include('../../../inc/includes.php');
 use GlpiPlugin\Planner\AccessPolicy;
 use GlpiPlugin\Planner\EventProvider;
 use GlpiPlugin\Planner\Right;
+use GlpiPlugin\Planner\TechnicianStats;
 
 Session::checkRight(Right::NAME, Right::USE_PLANNER);
 
@@ -71,6 +72,10 @@ $allowed = AccessPolicy::filterRequested($requested);
 $events  = EventProvider::getEvents($allowed, $begin, $end, $types, $include_done);
 
 echo json_encode([
-    'events' => $events,
-    'stats'  => EventProvider::getStats($events),
+    'events'     => $events,
+    'stats'      => EventProvider::getStats($events),
+    // Mesmo intervalo da busca acima: o painel "Chamados como técnico" da
+    // barra lateral acompanha o período visível no calendário (Dia/Semana/
+    // Mês), não sempre o mês corrente (ver TechnicianStats::getPanelForUser()).
+    'technician' => TechnicianStats::getPanelForUser((int) Session::getLoginUserID(), $begin, $end),
 ]);
