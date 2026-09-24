@@ -395,9 +395,13 @@
                         <textarea class="form-control" id="refactorytools-event-text" name="text" rows="2" required></textarea>
                     </div>
 
-                    {# Só para Visita: liga o compromisso a uma reserva já
-                       feita pela própria pessoa (ver `VisitLink`) — opcional,
-                       de propósito. Escondido/mostrado por
+                    {# Só para Visita/Viagem (`EventTypes::LINKABLE_WITH_RESERVATION`):
+                       liga o compromisso a uma reserva — já existente, OU
+                       nova (criada junto, no mesmo envio). As duas opções
+                       são mutuamente exclusivas: se um item reservável for
+                       escolhido abaixo, ele vale e a reserva existente
+                       selecionada aqui é ignorada — ver
+                       `ajax/create_event.php`. Escondido/mostrado por
                        `refactorytools-event-kind`, ver o script abaixo. #}
                     <div class="mb-3" id="refactorytools-event-visit-reservation" hidden>
                         <label class="form-label" for="refactorytools-event-reservation">{{ __('Linked reservation', 'refactorytools') }}</label>
@@ -407,6 +411,20 @@
                                 <option value="{{ choice.id }}">{{ choice.label }}</option>
                             {% endfor %}
                         </select>
+                        <div class="form-hint">{{ __('Or create a new reservation for this commitment:', 'refactorytools') }}</div>
+
+                        <div class="row g-2 mt-1">
+                            <div class="col-12 col-sm-6">
+                                <select class="form-select" id="refactorytools-event-new-res-type">
+                                    <option value="">{{ __('Choose an asset type', 'refactorytools') }}</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <select class="form-select" id="refactorytools-event-new-res-item" name="new_reservation_item_id">
+                                    <option value="">{{ __('Fill in the dates above first', 'refactorytools') }}</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     {# Só para Reunião: convida outras pessoas — o compromisso
@@ -489,21 +507,73 @@
                 });
             }
 
+            var LINKABLE_WITH_RESERVATION = {{ constant('GlpiPlugin\\Refactorytools\\EventTypes::LINKABLE_WITH_RESERVATION')|json_encode|raw }};
+            var SHAREABLE_KINDS = {{ constant('GlpiPlugin\\Refactorytools\\EventTypes::SHAREABLE')|json_encode|raw }};
+
             function toggleRrule() {
                 // "Lembrete" é a única opção sem coluna de recorrência no
                 // banco — some com o bloco nesse caso, em vez de deixá-lo
                 // visível prometendo algo que o envio ignoraria.
                 $rrule.prop('hidden', $kindSelect.val() === {{ constant('GlpiPlugin\\Refactorytools\\EventTypes::REMINDER')|json_encode|raw }});
 
-                // "Reserva vinculada" só faz sentido para Visita.
-                $visitReservation.prop('hidden', $kindSelect.val() !== {{ constant('GlpiPlugin\\Refactorytools\\EventTypes::EVENT_VISIT')|json_encode|raw }});
+                // "Reserva vinculada" só faz sentido para Visita/Viagem.
+                $visitReservation.prop('hidden', LINKABLE_WITH_RESERVATION.indexOf($kindSelect.val()) === -1);
 
-                // Convidados só fazem sentido para Reunião.
-                $meetingGuests.prop('hidden', $kindSelect.val() !== {{ constant('GlpiPlugin\\Refactorytools\\EventTypes::EVENT_MEETING')|json_encode|raw }});
+                // Convidados fazem sentido para Reunião/Viagem/Visita.
+                $meetingGuests.prop('hidden', SHAREABLE_KINDS.indexOf($kindSelect.val()) === -1);
             }
 
             $kindSelect.on('change', toggleRrule);
             toggleRrule();
+
+            // Criar reserva nova junto com a Visita/Viagem: mesmo par
+            // Tipo de ativo + Item reservável do modal de "Nova reserva",
+            // consultando o mesmo endpoint de disponibilidade — ver
+            // `refreshResAvailability()` em templates/reservations.html.twig
+            // para o comentário completo sobre o formato de data.
+            var $newResType = $('#refactorytools-event-new-res-type');
+            var $newResItem = $('#refactorytools-event-new-res-item');
+            var newResAvailableItems = [];
+
+            function setNewResOptions($select, options, placeholder) {
+                $select.empty().append($('<option></option>').val('').text(placeholder));
+                options.forEach(function (opt) {
+                    $select.append($('<option></option>').val(opt.value).text(opt.text));
+                });
+            }
+
+            function refreshNewResAvailability() {
+                var begin = $('#refactorytools-event-begin').val();
+                var end = $('#refactorytools-event-end').val();
+
+                if (!begin || !end || begin >= end) {
+                    return;
+                }
+
+                $.getJSON({{ (root_doc ~ '/plugins/refactorytools/ajax/reservation_availability.php')|json_encode|raw }}, {
+                    begin: begin,
+                    end: end
+                }).done(function (data) {
+                    newResAvailableItems = data.items || [];
+
+                    var typeOpts = (data.types || []).map(function (t) {
+                        return { value: t.itemtype, text: t.label + ' (' + t.count + ')' };
+                    });
+                    setNewResOptions($newResType, typeOpts, {{ __('Choose an asset type', 'refactorytools')|json_encode|raw }});
+                    applyNewResTypeFilter();
+                });
+            }
+
+            function applyNewResTypeFilter() {
+                var type = $newResType.val();
+                var opts = newResAvailableItems
+                    .filter(function (it) { return !type || it.itemtype === type; })
+                    .map(function (it) { return { value: it.id, text: it.type_name + ' — ' + it.name }; });
+                setNewResOptions($newResItem, opts, {{ __('Choose an item', 'refactorytools')|json_encode|raw }});
+            }
+
+            $('#refactorytools-event-begin, #refactorytools-event-end').on('change', refreshNewResAvailability);
+            $newResType.on('change', applyNewResTypeFilter);
         });
     </script>
 {% endif %}

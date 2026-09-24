@@ -22,6 +22,7 @@
 
 use GlpiPlugin\Refactorytools\EventTypes;
 use GlpiPlugin\Refactorytools\MeetingGuest;
+use GlpiPlugin\Refactorytools\ReservationView;
 use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\Settings;
 use GlpiPlugin\Refactorytools\VisitLink;
@@ -94,15 +95,15 @@ if ($itemtype === PlanningExternalEvent::class) {
     }
 }
 
-// Convidados: só para Reunião. `users_id_guests` é um campo NATIVO de
-// `PlanningExternalEvent` — o core já espelha o compromisso na agenda de
-// cada convidado sozinho (ver `Glpi\Features\PlanningEvent::populatePlanning()`,
-// que inclui o convidado no filtro `who`). O que o plugin acrescenta é só o
-// controle de obrigatório/opcional e a resposta de cada um — ver
-// `MeetingGuest`.
+// Convidados: Reunião/Viagem/Visita (`EventTypes::SHAREABLE`).
+// `users_id_guests` é um campo NATIVO de `PlanningExternalEvent` — o core já
+// espelha o compromisso na agenda de cada convidado sozinho (ver
+// `Glpi\Features\PlanningEvent::populatePlanning()`, que inclui o convidado
+// no filtro `who`). O que o plugin acrescenta é só o controle de
+// obrigatório/opcional e a resposta de cada um — ver `MeetingGuest`.
 $guests_mandatory = [];
 $guests_optional  = [];
-if ($kind === EventTypes::EVENT_MEETING) {
+if (in_array($kind, EventTypes::SHAREABLE, true)) {
     $guests_mandatory = array_map('intval', (array) ($_POST['guests_mandatory'] ?? []));
     $guests_optional  = array_map('intval', (array) ($_POST['guests_optional'] ?? []));
     $all_guests       = array_values(array_unique(array_filter(
@@ -117,18 +118,42 @@ if ($kind === EventTypes::EVENT_MEETING) {
 
 $new_id = $item->add($input);
 
-if ($new_id && $kind === EventTypes::EVENT_MEETING) {
+if ($new_id && in_array($kind, EventTypes::SHAREABLE, true)) {
     MeetingGuest::setGuests((int) $new_id, $guests_mandatory, $guests_optional);
 }
 
-// Visita: liga o compromisso recém-criado à reserva escolhida no modal, se
-// alguma foi escolhida — opcional de propósito. `VisitLink::link()` já
-// reconfere que a reserva é de quem está logado, então um id manipulado
-// não liga a visita à reserva de outra pessoa.
-if ($new_id && $kind === EventTypes::EVENT_VISIT) {
-    $reservations_id = (int) ($_POST['reservations_id'] ?? 0);
-    if ($reservations_id > 0) {
-        VisitLink::link((int) $new_id, $reservations_id);
+// Visita/Viagem: liga o compromisso recém-criado a uma reserva — já
+// existente (escolhida no select), OU nova (criada aqui mesmo, no mesmo
+// envio). As duas são opcionais e mutuamente exclusivas: um item novo
+// escolhido vale sobre uma reserva existente marcada por engano.
+if ($new_id && in_array($kind, EventTypes::LINKABLE_WITH_RESERVATION, true)) {
+    $new_reservation_item_id = (int) ($_POST['new_reservation_item_id'] ?? 0);
+
+    if ($new_reservation_item_id > 0) {
+        // Reconfere no servidor que o item ainda está livre — a mesma
+        // checagem que `ajax/create_reservation.php` já faz, aqui só para
+        // UM item (o par de selects deste modal não permite escolher mais
+        // de um).
+        $available_ids = array_column(ReservationView::getAvailableItems($begin, $end), 'id');
+        if (in_array($new_reservation_item_id, $available_ids, true)) {
+            $reservation = new Reservation();
+            $reservations_id = $reservation->add([
+                'begin'               => $begin,
+                'end'                 => $end,
+                'reservationitems_id' => $new_reservation_item_id,
+                'comment'             => $text,
+                'users_id'            => (int) Session::getLoginUserID(),
+            ]);
+
+            if ($reservations_id) {
+                VisitLink::link((int) $new_id, (int) $reservations_id);
+            }
+        }
+    } else {
+        $reservations_id = (int) ($_POST['reservations_id'] ?? 0);
+        if ($reservations_id > 0) {
+            VisitLink::link((int) $new_id, $reservations_id);
+        }
     }
 }
 

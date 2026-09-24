@@ -23,7 +23,13 @@
  * resolve.
  */
 
+use GlpiPlugin\Refactorytools\EventTypes;
 use GlpiPlugin\Refactorytools\ReservationView;
+use GlpiPlugin\Refactorytools\Settings;
+use GlpiPlugin\Refactorytools\VisitLink;
+
+/** @var \DBmysql $DB */
+global $DB;
 
 if (!ReservationView::canReserve()) {
     Session::addMessageAfterRedirect(
@@ -97,5 +103,52 @@ if (isset($_POST['periodicity']) && is_array($_POST['periodicity']) && !empty($_
 }
 
 Reservation::handleAddForm($input);
+
+// Cria um compromisso de Visita/Viagem já ligado a esta reserva — só quando
+// dá para saber, sem ambiguidade, a qual reserva ligar: UM item, sem
+// recorrência (mais de um item ou `periodicity` geram várias linhas em
+// `glpi_reservations`, e não haveria como escolher qual delas é "a" reserva
+// da visita/viagem). `handleAddForm()` não devolve o id criado, então a
+// linha é encontrada de volta pelos mesmos campos que acabou de gravar —
+// dono, item e horário, únicos o bastante para este caso de uso.
+$linked_kind = (string) ($_POST['linked_kind'] ?? '');
+if (
+    $linked_kind !== ''
+    && in_array($linked_kind, EventTypes::LINKABLE_WITH_RESERVATION, true)
+    && count($items) === 1
+    && empty($input['periodicity'])
+) {
+    $created = $DB->request([
+        'FROM'  => Reservation::getTable(),
+        'WHERE' => [
+            'users_id'            => Session::getLoginUserID(),
+            'reservationitems_id' => $items[0],
+            'begin'               => $begin,
+            'end'                 => $end,
+        ],
+        'ORDER' => 'id DESC',
+        'LIMIT' => 1,
+    ])->current();
+
+    if ($created) {
+        $event_input = [
+            'name' => $comment,
+            'text' => $comment,
+            'plan' => ['begin' => $begin, 'end' => $end],
+        ];
+
+        $category_id = Settings::getCategoryId($linked_kind);
+        if ($category_id > 0) {
+            $event_input['planningeventcategories_id'] = $category_id;
+        }
+
+        $event      = new PlanningExternalEvent();
+        $new_event_id = $event->add($event_input);
+
+        if ($new_event_id) {
+            VisitLink::link((int) $new_event_id, (int) $created['id']);
+        }
+    }
+}
 
 Html::back();
