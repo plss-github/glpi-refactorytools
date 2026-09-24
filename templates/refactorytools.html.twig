@@ -76,6 +76,35 @@
                 <i class="ti ti-users-group"></i> {{ __('By person', 'refactorytools') }}
             </button>
 
+            {# Acesso a agendas de terceiros, ao lado de "Por pessoa" — as
+               duas mexem em QUAIS agendas aparecem no calendário, então
+               ficam juntas no canto superior esquerdo. #}
+            {% if can_pick_any %}
+                <div class="refactorytools-picker refactorytools-picker-inline">
+                    {{ 'User'|itemtype_dropdown({
+                        name: 'refactorytools_add_user',
+                        value: 0,
+                        entity: session('glpiactive_entity'),
+                        entity_sons: session('glpiactive_entity_recursive'),
+                        right: 'all',
+                        width: '14rem',
+                        placeholder: __('Open another schedule', 'refactorytools')
+                    }) }}
+                </div>
+                {% if reads_all %}
+                    <i class="ti ti-info-circle refactorytools-info"
+                       data-bs-toggle="tooltip" data-bs-placement="top"
+                       title="{{ __('Your profile has "See all schedules": you can open any user schedule, without depending on team, group or sharing.', 'refactorytools') }}"></i>
+                {% endif %}
+            {% elseif can_request %}
+                <a href="{{ root_doc }}/plugins/refactorytools/front/share.php"
+                   class="btn btn-sm btn-outline-primary"
+                   title="{{ __('Open another schedule', 'refactorytools') }}">
+                    <i class="ti ti-lock-open"></i>
+                    {{ __('Request access to a schedule', 'refactorytools') }}
+                </a>
+            {% endif %}
+
             {% if can_group_manager_mode %}
                 {# Só aparece para quem é `is_manager=1` de pelo menos um
                    grupo com membros visíveis (ver `AccessPolicy::canUseGroupManagerMode`).
@@ -246,49 +275,6 @@
                     </div>
                 {% endif %}
 
-                {# Acesso a agendas de terceiros: as duas ações ficam juntas, no
-                   fim da barra, porque são sobre a mesma coisa — abrir uma
-                   agenda que não é minha. #}
-                {% if can_pick_any %}
-                    <div class="refactorytools-section">
-                        {# O aviso de "Ver todas as agendas" é uma explicação,
-                           não uma instrução: ocupava quatro linhas fixas da
-                           barra lateral para algo que se lê uma vez. Virou
-                           ícone com dica ao passar o mouse, usando o tooltip do
-                           Bootstrap que o GLPI já inicializa nas páginas. #}
-                        <div class="refactorytools-section-title">
-                            {{ __('Open another schedule', 'refactorytools') }}
-                            {% if reads_all %}
-                                <i class="ti ti-info-circle refactorytools-info"
-                                   data-bs-toggle="tooltip" data-bs-placement="top"
-                                   title="{{ __('Your profile has "See all schedules": you can open any user schedule, without depending on team, group or sharing.', 'refactorytools') }}"></i>
-                            {% endif %}
-                        </div>
-                        {# Dropdown nativo (select2 com busca via ajax) em vez do
-                           wrapper `fields.dropdownField`, que traria rótulo e
-                           grade de formulário desnecessários na barra lateral. #}
-                        <div class="refactorytools-picker">
-                            {{ 'User'|itemtype_dropdown({
-                                name: 'refactorytools_add_user',
-                                value: 0,
-                                entity: session('glpiactive_entity'),
-                                entity_sons: session('glpiactive_entity_recursive'),
-                                right: 'all',
-                                width: '100%'
-                            }) }}
-                        </div>
-                    </div>
-                {% elseif can_request %}
-                    <div class="refactorytools-section">
-                        <div class="refactorytools-section-title">{{ __('Open another schedule', 'refactorytools') }}</div>
-                        <a href="{{ root_doc }}/plugins/refactorytools/front/share.php"
-                           class="btn btn-sm btn-outline-primary w-100">
-                            <i class="ti ti-lock-open"></i>
-                            {{ __('Request access to a schedule', 'refactorytools') }}
-                        </a>
-                    </div>
-                {% endif %}
-
                 {% if can_share or reads_all %}
                     <div class="refactorytools-section refactorytools-section-footer">
                         {% if can_share %}
@@ -380,27 +366,33 @@
                                mesmo comentário no modal de nova reserva
                                (templates/reservations.html.twig). #}
                             <input type="text" class="form-control" id="refactorytools-event-begin"
-                                   name="begin" value="{{ default_event_begin }}" required autocomplete="off">
+                                   name="begin" value="" required autocomplete="off">
                         </div>
                         <div class="col-12 col-sm-6">
                             <label class="form-label required" for="refactorytools-event-end">{{ __('End', 'refactorytools') }}</label>
                             <input type="text" class="form-control" id="refactorytools-event-end"
-                                   name="end" value="{{ default_event_end }}" required autocomplete="off">
+                                   name="end" value="" required autocomplete="off">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="refactorytools-event-text">{{ __('Description', 'refactorytools') }}</label>
-                        <textarea class="form-control" id="refactorytools-event-text" name="text" rows="2"></textarea>
+                        <label class="form-label required" for="refactorytools-event-text">{{ __('Description', 'refactorytools') }}</label>
+                        <textarea class="form-control" id="refactorytools-event-text" name="text" rows="2" required></textarea>
                     </div>
 
                     {# Recorrência: só se aplica às 4 variantes de Evento — o
                        widget nativo (`showRepetitionForm`) escreve os campos
                        `rrule[...]`, que `PlanningExternalEvent::add()` já
                        sabe converter. Lembrete não tem coluna de recorrência
-                       no banco, então o bloco fica escondido nesse caso. #}
-                    <div id="refactorytools-event-rrule">
-                        {{ call('PlanningExternalEvent::showRepetitionForm', ['', {rand: random()}])|raw }}
+                       no banco, então o bloco fica escondido nesse caso.
+                       O próprio widget não desenha um `<label>` (só a lista
+                       suspensa), então o título vai aqui fora, do mesmo jeito
+                       que o campo equivalente do modal de reserva. #}
+                    <div class="mb-3">
+                        <label class="form-label">{{ __('Repeat', 'refactorytools') }}</label>
+                        <div id="refactorytools-event-rrule">
+                            {{ call('PlanningExternalEvent::showRepetitionForm', ['', {rand: random()}])|raw }}
+                        </div>
                     </div>
                 </div>
 

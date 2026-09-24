@@ -371,6 +371,12 @@
     width: 100% !important;
 }
 
+/* Variante compacta: "Abrir outra agenda" ao lado de "Por pessoa", na barra
+   de opções — largura fixa, não a largura toda de uma barra lateral. */
+.refactorytools-picker-inline .select2-container {
+    width: 14rem !important;
+}
+
 /* --------------------------------------------------------------------- */
 /* Calendário (FullCalendar 4, o embarcado no GLPI 11)                    */
 /* --------------------------------------------------------------------- */

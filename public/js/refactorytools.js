@@ -250,6 +250,15 @@ var GlpiRefactoryTools = {
             editable: true,
             // Nada é arrastado de fora para dentro do calendário.
             droppable: false,
+            // Clicar (ou arrastar) um horário livre abre o modal de "Novo
+            // compromisso"/"Nova reserva" já com aquele horário preenchido —
+            // ver `openCreateModalForSelection()`. Sem isso os campos de data
+            // só teriam como ser preenchidos digitando à mão.
+            selectable: true,
+            select: function (info) {
+                self.openCreateModalForSelection(info.start, info.end);
+                self.calendar.unselect();
+            },
             // Rótulo da coluna de raias na visão por pessoa. Sem isto o
             // FullCalendar escreve "Resources", em inglês e sem sentido aqui.
             resourceLabelText: (self.config.labels && self.config.labels.person) || '',
@@ -415,6 +424,44 @@ var GlpiRefactoryTools = {
      */
     toSqlDate: function (date) {
         return date.toISOString().slice(0, 19).replace('T', ' ');
+    },
+
+    /**
+     * Preenche o modal de criação (Novo compromisso ou Nova reserva, o que
+     * existir nesta tela) com o intervalo clicado/arrastado no calendário e
+     * abre o modal. Os campos de data começam vazios (ver os templates); só
+     * ganham valor por aqui, nunca por um default do servidor.
+     */
+    openCreateModalForSelection: function (start, end) {
+        var self = this;
+        var $modal, $begin, $end;
+
+        if ($('#refactorytools-new-event').length) {
+            $modal = $('#refactorytools-new-event');
+            $begin = $('#refactorytools-event-begin');
+            $end   = $('#refactorytools-event-end');
+        } else if ($('#refactorytools-new-reservation').length) {
+            $modal = $('#refactorytools-new-reservation');
+            $begin = $('#refactorytools-res-begin');
+            $end   = $('#refactorytools-res-end');
+        } else {
+            return;
+        }
+
+        var setValue = function ($el, date) {
+            var sql = self.toSqlDate(date);
+            // O flatpickr guarda o próprio estado; `.val()` sozinho não
+            // atualiza o calendário/o texto que ele mostra.
+            if ($el.length && $el[0]._flatpickr) {
+                $el[0]._flatpickr.setDate(sql, true);
+            } else {
+                $el.val(sql).trigger('change');
+            }
+        };
+
+        setValue($begin, start);
+        setValue($end, end);
+        $modal.modal('show');
     },
 
     // -----------------------------------------------------------------
@@ -1037,12 +1084,13 @@ var GlpiRefactoryTools = {
         }
         $type.appendTo($tr);
 
+        // Nunca um link: a Lista é uma visão de conjunto, não um atalho para
+        // sair para outra tela. Abrir o item individual, um a um, só faz
+        // sentido na aba de Configuração do Plugin — aqui o hover mostra o
+        // popover de notas (`bindPopover`, ligado abaixo), do mesmo jeito
+        // que um cartão do Kanban.
         var $subject = $('<td></td>');
-        if (props.url) {
-            $('<a></a>').attr('href', props.url).text(ev.title).appendTo($subject);
-        } else {
-            $('<span></span>').text(ev.title).appendTo($subject);
-        }
+        $('<span></span>').text(ev.title).appendTo($subject);
         $subject.appendTo($tr);
 
         var $state = $('<td class="refactorytools-list-state"></td>');
@@ -1053,6 +1101,8 @@ var GlpiRefactoryTools = {
                 .appendTo($state);
         }
         $state.appendTo($tr);
+
+        this.bindPopover($tr, ev);
 
         return $tr;
     },

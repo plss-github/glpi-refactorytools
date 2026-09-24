@@ -34,7 +34,7 @@ if (!in_array($kind, EventTypes::CREATABLE, true)) {
 }
 
 $name  = trim((string) ($_POST['name'] ?? ''));
-$text  = (string) ($_POST['text'] ?? '');
+$text  = trim((string) ($_POST['text'] ?? ''));
 $begin = (string) ($_POST['begin'] ?? '');
 $end   = (string) ($_POST['end'] ?? '');
 
@@ -44,6 +44,13 @@ if ($begin === '' || $end === '' || $begin >= $end) {
         false,
         ERROR
     );
+    Html::back();
+}
+
+// `required` no HTML não impede um POST direto sem o campo — a validação
+// que decide de verdade é sempre a do servidor.
+if ($text === '') {
+    Session::addMessageAfterRedirect(htmlescape(__('Description is required.', 'refactorytools')), false, ERROR);
     Html::back();
 }
 

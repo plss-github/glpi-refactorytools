@@ -50,8 +50,6 @@ final class View
             'today'          => date('Y-m-d'),
             'level_busy'     => Settings::LEVEL_BUSY,
             'creatable_kinds'    => self::getCreatableKinds(),
-            'default_event_begin' => date('Y-m-d H:00:00', strtotime('+1 hour')),
-            'default_event_end'   => date('Y-m-d H:00:00', strtotime('+2 hours')),
             'csrf'           => Session::getNewCSRFToken(),
         ]);
     }
