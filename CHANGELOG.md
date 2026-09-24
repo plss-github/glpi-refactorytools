@@ -3,6 +3,23 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.5] - 2026-09-24
+
+### Corrigido
+
+- **`include('../../../inc/includes.php')` removido de todos os pontos de
+  entrada (`ajax/*.php`, `front/*.php`).** No GLPI 11, o roteamento já faz
+  todo o bootstrap (banco, sessão, autoload) antes de incluir qualquer
+  arquivo de plugin — o próprio core não inclui mais esse arquivo em seus
+  `front/*.php`. Mantê-lo é inofensivo em instalações onde o arquivo ainda
+  existe (hoje só emite avisos de depreciação), mas quebra com fatal error
+  em instalações onde ele foi removido.
+- **Colunas de data em `TIMESTAMP` trocadas por `DATETIME`** (`EventNotes`,
+  `Share`). `TIMESTAMP` é o padrão antigo do GLPI: converte o valor
+  conforme o fuso da sessão que lê/grava e tem o limite de 2038. Quem já
+  tinha as tabelas instaladas é migrado automaticamente (`ALTER TABLE ...
+  MODIFY`), sem perda de dado.
+
 ## [0.11.4] - 2026-09-23
 
 ### Corrigido
