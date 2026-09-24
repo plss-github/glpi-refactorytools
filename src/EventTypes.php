@@ -33,11 +33,13 @@ final class EventTypes
     public const RESERVATION  = 'Reservation';
     public const REMINDER     = 'Reminder';
 
-    /** Evento externo "puro": sem categoria, ou com uma categoria que não é nenhuma das três abaixo. */
+    /** Evento externo "puro": sem categoria, ou com uma categoria que não é nenhuma das quatro abaixo. */
     public const EVENT_EXTERNAL = 'PlanningExternalEvent';
     public const EVENT_INTERNAL = 'PlanningExternalEvent:internal';
     public const EVENT_TRAVEL   = 'PlanningExternalEvent:travel';
     public const EVENT_MEETING  = 'PlanningExternalEvent:meeting';
+    /** Visita: a única variante que pode se ligar a uma Reserva (ver `VisitLink`). */
+    public const EVENT_VISIT    = 'PlanningExternalEvent:visit';
 
     /**
      * Tipos que o usuário pode criar pela tela ("+ Novo compromisso").
@@ -57,6 +59,7 @@ final class EventTypes
         self::EVENT_INTERNAL,
         self::EVENT_TRAVEL,
         self::EVENT_MEETING,
+        self::EVENT_VISIT,
     ];
 
     /**
@@ -77,6 +80,7 @@ final class EventTypes
             self::EVENT_INTERNAL,
             self::EVENT_TRAVEL,
             self::EVENT_MEETING,
+            self::EVENT_VISIT,
             self::REMINDER,
         ];
     }
@@ -94,6 +98,7 @@ final class EventTypes
             self::EVENT_INTERNAL => __('Internal event', 'refactorytools'),
             self::EVENT_TRAVEL   => __('Travel', 'refactorytools'),
             self::EVENT_MEETING  => __('Meeting', 'refactorytools'),
+            self::EVENT_VISIT    => __('Visit', 'refactorytools'),
             default => $key,
         };
     }
@@ -111,6 +116,7 @@ final class EventTypes
             self::EVENT_INTERNAL => 'ti ti-building',
             self::EVENT_TRAVEL   => 'ti ti-plane',
             self::EVENT_MEETING  => 'ti ti-users',
+            self::EVENT_VISIT    => 'ti ti-door-enter',
             default => 'ti ti-calendar',
         };
     }
@@ -138,6 +144,7 @@ final class EventTypes
             self::CHANGE_TASK    => '#7c3aed', // roxo
             self::EVENT_EXTERNAL => '#db2777', // rosa
             self::REMINDER       => '#64748b', // cinza neutro
+            self::EVENT_VISIT    => '#be185d', // magenta
             default => '#64748b',
         };
     }
@@ -147,7 +154,8 @@ final class EventTypes
         return $key === self::EVENT_EXTERNAL
             || $key === self::EVENT_INTERNAL
             || $key === self::EVENT_TRAVEL
-            || $key === self::EVENT_MEETING;
+            || $key === self::EVENT_MEETING
+            || $key === self::EVENT_VISIT;
     }
 
     /**
@@ -172,6 +180,7 @@ final class EventTypes
             self::EVENT_INTERNAL => 'category_internal_id',
             self::EVENT_TRAVEL   => 'category_travel_id',
             self::EVENT_MEETING  => 'category_meeting_id',
+            self::EVENT_VISIT    => 'category_visit_id',
             default => null,
         };
     }
@@ -188,6 +197,7 @@ final class EventTypes
             self::EVENT_INTERNAL => __('Internal event', 'refactorytools'),
             self::EVENT_TRAVEL   => __('Travel', 'refactorytools'),
             self::EVENT_MEETING  => __('Meeting', 'refactorytools'),
+            self::EVENT_VISIT    => __('Visit', 'refactorytools'),
             default => null,
         };
     }

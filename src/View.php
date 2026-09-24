@@ -68,6 +68,11 @@ final class View
             'today'          => date('Y-m-d'),
             'level_busy'     => Settings::LEVEL_BUSY,
             'creatable_kinds'    => self::getCreatableKinds(),
+            // Para o seletor "Reserva vinculada" do modal de Visita (ver
+            // `VisitLink`) — sempre calculado, mesmo para quem não vai criar
+            // uma Visita: é uma consulta pequena (só as reservas da própria
+            // pessoa), mais simples que buscar sob demanda via ajax.
+            'my_reservation_choices' => VisitLink::getMyReservationChoices(),
             'csrf'           => Session::getNewCSRFToken(),
         ]);
     }
