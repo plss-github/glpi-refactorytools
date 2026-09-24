@@ -29,9 +29,19 @@ final class View
 
         $me = (int) Session::getLoginUserID();
 
+        // Grupo escolhido no seletor da barra lateral, só relevante quando o
+        // observador está em mais de um (ver `AccessPolicy::getGroupColleagues()`).
+        // Validado contra os grupos de quem está logado — um id de grupo que
+        // não é dele é tratado como se não tivesse escolhido nenhum.
+        $group_choices = AccessPolicy::getGroupChoices($me);
+        $group_id      = (int) ($_GET['group_id'] ?? 0);
+        if ($group_id <= 0 || !isset($group_choices[$group_id])) {
+            $group_id = null;
+        }
+
         TemplateRenderer::getInstance()->display('@refactorytools/refactorytools.html.twig', [
             'root_doc'       => $CFG_GLPI['root_doc'],
-            'actor_groups'   => self::getActorGroups($me),
+            'actor_groups'   => self::getActorGroups($me, $group_id),
             'types'          => EventProvider::getAvailableTypes($me),
             'can_pick_any'   => Right::has(Right::READ_ALL),
             // Exibido como aviso na barra lateral: sem isso, quem tem
@@ -43,7 +53,15 @@ final class View
             'default_mode'   => Settings::get('default_mode'),
             'pending_count'  => self::countPendingForOwner($me),
             'auto_load_team' => Settings::isTrue('auto_load_team'),
-            'can_group_manager_mode' => AccessPolicy::canUseGroupManagerMode($me),
+            'group_choices'  => $group_choices,
+            'selected_group_id' => $group_id,
+            // Nome mantido por compatibilidade com o CSS/JS existente
+            // (`#refactorytools-group-manager-toggle`) — o gate deixou de
+            // ser "é gerente de algum grupo" (removido, redundante com
+            // `READ_TEAM`) e passou a ser simplesmente "tem colegas de grupo
+            // visíveis agora", ver `AccessPolicy::getGroupColleagues()`.
+            'can_group_manager_mode' => Right::has(Right::READ_GROUP)
+                && AccessPolicy::getGroupColleagues($me, $group_id) !== [],
             'technician_panel' => TechnicianStats::getPanelForUser($me),
             'kanban_state_order' => KanbanPrefs::getStateOrder($me),
             'me'             => $me,
@@ -98,15 +116,14 @@ final class View
      *
      * @return array<int, array{reason: string, label: string, actors: array<int, array<string, mixed>>}>
      */
-    public static function getActorGroups(int $users_id): array
+    public static function getActorGroups(int $users_id, ?int $group_id = null): array
     {
-        $visible = AccessPolicy::getVisibleUsers($users_id);
+        $visible = AccessPolicy::getVisibleUsers($users_id, $group_id);
 
         $order = [
             AccessPolicy::REASON_SELF,
             AccessPolicy::REASON_TEAM,
             AccessPolicy::REASON_GROUP,
-            AccessPolicy::REASON_GROUP_MANAGER,
             AccessPolicy::REASON_SHARE,
         ];
 

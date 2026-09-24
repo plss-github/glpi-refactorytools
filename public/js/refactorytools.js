@@ -382,7 +382,12 @@ var GlpiRefactoryTools = {
             // Esta marca resolve: com ela, a lista acima é a palavra final,
             // mesmo vazia.
             types_defined: 1,
-            include_done: $('#refactorytools-show-done').is(':checked') ? 1 : 0
+            include_done: $('#refactorytools-show-done').is(':checked') ? 1 : 0,
+            // Precisa ser o mesmo grupo com que a barra lateral foi
+            // desenhada no servidor (ver `View::showRefactoryTools()`), para
+            // os colegas de grupo marcados aqui não caírem fora da
+            // autorização em `ajax/events.php`.
+            group_id: self.config.group_id || 0
         };
         payload[self.config.actor_param || 'users_ids'] = ids;
 
@@ -1699,6 +1704,21 @@ var GlpiRefactoryTools = {
 
     bindToolbar: function () {
         var self = this;
+
+        // Trocar de grupo muda QUEM aparece na barra lateral (calculado no
+        // servidor, ver `View::showRefactoryTools()`), então recarrega a
+        // página com o grupo escolhido na URL em vez de tentar re-renderizar
+        // a barra lateral só em JS.
+        $(document).on('change', '#refactorytools-group-select', function () {
+            var group_id = $(this).val();
+            var url = new URL(window.location.href);
+            if (group_id) {
+                url.searchParams.set('group_id', group_id);
+            } else {
+                url.searchParams.delete('group_id');
+            }
+            window.location.href = url.toString();
+        });
 
         $(document).on('click', '.refactorytools-modes [data-mode]', function () {
             self.mode = $(this).data('mode');

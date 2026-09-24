@@ -66,7 +66,16 @@ if (($_GET['types_defined'] ?? '') === '1') {
 
 $include_done = ($_GET['include_done'] ?? '1') !== '0';
 
-$allowed = AccessPolicy::filterRequested($requested);
+// Precisa ser o MESMO grupo com que a barra lateral foi desenhada (ver
+// `View::showRefactoryTools()`), senão um colega de grupo marcado lá cai
+// fora daqui e some da busca — `filterRequested()` valida de novo que o
+// grupo é mesmo do observador, então um id manipulado não amplia nada.
+$group_id = (int) ($_GET['group_id'] ?? 0);
+if ($group_id <= 0) {
+    $group_id = null;
+}
+
+$allowed = AccessPolicy::filterRequested($requested, null, $group_id);
 $events  = EventProvider::getEvents($allowed, $begin, $end, $types, $include_done);
 
 echo json_encode([
