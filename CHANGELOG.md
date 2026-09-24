@@ -3,6 +3,21 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.8] - 2026-09-24
+
+### Adicionado
+
+- Viagem agora pode se ligar a uma reserva, igual a Visita já podia
+  (`EventTypes::LINKABLE_WITH_RESERVATION`).
+- O vínculo com reserva passou a funcionar nos dois sentidos: do modal de
+  Visita/Viagem dá para criar uma reserva nova (não só ligar a uma já
+  existente), e do modal de Nova reserva dá para criar uma Visita ou
+  Viagem já ligada a ela (só reservando um único item, sem recorrência).
+- Compartilhamento com outros usuários (convidados obrigatório/opcional,
+  aceitar/recusar) estendido de Reunião para também valer em Viagem e
+  Visita — útil quando a viagem é de várias pessoas: o compromisso
+  aparece na agenda de cada uma.
+
 ## [0.11.7] - 2026-09-24
 
 ### Adicionado
