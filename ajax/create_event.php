@@ -23,6 +23,7 @@
 use GlpiPlugin\Refactorytools\EventTypes;
 use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\Settings;
+use GlpiPlugin\Refactorytools\VisitLink;
 
 Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);
 
@@ -93,6 +94,17 @@ if ($itemtype === PlanningExternalEvent::class) {
 }
 
 $new_id = $item->add($input);
+
+// Visita: liga o compromisso recém-criado à reserva escolhida no modal, se
+// alguma foi escolhida — opcional de propósito. `VisitLink::link()` já
+// reconfere que a reserva é de quem está logado, então um id manipulado
+// não liga a visita à reserva de outra pessoa.
+if ($new_id && $kind === EventTypes::EVENT_VISIT) {
+    $reservations_id = (int) ($_POST['reservations_id'] ?? 0);
+    if ($reservations_id > 0) {
+        VisitLink::link((int) $new_id, $reservations_id);
+    }
+}
 
 if ($new_id) {
     Session::addMessageAfterRedirect(

@@ -71,6 +71,7 @@ final class Settings
             'category_internal_id' => '',
             'category_travel_id'   => '',
             'category_meeting_id'  => '',
+            'category_visit_id'    => '',
         ];
     }
 

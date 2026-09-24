@@ -769,6 +769,13 @@ var GlpiRefactoryTools = {
                 .appendTo($pop);
         }
 
+        // Reserva vinculada a uma Visita (ver `VisitLink`).
+        if (props.visitReservation) {
+            $('<div class="refactorytools-popover-meta"></div>')
+                .html('<i class="ti ti-calendar-time"></i> ' + (self.label('linked_reservation') || 'Linked reservation') + ': ' + props.visitReservation)
+                .appendTo($pop);
+        }
+
         // Notas do compromisso: histórico, não um campo só — várias pessoas
         // com `canManageNote` (ver `AccessPolicy::canManageNoteFor()`) podem
         // ter deixado uma cada, ou a mesma pessoa várias ao longo do tempo. O

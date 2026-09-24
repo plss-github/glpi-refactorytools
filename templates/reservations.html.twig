@@ -461,7 +461,7 @@
             default_mode: {{ default_mode|json_encode|raw }},
             // O eixo desta tela é o item reservável, não a pessoa.
             actor_param: 'itemtypes',
-            resource_prefix: {{ constant('GlpiPlugin\\RefactoryTools\\ReservationView::RESOURCE_PREFIX')|json_encode|raw }},
+            resource_prefix: {{ constant('GlpiPlugin\\Refactorytools\\ReservationView::RESOURCE_PREFIX')|json_encode|raw }},
             // Faixas aqui são itens, não pessoas: não existe reatribuir uma
             // reserva arrastando de uma faixa para outra.
             resource_itemtype: null,

@@ -143,6 +143,7 @@ final class EventProvider
 
         self::attachNotes($events, $viewer_id);
         self::attachTicketDurations($events);
+        self::attachVisitReservations($events);
 
         return $events;
     }
@@ -160,6 +161,36 @@ final class EventProvider
      *
      * @param array<int, array<string, mixed>> $events
      */
+    /**
+     * Anexa, em lote, a reserva ligada a cada compromisso de Visita (ver
+     * `VisitLink`) — o que o popover mostra como "Reserva vinculada".
+     */
+    private static function attachVisitReservations(array &$events): void
+    {
+        $items_ids = [];
+        foreach ($events as $event) {
+            if (($event['extendedProps']['virtualType'] ?? '') === EventTypes::EVENT_VISIT) {
+                $items_ids[] = (int) $event['extendedProps']['items_id'];
+            }
+        }
+
+        if ($items_ids === []) {
+            return;
+        }
+
+        $links = VisitLink::getForItems(array_values(array_unique($items_ids)));
+        if ($links === []) {
+            return;
+        }
+
+        foreach ($events as $key => $event) {
+            $items_id = (int) $event['extendedProps']['items_id'];
+            if (isset($links[$items_id])) {
+                $events[$key]['extendedProps']['visitReservation'] = $links[$items_id]['label'];
+            }
+        }
+    }
+
     private static function attachTicketDurations(array &$events): void
     {
         /** @var \DBmysql $DB */
@@ -327,7 +358,7 @@ final class EventProvider
             return EventTypes::EVENT_EXTERNAL;
         }
 
-        foreach ([EventTypes::EVENT_INTERNAL, EventTypes::EVENT_TRAVEL, EventTypes::EVENT_MEETING] as $variant) {
+        foreach ([EventTypes::EVENT_INTERNAL, EventTypes::EVENT_TRAVEL, EventTypes::EVENT_MEETING, EventTypes::EVENT_VISIT] as $variant) {
             if (Settings::getCategoryId($variant) === $category_id) {
                 return $variant;
             }
@@ -497,6 +528,7 @@ final class EventProvider
                 // compromisso, então já é conhecido aqui.
                 'notes'          => [],
                 'ticketDuration' => '',
+                'visitReservation' => '',
                 'canManageNote' => $is_details && $itemtype !== ''
                                    ? AccessPolicy::canManageNoteFor($users_id, $viewer_id)
                                    : false,

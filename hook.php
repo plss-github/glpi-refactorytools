@@ -14,6 +14,7 @@ use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\Settings;
 use GlpiPlugin\Refactorytools\Share;
 use GlpiPlugin\Refactorytools\UserColors;
+use GlpiPlugin\Refactorytools\VisitLink;
 
 /**
  * Instalação.
@@ -36,6 +37,7 @@ function plugin_refactorytools_install(): bool
     Share::install($migration);
     EventNotes::install($migration);
     KanbanPrefs::install($migration);
+    VisitLink::install($migration);
 
     $migration->executeMigration();
 
@@ -77,7 +79,7 @@ function plugin_refactorytools_install(): bool
     // uma categoria NOVA a cada atualização, duplicando "Evento Interno" /
     // "Viagem" / "Reunião" indefinidamente.
     $defaults = Settings::getDefaults();
-    foreach (['category_internal_id', 'category_travel_id', 'category_meeting_id'] as $key) {
+    foreach (['category_internal_id', 'category_travel_id', 'category_meeting_id', 'category_visit_id'] as $key) {
         unset($defaults[$key]);
     }
     Settings::save($defaults);
@@ -233,6 +235,7 @@ function plugin_refactorytools_uninstall(): bool
     UserColors::uninstall();
     EventNotes::uninstall();
     KanbanPrefs::uninstall();
+    VisitLink::uninstall();
 
     ProfileRight::deleteProfileRights([Right::NAME]);
 
@@ -255,7 +258,7 @@ function plugin_refactorytools_uninstall(): bool
  */
 function plugin_refactorytools_seed_event_categories(): void
 {
-    $variants = [EventTypes::EVENT_INTERNAL, EventTypes::EVENT_TRAVEL, EventTypes::EVENT_MEETING];
+    $variants = [EventTypes::EVENT_INTERNAL, EventTypes::EVENT_TRAVEL, EventTypes::EVENT_MEETING, EventTypes::EVENT_VISIT];
 
     foreach ($variants as $variant) {
         $existing_id = Settings::getCategoryId($variant);

@@ -395,6 +395,20 @@
                         <textarea class="form-control" id="refactorytools-event-text" name="text" rows="2" required></textarea>
                     </div>
 
+                    {# Só para Visita: liga o compromisso a uma reserva já
+                       feita pela própria pessoa (ver `VisitLink`) — opcional,
+                       de propósito. Escondido/mostrado por
+                       `refactorytools-event-kind`, ver o script abaixo. #}
+                    <div class="mb-3" id="refactorytools-event-visit-reservation" hidden>
+                        <label class="form-label" for="refactorytools-event-reservation">{{ __('Linked reservation', 'refactorytools') }}</label>
+                        <select class="form-select" id="refactorytools-event-reservation" name="reservations_id">
+                            <option value="">{{ __('None', 'refactorytools') }}</option>
+                            {% for choice in my_reservation_choices %}
+                                <option value="{{ choice.id }}">{{ choice.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
                     {# Recorrência: só se aplica às 4 variantes de Evento — o
                        widget nativo (`showRepetitionForm`) escreve os campos
                        `rrule[...]`, que `PlanningExternalEvent::add()` já
@@ -403,7 +417,7 @@
                        O próprio widget não desenha um `<label>` (só a lista
                        suspensa), então o título vai aqui fora, do mesmo jeito
                        que o campo equivalente do modal de reserva. #}
-                    <div class="mb-3">
+                    <div class="mb-3" id="refactorytools-event-rrule-wrap">
                         <label class="form-label">{{ __('Repeat', 'refactorytools') }}</label>
                         <div id="refactorytools-event-rrule">
                             {{ call('PlanningExternalEvent::showRepetitionForm', ['', {rand: random()}])|raw }}
@@ -426,7 +440,8 @@
     <script>
         $(function () {
             var $kindSelect = $('#refactorytools-event-kind');
-            var $rrule = $('#refactorytools-event-rrule');
+            var $rrule = $('#refactorytools-event-rrule-wrap');
+            var $visitReservation = $('#refactorytools-event-visit-reservation');
 
             if ($.fn.flatpickr) {
                 $('#refactorytools-event-begin, #refactorytools-event-end').flatpickr({
@@ -447,7 +462,10 @@
                 // "Lembrete" é a única opção sem coluna de recorrência no
                 // banco — some com o bloco nesse caso, em vez de deixá-lo
                 // visível prometendo algo que o envio ignoraria.
-                $rrule.prop('hidden', $kindSelect.val() === {{ constant('GlpiPlugin\\RefactoryTools\\EventTypes::REMINDER')|json_encode|raw }});
+                $rrule.prop('hidden', $kindSelect.val() === {{ constant('GlpiPlugin\\Refactorytools\\EventTypes::REMINDER')|json_encode|raw }});
+
+                // "Reserva vinculada" só faz sentido para Visita.
+                $visitReservation.prop('hidden', $kindSelect.val() !== {{ constant('GlpiPlugin\\Refactorytools\\EventTypes::EVENT_VISIT')|json_encode|raw }});
             }
 
             $kindSelect.on('change', toggleRrule);
@@ -486,6 +504,7 @@
                 own_note: {{ __('Note', 'refactorytools')|json_encode|raw }},
                 note_by: {{ __('By', 'refactorytools')|json_encode|raw }},
                 ticket_duration: {{ __('Total time on this ticket', 'refactorytools')|json_encode|raw }},
+                linked_reservation: {{ __('Linked reservation', 'refactorytools')|json_encode|raw }},
                 add_note: {{ __('Add a note', 'refactorytools')|json_encode|raw }},
                 edit_note: {{ __('Edit note', 'refactorytools')|json_encode|raw }},
                 note_saved: {{ __('Note saved.', 'refactorytools')|json_encode|raw }},
