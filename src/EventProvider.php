@@ -163,14 +163,15 @@ final class EventProvider
      * @param array<int, array<string, mixed>> $events
      */
     /**
-     * Anexa, em lote, a reserva ligada a cada compromisso de Visita (ver
-     * `VisitLink`) — o que o popover mostra como "Reserva vinculada".
+     * Anexa, em lote, a reserva ligada a cada Visita/Viagem (ver
+     * `VisitLink`, `EventTypes::LINKABLE_WITH_RESERVATION`) — o que o
+     * popover mostra como "Reserva vinculada".
      */
     private static function attachVisitReservations(array &$events): void
     {
         $items_ids = [];
         foreach ($events as $event) {
-            if (($event['extendedProps']['virtualType'] ?? '') === EventTypes::EVENT_VISIT) {
+            if (in_array($event['extendedProps']['virtualType'] ?? '', EventTypes::LINKABLE_WITH_RESERVATION, true)) {
                 $items_ids[] = (int) $event['extendedProps']['items_id'];
             }
         }
@@ -193,17 +194,18 @@ final class EventProvider
     }
 
     /**
-     * Anexa, em lote, a lista de convidados de cada Reunião (ver
-     * `MeetingGuest`) — quem o popover mostra com o selo de
-     * obrigatório/opcional e a resposta (aceito/recusado/pendente).
-     * `canRespond` marca se QUEM ESTÁ OLHANDO é um dos convidados ainda sem
-     * resposta — só nesse caso o popover oferece os botões de responder.
+     * Anexa, em lote, a lista de convidados de cada Reunião/Viagem/Visita
+     * (ver `MeetingGuest`, `EventTypes::SHAREABLE`) — quem o popover mostra
+     * com o selo de obrigatório/opcional e a resposta
+     * (aceito/recusado/pendente). `canRespond` marca se QUEM ESTÁ OLHANDO é
+     * um dos convidados ainda sem resposta — só nesse caso o popover
+     * oferece os botões de responder.
      */
     private static function attachMeetingGuests(array &$events, ?int $viewer_id): void
     {
         $items_ids = [];
         foreach ($events as $event) {
-            if (($event['extendedProps']['virtualType'] ?? '') === EventTypes::EVENT_MEETING) {
+            if (in_array($event['extendedProps']['virtualType'] ?? '', EventTypes::SHAREABLE, true)) {
                 $items_ids[] = (int) $event['extendedProps']['items_id'];
             }
         }

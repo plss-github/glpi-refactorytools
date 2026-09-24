@@ -238,6 +238,22 @@
                                   placeholder="{{ __('What is it for?', 'refactorytools') }}" required></textarea>
                     </div>
 
+                    {# Cria uma Visita/Viagem junto com a reserva, já ligada a
+                       ela (ver `VisitLink`) — só funciona reservando UM item
+                       sem repetição; com mais de um item ou recorrência
+                       marcada, `ajax/create_reservation.php` ignora esta
+                       escolha (não dá para saber a qual das reservas geradas
+                       ligar). #}
+                    <div class="mb-3">
+                        <label class="form-label" for="refactorytools-res-linked-kind">{{ __('Create linked commitment', 'refactorytools') }}</label>
+                        <select class="form-select" id="refactorytools-res-linked-kind" name="linked_kind">
+                            <option value="">{{ __('None', 'refactorytools') }}</option>
+                            <option value="{{ constant('GlpiPlugin\\Refactorytools\\EventTypes::EVENT_VISIT') }}">{{ __('Visit', 'refactorytools') }}</option>
+                            <option value="{{ constant('GlpiPlugin\\Refactorytools\\EventTypes::EVENT_TRAVEL') }}">{{ __('Travel', 'refactorytools') }}</option>
+                        </select>
+                        <div class="form-hint">{{ __('Only when reserving a single item, without repetition.', 'refactorytools') }}</div>
+                    </div>
+
                     {# Recorrência: mesmos nomes de campo (`periodicity[...]`)
                        que o formulário nativo de reserva usa, então
                        `Reservation::handleAddForm()` entende sem tradução. #}

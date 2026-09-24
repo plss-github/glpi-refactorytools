@@ -38,7 +38,7 @@ final class EventTypes
     public const EVENT_INTERNAL = 'PlanningExternalEvent:internal';
     public const EVENT_TRAVEL   = 'PlanningExternalEvent:travel';
     public const EVENT_MEETING  = 'PlanningExternalEvent:meeting';
-    /** Visita: a única variante que pode se ligar a uma Reserva (ver `VisitLink`). */
+    /** Visita e Viagem podem se ligar a uma Reserva (ver `EventTypes::LINKABLE_WITH_RESERVATION`, `VisitLink`). */
     public const EVENT_VISIT    = 'PlanningExternalEvent:visit';
 
     /**
@@ -59,6 +59,31 @@ final class EventTypes
         self::EVENT_INTERNAL,
         self::EVENT_TRAVEL,
         self::EVENT_MEETING,
+        self::EVENT_VISIT,
+    ];
+
+    /**
+     * Podem se ligar a uma Reserva, nos dois sentidos: linkar uma já
+     * existente, ou criar uma nova reserva junto (ver `VisitLink`,
+     * `ajax/create_event.php`, `ajax/create_reservation.php`).
+     *
+     * @var array<int, string>
+     */
+    public const LINKABLE_WITH_RESERVATION = [
+        self::EVENT_VISIT,
+        self::EVENT_TRAVEL,
+    ];
+
+    /**
+     * Podem ser compartilhados com outros usuários — o compromisso passa a
+     * aparecer na agenda deles também (ver `MeetingGuest`, campo nativo
+     * `users_id_guests`).
+     *
+     * @var array<int, string>
+     */
+    public const SHAREABLE = [
+        self::EVENT_MEETING,
+        self::EVENT_TRAVEL,
         self::EVENT_VISIT,
     ];
 
