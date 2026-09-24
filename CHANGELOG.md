@@ -3,6 +3,31 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.6] - 2026-09-24
+
+### Adicionado
+
+- Popover do compromisso/reserva ganhou "Editar" e "Cancelar" (Lembrete,
+  Evento — as 4 variantes — e Reserva).
+- Campos de data dos modais de criação: mostram DD-MM-AAAA HH:MM pra
+  pessoa, sem mudar o valor enviado ao servidor.
+
+### Alterado
+
+- Tipos de compromisso: Chamado, Mudança e Problema saíram do filtro da
+  barra lateral (o painel "Meus chamados como técnico" continua igual).
+- Compromisso de outra pessoa fora de dia útil 8h-19h some do campo de
+  visão de quem está olhando (vale mesmo para "Ver todas as agendas");
+  o dono sempre vê a própria agenda normalmente.
+- Campo de repetição (Reunião/Evento/Viagem) ganhou o rótulo "Repetir".
+- Campos de data dos modais de criação começam vazios; só são
+  preenchidos ao clicar/arrastar um horário no calendário.
+- Descrição do compromisso passou a ser obrigatória.
+- Visão Lista: passar o mouse no nome do compromisso mostra o popover de
+  notas; clicar não navega mais para outra tela.
+- "Abrir outra agenda" saiu do fim da barra lateral e foi para o lado do
+  botão "Por pessoa".
+
 ## [0.11.5] - 2026-09-24
 
 ### Corrigido
