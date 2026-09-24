@@ -78,6 +78,15 @@ final class Settings
             // Vazio por padrão: até o administrador escolher alguém, a aba
             // não aparece pra ninguém além de quem já tem READ_ALL.
             'reservation_report_users' => '',
+            // Chaves virtuais (`EventTypes`), separadas por vírgula, que o
+            // administrador desligou — somem do filtro/legenda da barra
+            // lateral e da lista de tipos criáveis em "+ Novo compromisso".
+            // Vazio por padrão: nenhum tipo desligado.
+            'disabled_types' => '',
+            // Desliga o painel "Meus chamados como técnico" inteiro (horas
+            // + link "Ver todos os meus chamados") na barra lateral do
+            // Planejamento.
+            'technician_panel_enabled' => '1',
         ];
     }
 
@@ -354,5 +363,41 @@ final class Settings
         }
 
         return in_array($user_id, self::getReservationReportUserIds(), true);
+    }
+
+    /**
+     * Chaves virtuais (`EventTypes`) que o administrador desligou.
+     *
+     * @return array<int, string>
+     */
+    public static function getDisabledTypes(): array
+    {
+        $raw = trim(self::get('disabled_types'));
+        if ($raw === '') {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode(',', $raw)), static fn($key) => $key !== ''));
+    }
+
+    public static function isTypeEnabled(string $key): bool
+    {
+        return !in_array($key, self::getDisabledTypes(), true);
+    }
+
+    /**
+     * @param array<int, string> $keys
+     */
+    public static function saveDisabledTypes(array $keys): void
+    {
+        // Só chaves REAIS (`EventTypes::getAll()`) são gravadas — um valor
+        // inventado no POST não vira uma entrada nova na lista, que o resto
+        // do plugin nunca reconheceria de qualquer forma.
+        $known = EventTypes::getAll();
+        $clean = array_values(array_intersect(array_map('strval', $keys), $known));
+
+        Config::setConfigurationValues(self::CONTEXT, [
+            'disabled_types' => implode(',', $clean),
+        ]);
     }
 }

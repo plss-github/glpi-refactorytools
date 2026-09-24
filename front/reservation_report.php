@@ -8,13 +8,16 @@
  * reserva.
  */
 
+use Glpi\Exception\Http\AccessDeniedHttpException;
 use GlpiPlugin\Refactorytools\ReservationMenu;
 use GlpiPlugin\Refactorytools\ReservationReport;
 
 Session::checkLoginUser();
 
 if (!ReservationReport::canView()) {
-    Html::displayRightError();
+    // Ver front/reservations.php — `Html::displayRightError()` está
+    // depreciado desde o GLPI 11.
+    throw new AccessDeniedHttpException();
 }
 
 Html::header(

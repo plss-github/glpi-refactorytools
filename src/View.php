@@ -62,7 +62,9 @@ final class View
             // visíveis agora", ver `AccessPolicy::getGroupColleagues()`.
             'can_group_manager_mode' => Right::has(Right::READ_GROUP)
                 && AccessPolicy::getGroupColleagues($me, $group_id) !== [],
-            'technician_panel' => TechnicianStats::getPanelForUser($me),
+            'technician_panel' => Settings::isTrue('technician_panel_enabled')
+                ? TechnicianStats::getPanelForUser($me)
+                : null,
             'kanban_state_order' => KanbanPrefs::getStateOrder($me),
             'me'             => $me,
             'today'          => date('Y-m-d'),
@@ -274,6 +276,10 @@ final class View
         $out = [];
 
         foreach (EventTypes::CREATABLE as $key) {
+            if (!Settings::isTypeEnabled($key)) {
+                continue;
+            }
+
             $itemtype = EventTypes::realItemtype($key);
 
             if ($itemtype::canCreate()) {
