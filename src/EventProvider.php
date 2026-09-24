@@ -359,6 +359,24 @@ final class EventProvider
      * @param array<string, mixed> $row
      * @return array<string, mixed>|null
      */
+    /**
+     * Dia útil (segunda a sexta) e horário entre 8h e 19h, pelo INÍCIO do
+     * compromisso — sábado, domingo e qualquer coisa começando antes das 8h
+     * ou às/depois das 19h contam como fora.
+     */
+    public static function isBusinessHours(string $begin): bool
+    {
+        $ts = strtotime($begin);
+        if ($ts === false) {
+            return false;
+        }
+
+        $weekday = (int) date('N', $ts); // 1 (segunda) .. 7 (domingo)
+        $hour    = (int) date('H', $ts);
+
+        return $weekday <= 5 && $hour >= 8 && $hour < 19;
+    }
+
     private static function normalize(
         array $row,
         string $virtual_key,
@@ -370,6 +388,18 @@ final class EventProvider
         $begin = (string) ($row['begin'] ?? '');
         $end   = (string) ($row['end'] ?? '');
         if ($begin === '' || $end === '') {
+            return null;
+        }
+
+        // Fora do horário comercial (dia útil, 8h-19h), um compromisso só é
+        // visível para o próprio dono — quem está olhando a agenda de
+        // outra pessoa (mesmo com "Ver todas as agendas") não vê nada ali,
+        // nem no nível livre/ocupado. O dono sempre vê a própria agenda
+        // normalmente, dentro ou fora do horário. Decidido pelo INÍCIO do
+        // compromisso, não pelo fim: um evento que começa às 18h e vai até
+        // as 20h ainda conta como dentro.
+        $effective_viewer = $viewer_id ?? (int) Session::getLoginUserID();
+        if ($users_id !== $effective_viewer && !self::isBusinessHours($begin)) {
             return null;
         }
 
