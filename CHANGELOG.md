@@ -3,6 +3,46 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.7] - 2026-09-24
+
+### Adicionado
+
+- Novo tipo de compromisso "Visita", que pode se ligar a uma reserva já
+  feita pela mesma pessoa (`VisitLink`).
+- Reunião agora pode ser compartilhada com outros usuários (campo nativo
+  `users_id_guests`, o compromisso passa a aparecer na agenda deles),
+  marcando cada convidado como obrigatório ou opcional. No popover, o
+  convidado aceita ou recusa; quem ainda não respondeu e já tem outro
+  compromisso no horário aparece com aviso automático de indisponibilidade.
+- Popover do compromisso/reserva ganhou "Editar" e "Cancelar".
+- Aba de Relatório de Reservas (Ferramentas > Reservas), com permissão
+  configurável por usuário — quem tem "Ver todas as agendas" já vê
+  automaticamente.
+
+### Alterado
+
+- Tipos de compromisso: Chamado, Mudança e Problema saíram do filtro da
+  barra lateral (o painel "Meus chamados como técnico" continua igual).
+- Compromisso de outra pessoa fora de dia útil 8h-19h some do campo de
+  visão de quem está olhando (vale mesmo para "Ver todas as agendas");
+  o dono sempre vê a própria agenda normalmente.
+- Visibilidade por grupo: removida a checagem de "gerente de grupo"
+  (redundante com o responsável direto/supervisor). Agora é só "sou do
+  mesmo grupo"; quem está em mais de um grupo escolhe qual num seletor
+  antes de ver os colegas.
+- "Abrir outra agenda" saiu do fim da barra lateral e foi para o lado do
+  botão "Por pessoa".
+- Campo de repetição (Reunião/Evento/Viagem) ganhou o rótulo "Repetir".
+- Campos de data dos modais de criação começam vazios; só são
+  preenchidos ao clicar/arrastar um horário no calendário. Nos dois
+  modais, o que a pessoa VÊ agora é DD-MM-AAAA HH:MM.
+- Descrição do compromisso passou a ser obrigatória.
+- Visão Lista: passar o mouse no nome do compromisso mostra o popover de
+  notas; clicar não navega mais para outra tela.
+- Removida a contagem de reservas que ficava sempre visível no topo da
+  tela de Reservas — esse número agora vive no Relatório, atrás de
+  permissão própria.
+
 ## [0.11.6] - 2026-09-24
 
 ### Adicionado
