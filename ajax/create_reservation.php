@@ -23,8 +23,6 @@
  * resolve.
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\ReservationView;
 
 if (!ReservationView::canReserve()) {

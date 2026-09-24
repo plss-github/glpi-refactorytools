@@ -13,8 +13,6 @@
  * vigor naquela linha.
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\ReservationEventProvider;
 use GlpiPlugin\Refactorytools\ReservationView;
 

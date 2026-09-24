@@ -22,8 +22,6 @@
  * reserva simplesmente não aparece nesta variante do Kanban.
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\Right;
 
 Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);

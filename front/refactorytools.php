@@ -10,8 +10,6 @@
  * e é o que o próprio core ainda usa para o planejamento (front/planning.php).
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\Menu;
 use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\View;

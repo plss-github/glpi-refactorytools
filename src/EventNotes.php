@@ -51,7 +51,7 @@ final class EventNotes
                     `users_id_owner` INT UNSIGNED NOT NULL,
                     `users_id_author` INT UNSIGNED NOT NULL,
                     `note` TEXT NOT NULL,
-                    `date_mod` DATETIME NULL DEFAULT NULL,
+                    `date_mod` TIMESTAMP NULL DEFAULT NULL,
                     PRIMARY KEY (`id`),
                     KEY `pair` (`itemtype`, `items_id`),
                     KEY `users_id_owner` (`users_id_owner`)
@@ -68,16 +68,6 @@ final class EventNotes
         if ($DB->fieldExists($table, 'itemtype') && self::hasUniqueIndex($table, 'unicity')) {
             $DB->doQuery("ALTER TABLE `{$table}` DROP INDEX `unicity`");
             $DB->doQuery("ALTER TABLE `{$table}` ADD INDEX `pair` (`itemtype`, `items_id`)");
-        }
-
-        // `TIMESTAMP` é o padrão antigo do GLPI para colunas de data: além do
-        // limite de 2038, o MySQL converte o valor conforme o fuso da SESSÃO
-        // na leitura e na escrita, então a mesma linha pode "mudar de hora"
-        // dependendo de quem consulta. `DATETIME` grava o valor literal, sem
-        // conversão — é o tipo que o próprio core usa hoje em `date_creation`/
-        // `date_mod` (ver `Migration::addField()` com `type: 'datetime'`).
-        if (self::columnType($table, 'date_mod') === 'timestamp') {
-            $DB->doQuery("ALTER TABLE `{$table}` MODIFY `date_mod` DATETIME NULL DEFAULT NULL");
         }
     }
 

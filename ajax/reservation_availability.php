@@ -13,8 +13,6 @@
  * no servidor em `ajax/create_reservation.php` no momento de gravar.
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\ReservationView;
 
 if (!ReservationView::canReserve()) {

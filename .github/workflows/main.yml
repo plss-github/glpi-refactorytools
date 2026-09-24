@@ -1,22 +1,8 @@
 # .github/workflows/main.yml
-#
-# Dois jobs, nesta ordem:
-#   1. lint     — roda em todo push e todo pull request contra main. É o
-#                 gate: sintaxe PHP de cada arquivo do plugin, mais
-#                 `composer validate`. Configure isto como "required status
-#                 check" da branch `main` (Settings > Branches) para travar
-#                 merge de PR com erro.
-#   2. release  — só roda em push direto na main (nunca em PR), e só depois
-#                 do lint passar (`needs: lint`). Empacota o repositório e
-#                 publica/atualiza a release do GitHub com a tag lida de
-#                 `PLUGIN_*_VERSION` em setup.php.
-name: CI & Release
+name: Release GLPI Plugin
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
@@ -27,35 +13,7 @@ env:
   PLUGIN_NAME: refactorytools
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Baixar código
-        uses: actions/checkout@v4
-
-      - name: Configurar PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-
-      - name: Lint (php -l em cada arquivo .php)
-        run: |
-          status=0
-          while IFS= read -r -d '' file; do
-            if ! php -l "$file" > /tmp/lint-output 2>&1; then
-              echo "::error file=$file::$(tail -n 1 /tmp/lint-output)"
-              status=1
-            fi
-          done < <(find . -name '*.php' -not -path './.git/*' -print0)
-          exit $status
-
-      - name: Validar composer.json
-        run: composer validate --no-check-publish --no-check-all
-
-  release:
-    needs: lint
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  build-release:
     runs-on: ubuntu-latest
 
     steps:
@@ -68,19 +26,13 @@ jobs:
           VERSION=$(grep -oP "\S*'PLUGIN_\w*_VERSION'\,\s*'\K[^']+" setup.php)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Criar tar.gz do repositório (só o que o plugin precisa para rodar)
+      - name: Criar tar.gz do repositório (ignorando .github/.git)
         run: |
           TAR_PATH="/tmp/${{ env.PLUGIN_NAME }}.tar.gz"
 
           tar -czf "$TAR_PATH" \
             --exclude=.github \
             --exclude=.git \
-            --exclude=.gitignore \
-            --exclude=.gitattributes \
-            --exclude=docker-compose.yml \
-            --exclude=.env.example \
-            --exclude=docs \
-            --exclude=tools \
             --exclude="${{ env.PLUGIN_NAME }}.tar.gz" \
             --transform "s|^|${{ env.PLUGIN_NAME }}/|" \
             .

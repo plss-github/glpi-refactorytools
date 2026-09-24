@@ -10,8 +10,6 @@
  * quem as edita já precisa ser alguém com visão administrativa da agenda.
  */
 
-include('../../../inc/includes.php');
-
 use Glpi\Application\View\TemplateRenderer;
 use GlpiPlugin\Refactorytools\EventProvider;
 use GlpiPlugin\Refactorytools\Menu;
