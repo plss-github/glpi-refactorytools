@@ -66,9 +66,11 @@ final class EventTypes
     public static function getAll(): array
     {
         return [
-            self::TICKET_TASK,
-            self::CHANGE_TASK,
-            self::PROBLEM_TASK,
+            // Chamado, Mudança e Problema ficaram de fora da lista de tipos
+            // (filtro da barra lateral + legenda): a informação equivalente
+            // já existe no painel "Meus chamados como técnico"
+            // (TechnicianStats), que não depende desta lista — continua
+            // mostrando normalmente.
             self::PROJECT_TASK,
             self::RESERVATION,
             self::EVENT_EXTERNAL,
