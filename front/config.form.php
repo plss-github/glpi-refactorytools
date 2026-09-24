@@ -37,6 +37,21 @@ if (isset($_POST['update'])) {
         Settings::saveReservationTypeColors($_POST['reservation_type_color']);
     }
 
+    // Nome de campo DIFERENTE da chave de configuração (`reservation_report_users`,
+    // uma string CSV) de propósito: `Settings::save()` já rodou acima e só
+    // aceita chaves escalares conhecidas — se o multiselect abaixo se
+    // chamasse igual, o array cru do POST teria ido parar lá, gravado como
+    // valor inválido no contexto do plugin.
+    //
+    // `_defined` é a mesma convenção de `_<campo>_defined` que o resto do
+    // plugin já usa — sem ela, desmarcar todo mundo do multiselect chegaria
+    // aqui como "campo ausente" (jQuery não serializa array vazio), e a
+    // lista antiga nunca seria realmente esvaziada.
+    if (($_POST['reservation_report_user_ids_defined'] ?? '') === '1') {
+        $users = $_POST['reservation_report_user_ids'] ?? [];
+        Settings::saveReservationReportUserIds(is_array($users) ? $users : [$users]);
+    }
+
     Session::addMessageAfterRedirect(
         htmlescape(__('Configuration saved.', 'refactorytools')),
         false,
@@ -60,6 +75,7 @@ TemplateRenderer::getInstance()->display('@refactorytools/config.html.twig', [
     'mode_labels'  => Settings::getModeLabels(),
     'types'        => EventProvider::getAvailableTypesForAdmin(),
     'reservation_types' => ReservationView::getReservableTypesForAdmin(),
+    'reservation_report_user_ids' => Settings::getReservationReportUserIds(),
     'csrf'         => Session::getNewCSRFToken(),
 ]);
 

@@ -167,6 +167,24 @@
             </div>
 
             <div class="mb-3">
+                <label class="form-label">{{ __('Who can see the reservation report', 'refactorytools') }}</label>
+                <div class="refactorytools-picker">
+                    {{ 'User'|itemtype_dropdown({
+                        name: 'reservation_report_user_ids',
+                        values: reservation_report_user_ids,
+                        multiple: true,
+                        entity: session('glpiactive_entity'),
+                        entity_sons: session('glpiactive_entity_recursive'),
+                        width: '100%'
+                    }) }}
+                </div>
+                <input type="hidden" name="reservation_report_user_ids_defined" value="1">
+                <div class="form-hint">
+                    {{ __('Anyone with "See all schedules" can already see it. This list is for giving access to people who don\'t have that administrative right.', 'refactorytools') }}
+                </div>
+            </div>
+
+            <div class="mb-3">
                 <label class="form-label">{{ __('Default mode', 'refactorytools') }}</label>
                 <select name="default_mode" class="form-select">
                     {% for value, label in mode_labels %}

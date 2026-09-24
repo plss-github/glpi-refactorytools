@@ -64,12 +64,10 @@
             </button>
         </div>
 
-        <div class="refactorytools-kpis">
-            <div class="refactorytools-kpi">
-                <span class="refactorytools-kpi-value" data-kpi="count">—</span>
-                <span class="refactorytools-kpi-label">{{ __('Reservations', 'refactorytools') }}</span>
-            </div>
-        </div>
+        {# A contagem de reservas saiu daqui: não faz mais sentido expor o
+           número pra qualquer um com acesso à tela — quem precisa de
+           números agora usa o Relatório de Reservas, atrás de permissão
+           própria (ver `Settings::canViewReservationReport()`). #}
     </div>
 
     <div class="refactorytools-body">
