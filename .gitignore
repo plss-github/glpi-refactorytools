@@ -3,6 +3,14 @@
 /node_modules/
 *.log
 
+# Ambiente de desenvolvimento local (Docker): não faz parte do plugin
+# instalado no GLPI de ninguém, então não fica no repositório nem no pacote
+# de release (ver .github/workflows/main.yml). Continuam existindo no seu
+# disco normalmente — só deixam de ser versionados.
+/docker-compose.yml
+/.env.example
+/docs/
+
 # Gerado por tools/update_locales.sh e removido no fim da execucao;
 # so aparece aqui se o script for interrompido no meio.
 /.locales-shadow/

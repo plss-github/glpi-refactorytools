@@ -68,13 +68,19 @@ jobs:
           VERSION=$(grep -oP "\S*'PLUGIN_\w*_VERSION'\,\s*'\K[^']+" setup.php)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Criar tar.gz do repositório (ignorando .github/.git)
+      - name: Criar tar.gz do repositório (só o que o plugin precisa para rodar)
         run: |
           TAR_PATH="/tmp/${{ env.PLUGIN_NAME }}.tar.gz"
 
           tar -czf "$TAR_PATH" \
             --exclude=.github \
             --exclude=.git \
+            --exclude=.gitignore \
+            --exclude=.gitattributes \
+            --exclude=docker-compose.yml \
+            --exclude=.env.example \
+            --exclude=docs \
+            --exclude=tools \
             --exclude="${{ env.PLUGIN_NAME }}.tar.gz" \
             --transform "s|^|${{ env.PLUGIN_NAME }}/|" \
             .
