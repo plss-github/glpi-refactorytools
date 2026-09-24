@@ -1,0 +1,64 @@
+{#
+ # RefactoryTools — relatório de reservas (só para quem foi autorizado).
+ #}
+
+<div class="refactorytools-report">
+    <form method="get" class="row g-2 align-items-end mb-3">
+        <div class="col-auto">
+            <label class="form-label" for="refactorytools-report-begin">{{ __('From', 'refactorytools') }}</label>
+            <input type="date" class="form-control" id="refactorytools-report-begin" name="begin" value="{{ begin }}">
+        </div>
+        <div class="col-auto">
+            <label class="form-label" for="refactorytools-report-end">{{ __('To', 'refactorytools') }}</label>
+            <input type="date" class="form-control" id="refactorytools-report-end" name="end" value="{{ end }}">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">{{ __('Filter', 'refactorytools') }}</button>
+        </div>
+    </form>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="refactorytools-report-total">{{ total }}</div>
+            <div class="text-muted">{{ __('Total reservations in this period', 'refactorytools') }}</div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">{{ __('By asset type', 'refactorytools') }}</div>
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        {% for row in by_type %}
+                            <tr>
+                                <td>{{ row.label }}</td>
+                                <td class="text-end">{{ row.count }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td class="text-muted">{{ __('No reservation in this period.', 'refactorytools') }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">{{ __('By person', 'refactorytools') }}</div>
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        {% for row in by_user %}
+                            <tr>
+                                <td>{{ row.label }}</td>
+                                <td class="text-end">{{ row.count }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td class="text-muted">{{ __('No reservation in this period.', 'refactorytools') }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

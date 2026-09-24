@@ -15,6 +15,7 @@
 namespace GlpiPlugin\Refactorytools;
 
 use Config;
+use Session;
 
 final class Settings
 {
@@ -72,6 +73,11 @@ final class Settings
             'category_travel_id'   => '',
             'category_meeting_id'  => '',
             'category_visit_id'    => '',
+            // Ids de usuário, separados por vírgula, autorizados a ver a aba
+            // de Relatório de Reservas (ver `canViewReservationReport()`).
+            // Vazio por padrão: até o administrador escolher alguém, a aba
+            // não aparece pra ninguém além de quem já tem READ_ALL.
+            'reservation_report_users' => '',
         ];
     }
 
@@ -300,5 +306,53 @@ final class Settings
     public static function purge(): void
     {
         Config::deleteConfigurationValues(self::CONTEXT, array_keys(self::getDefaults()));
+    }
+
+    /**
+     * Ids dos usuários autorizados, pelo administrador, a ver a aba de
+     * Relatório de Reservas.
+     *
+     * @return array<int, int>
+     */
+    public static function getReservationReportUserIds(): array
+    {
+        $raw = trim(self::get('reservation_report_users'));
+        if ($raw === '') {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('intval', explode(',', $raw)), static fn($id) => $id > 0));
+    }
+
+    /**
+     * @param array<int, int|string> $user_ids
+     */
+    public static function saveReservationReportUserIds(array $user_ids): void
+    {
+        $clean = array_values(array_unique(array_filter(array_map('intval', $user_ids), static fn($id) => $id > 0)));
+
+        Config::setConfigurationValues(self::CONTEXT, [
+            'reservation_report_users' => implode(',', $clean),
+        ]);
+    }
+
+    /**
+     * Quem tem READ_ALL do plugin já vê tudo mesmo, então também vê o
+     * relatório sem precisar estar na lista — a lista é para dar acesso a
+     * QUEM NÃO TEM esse direito administrativo, não uma segunda barreira
+     * para quem já tem.
+     */
+    public static function canViewReservationReport(?int $user_id = null): bool
+    {
+        $user_id ??= (int) Session::getLoginUserID();
+        if ($user_id <= 0) {
+            return false;
+        }
+
+        if (Right::has(Right::READ_ALL)) {
+            return true;
+        }
+
+        return in_array($user_id, self::getReservationReportUserIds(), true);
     }
 }

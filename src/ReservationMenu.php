@@ -71,15 +71,26 @@ class ReservationMenu extends CommonGLPI
 
         $native = $menu['tools']['content'][self::NATIVE_KEY];
 
-        // Só o destino muda. As `options` e os `links` do core são mantidos
-        // como estão: eles levam à lista de itens reserváveis, que continua
-        // sendo onde se marca um ativo como reservável.
-        //
-        // Nenhuma opção nova é acrescentada de propósito. Uma opção com o
-        // mesmo nome do item deixaria a trilha como "Reservas / Reservas" —
-        // uma migalha a mais que não leva a lugar nenhum novo.
+        // As `options`/`links` nativos são mantidos como estão: eles levam à
+        // lista de itens reserváveis, que continua sendo onde se marca um
+        // ativo como reservável. A única opção acrescentada é o Relatório,
+        // e só para quem o administrador autorizou a vê-lo — ver
+        // `Settings::canViewReservationReport()`.
+        $options = $native['options'] ?? [];
+        if (ReservationReport::canView()) {
+            $options['refactorytools_reservation_report'] = [
+                'title' => __('Reservation report', 'refactorytools'),
+                'page'  => '/plugins/refactorytools/front/reservation_report.php',
+                'icon'  => 'ti ti-chart-bar',
+                'links' => [
+                    'search' => '/plugins/refactorytools/front/reservation_report.php',
+                ],
+            ];
+        }
+
         $menu['tools']['content'][self::NATIVE_KEY] = array_merge($native, [
-            'page' => self::getPage(),
+            'page'    => self::getPage(),
+            'options' => $options,
         ]);
 
         return $menu;
