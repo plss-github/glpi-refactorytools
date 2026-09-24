@@ -354,15 +354,44 @@ class Share extends CommonDBTM
                     `date_start` DATE NULL DEFAULT NULL,
                     `date_end` DATE NULL DEFAULT NULL,
                     `comment` TEXT NULL,
-                    `date_creation` TIMESTAMP NULL DEFAULT NULL,
-                    `date_mod` TIMESTAMP NULL DEFAULT NULL,
+                    `date_creation` DATETIME NULL DEFAULT NULL,
+                    `date_mod` DATETIME NULL DEFAULT NULL,
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `unicity` (`users_id_owner`, `users_id_grantee`),
                     KEY `users_id_grantee` (`users_id_grantee`),
                     KEY `status` (`status`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             ");
+
+            return;
         }
+
+        // `TIMESTAMP` é o padrão antigo do GLPI para colunas de data: além do
+        // limite de 2038, o MySQL converte o valor conforme o fuso da SESSÃO
+        // na leitura e na escrita, então a mesma linha pode "mudar de hora"
+        // dependendo de quem consulta. `DATETIME` grava o valor literal, sem
+        // conversão — é o tipo que o próprio core usa hoje em `date_creation`/
+        // `date_mod` (ver `Migration::addField()` com `type: 'datetime'`).
+        foreach (['date_creation', 'date_mod'] as $column) {
+            if (self::columnType($table, $column) === 'timestamp') {
+                $DB->doQuery("ALTER TABLE `{$table}` MODIFY `{$column}` DATETIME NULL DEFAULT NULL");
+            }
+        }
+    }
+
+    private static function columnType(string $table, string $column): ?string
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        $result = $DB->doQuery("SHOW FIELDS FROM `{$table}` WHERE Field = '{$column}'");
+        $row    = $result !== false ? $DB->fetchAssoc($result) : null;
+
+        if (!$row) {
+            return null;
+        }
+
+        return strtolower((string) $row['Type']);
     }
 
     public static function uninstall(): void
