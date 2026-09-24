@@ -106,12 +106,13 @@
             {% endif %}
 
             {% if can_group_manager_mode %}
-                {# Só aparece para quem é `is_manager=1` de pelo menos um
-                   grupo com membros visíveis (ver `AccessPolicy::canUseGroupManagerMode`).
-                   Ligar isto não muda QUEM aparece na agenda — isso já
-                   depende de marcar o grupo na barra lateral — só COMO os
-                   compromissos são coloridos: uma cor por pessoa em vez de
-                   uma cor por tipo, que passa a virar uma tag de texto. #}
+                {# Só aparece para quem tem direito de ver agenda de grupo e
+                   tem, agora, pelo menos um colega de grupo visível (ver
+                   `View::showRefactoryTools()`). Ligar isto não muda QUEM
+                   aparece na agenda — isso já depende de marcar o grupo na
+                   barra lateral — só COMO os compromissos são coloridos: uma
+                   cor por pessoa em vez de uma cor por tipo, que passa a
+                   virar uma tag de texto. #}
                 <button type="button" class="btn btn-sm" id="refactorytools-group-manager-toggle"
                         title="{{ __('Each group member gets a colour; event types become text tags', 'refactorytools') }}">
                     <i class="ti ti-users"></i> {{ __('Group manager view', 'refactorytools') }}
@@ -176,6 +177,20 @@
                         <i class="ti ti-bell"></i>
                         {{ __('%d access request(s) awaiting your decision', 'refactorytools')|format(pending_count) }}
                     </a>
+                {% endif %}
+
+                {% if group_choices is not empty %}
+                    <div class="refactorytools-section">
+                        <div class="refactorytools-section-title">{{ __('My group', 'refactorytools') }}</div>
+                        <select class="form-select form-select-sm" id="refactorytools-group-select">
+                            <option value="">{{ __('Choose a group', 'refactorytools') }}</option>
+                            {% for group_id, group_name in group_choices %}
+                                <option value="{{ group_id }}" {{ selected_group_id == group_id ? 'selected' : '' }}>
+                                    {{ group_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 {% endif %}
 
                 {% for group in actor_groups %}
@@ -449,6 +464,7 @@
             me: {{ me }},
             default_mode: {{ default_mode|json_encode|raw }},
             kanban_state_order: {{ kanban_state_order|json_encode|raw }},
+            group_id: {{ selected_group_id|default(0)|json_encode|raw }},
             labels: {
                 busy: {{ __('Busy', 'refactorytools')|json_encode|raw }},
                 no_actor: {{ __('Select at least one schedule in the sidebar.', 'refactorytools')|json_encode|raw }},

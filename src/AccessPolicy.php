@@ -18,39 +18,38 @@
  * estado atual (perfil, supervisor, grupos, compartilhamentos). Nada que o
  * cliente mande — nem a lista de agendas selecionadas — amplia o que ele vê.
  *
- * Cinco origens de acesso, todas cumulativas:
+ * Quatro origens de acesso, todas cumulativas:
  *
- *   self            sempre, para a própria agenda.
- *   all             direito READ_ALL no perfil (papel administrativo).
- *   team            direito READ_TEAM + `glpi_users.users_id_supervisor`
- *                   apontando para o observador. Opcionalmente toda a árvore
- *                   abaixo.
- *   group           direito READ_GROUP + grupo em comum.
- *   group_manager   direito READ_MANAGED_GROUP + o observador marcado como
- *                   `is_manager=1` num grupo (`glpi_groups_users`) do qual o
- *                   dono da agenda também é membro. Sempre nível "details" —
- *                   é o próprio propósito do modo gerente de grupo em Minha
- *                   Agenda, não um nível configurável como os demais.
- *   share           linha aceita e vigente em Share, independente de direito
- *                   de leitura — é o dono da agenda quem autorizou.
+ *   self    sempre, para a própria agenda.
+ *   all     direito READ_ALL no perfil (papel administrativo).
+ *   team    direito READ_TEAM + `glpi_users.users_id_supervisor` apontando
+ *           para o observador. Opcionalmente toda a árvore abaixo.
+ *   group   direito READ_GROUP + "sou do mesmo grupo" — sem distinguir
+ *           gerente de membro comum (esse papel já é coberto por READ_TEAM,
+ *           via responsável direto). Quando o observador está em mais de um
+ *           grupo, a tela pede que ele escolha QUAL antes de mostrar
+ *           colegas — ver `getGroupColleagues()` e o seletor de grupo na
+ *           barra lateral.
+ *   share   linha aceita e vigente em Share, independente de direito de
+ *           leitura — é o dono da agenda quem autorizou.
  *
  * Quando mais de uma origem se aplica, vale a mais permissiva (details > busy).
  */
 
 namespace GlpiPlugin\Refactorytools;
 
+use Group;
 use Group_User;
 use Session;
 use User;
 
 final class AccessPolicy
 {
-    public const REASON_SELF          = 'self';
-    public const REASON_ALL           = 'all';
-    public const REASON_TEAM          = 'team';
-    public const REASON_GROUP         = 'group';
-    public const REASON_GROUP_MANAGER = 'group_manager';
-    public const REASON_SHARE         = 'share';
+    public const REASON_SELF  = 'self';
+    public const REASON_ALL   = 'all';
+    public const REASON_TEAM  = 'team';
+    public const REASON_GROUP = 'group';
+    public const REASON_SHARE = 'share';
 
     /**
      * Teto de profundidade ao subir a árvore de liderança com
@@ -75,9 +74,12 @@ final class AccessPolicy
      * receber o próprio usuário logado; ele existe para tornar a dependência
      * explícita e testável, não para simular outra pessoa.
      *
+     * @param int|null $group_id grupo escolhido no seletor da barra lateral
+     *        (ver `getGroupColleagues()`) — irrelevante quando o observador
+     *        está em 0 ou 1 grupo.
      * @return array<int, array{level: string, reason: string}> users_id => acesso
      */
-    public static function getVisibleUsers(?int $viewer_id = null): array
+    public static function getVisibleUsers(?int $viewer_id = null, ?int $group_id = null): array
     {
         $viewer_id ??= (int) Session::getLoginUserID();
         if ($viewer_id <= 0) {
@@ -97,14 +99,8 @@ final class AccessPolicy
 
         if (Right::has(Right::READ_GROUP)) {
             $level = self::normalizeLevel(Settings::get('group_level'));
-            foreach (self::getGroupColleagues($viewer_id) as $users_id) {
+            foreach (self::getGroupColleagues($viewer_id, $group_id) as $users_id) {
                 self::keepBest($found, $users_id, $level, self::REASON_GROUP);
-            }
-        }
-
-        if (Right::has(Right::READ_MANAGED_GROUP)) {
-            foreach (self::getManagedGroupMembers($viewer_id) as $users_id) {
-                self::keepBest($found, $users_id, Settings::LEVEL_DETAILS, self::REASON_GROUP_MANAGER);
             }
         }
 
@@ -163,9 +159,8 @@ final class AccessPolicy
      * um colega do mesmo grupo (REASON_GROUP) ou alguém que recebeu
      * compartilhamento (REASON_SHARE) não é gestor de ninguém, só tem visão.
      * Só quem realmente ocupa uma posição de liderança sobre o dono —
-     * responsável direto (REASON_TEAM), gerente do grupo dele
-     * (REASON_GROUP_MANAGER), ou acesso administrativo — pode deixar um
-     * recado que o dono vê destacado.
+     * responsável direto (REASON_TEAM) ou acesso administrativo — pode
+     * deixar um recado que o dono vê destacado.
      */
     public static function canManageNoteFor(int $owner_id, ?int $viewer_id = null): bool
     {
@@ -186,7 +181,7 @@ final class AccessPolicy
 
         $reason = self::getVisibleUsers($viewer_id)[$owner_id]['reason'] ?? null;
 
-        return in_array($reason, [self::REASON_TEAM, self::REASON_GROUP_MANAGER], true);
+        return $reason === self::REASON_TEAM;
     }
 
     /**
@@ -195,9 +190,13 @@ final class AccessPolicy
      * que chega na requisição.
      *
      * @param array<int, int|string> $requested
+     * @param int|null $group_id grupo escolhido no seletor da barra lateral
+     *        — precisa ser o MESMO que gerou os checkboxes marcados em
+     *        `$requested`, senão um colega de grupo pedido cai fora do mapa
+     *        e é descartado como qualquer id não autorizado.
      * @return array<int, string> users_id => nível
      */
-    public static function filterRequested(array $requested, ?int $viewer_id = null): array
+    public static function filterRequested(array $requested, ?int $viewer_id = null, ?int $group_id = null): array
     {
         $viewer_id ??= (int) Session::getLoginUserID();
 
@@ -211,7 +210,7 @@ final class AccessPolicy
         // configuração, a árvore de liderança, os grupos e os
         // compartilhamentos — com oito agendas abertas eram oito vezes o mesmo
         // trabalho, a cada navegação no calendário.
-        $visible   = self::getVisibleUsers($viewer_id);
+        $visible   = self::getVisibleUsers($viewer_id, $group_id);
         $reads_all = Right::has(Right::READ_ALL);
 
         $out = [];
@@ -307,30 +306,75 @@ final class AccessPolicy
     }
 
     /**
-     * Colegas dos grupos do observador.
-     *
-     * Usa os grupos da sessão quando o observador é o usuário logado (já
-     * carregados pelo core, evita uma consulta), e consulta o banco quando é
-     * outro usuário — o que acontece nas checagens feitas fora de uma sessão
-     * interativa.
+     * Ids dos grupos do observador. Usa os grupos da sessão quando o
+     * observador é o usuário logado (já carregados pelo core, evita uma
+     * consulta), e consulta o banco quando é outro usuário — o que acontece
+     * nas checagens feitas fora de uma sessão interativa.
      *
      * @return array<int, int>
      */
-    public static function getGroupColleagues(int $users_id): array
+    private static function getViewerGroupIds(int $users_id): array
     {
         $is_current = $users_id === (int) Session::getLoginUserID();
 
         if ($is_current && isset($_SESSION['glpigroups']) && is_array($_SESSION['glpigroups'])) {
-            $groups = array_map('intval', $_SESSION['glpigroups']);
-        } else {
-            $groups = array_map(
-                static fn(array $g) => (int) $g['id'],
-                Group_User::getUserGroups($users_id)
-            );
+            return array_map('intval', $_SESSION['glpigroups']);
         }
+
+        return array_map(
+            static fn(array $g) => (int) $g['id'],
+            Group_User::getUserGroups($users_id)
+        );
+    }
+
+    /**
+     * Grupos do observador, para o seletor da barra lateral — só quando ele
+     * está em MAIS de um (com 0 ou 1, não há o que escolher).
+     *
+     * @return array<int, string> group_id => nome
+     */
+    public static function getGroupChoices(int $users_id): array
+    {
+        $ids = self::getViewerGroupIds($users_id);
+        if (count($ids) < 2) {
+            return [];
+        }
+
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        $out = [];
+        foreach ($DB->request(['SELECT' => ['id', 'name'], 'FROM' => Group::getTable(), 'WHERE' => ['id' => $ids]]) as $row) {
+            $out[(int) $row['id']] = (string) $row['name'];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Colegas do grupo do observador.
+     *
+     * Sem distinguir gerente de membro comum: esse papel já é coberto por
+     * `getTeamMembers()` (responsável direto). Quando o observador está em
+     * MAIS de um grupo, exige um `$selected_group_id` válido — sem isso
+     * (ainda não escolheu, ou mandou um grupo que não é dele) devolve vazio
+     * em vez de misturar colegas de todos os grupos numa lista só.
+     *
+     * @return array<int, int>
+     */
+    public static function getGroupColleagues(int $users_id, ?int $selected_group_id = null): array
+    {
+        $groups = self::getViewerGroupIds($users_id);
 
         if ($groups === []) {
             return [];
+        }
+
+        if (count($groups) > 1) {
+            if ($selected_group_id === null || !in_array($selected_group_id, $groups, true)) {
+                return [];
+            }
+            $groups = [$selected_group_id];
         }
 
         /** @var \DBmysql $DB */
@@ -366,94 +410,6 @@ final class AccessPolicy
         return $out;
     }
 
-    /**
-     * Cache do processo: `getManagedGroupMembers()` é chamada duas vezes na
-     * mesma requisição sempre que o direito está ligado — direto por
-     * `canUseGroupManagerMode()` e de novo dentro de `getVisibleUsers()` — e
-     * as duas sempre valem para o mesmo `$manager_id` (o usuário da sessão).
-     * Chave por id para continuar correta se um dia for chamada para outro
-     * usuário dentro da mesma requisição.
-     *
-     * @var array<int, array<int, int>>
-     */
-    private static array $managed_group_members_cache = [];
-
-    /**
-     * Membros dos grupos que $manager_id gerencia (`glpi_groups_users.is_manager=1`),
-     * ativos e não excluídos, sem incluir o próprio gerente.
-     *
-     * @return array<int, int>
-     */
-    public static function getManagedGroupMembers(int $manager_id): array
-    {
-        if (isset(self::$managed_group_members_cache[$manager_id])) {
-            return self::$managed_group_members_cache[$manager_id];
-        }
-
-        /** @var \DBmysql $DB */
-        global $DB;
-
-        $managed_groups = [];
-        foreach ($DB->request([
-            'SELECT' => 'groups_id',
-            'FROM'   => Group_User::getTable(),
-            'WHERE'  => [
-                'users_id'   => $manager_id,
-                'is_manager' => 1,
-            ],
-        ]) as $row) {
-            $managed_groups[] = (int) $row['groups_id'];
-        }
-
-        if ($managed_groups === []) {
-            return self::$managed_group_members_cache[$manager_id] = [];
-        }
-
-        $rows = $DB->request([
-            'SELECT'     => 'glpi_users.id',
-            'DISTINCT'   => true,
-            'FROM'       => Group_User::getTable(),
-            'INNER JOIN' => [
-                'glpi_users' => [
-                    'ON' => [
-                        'glpi_users'           => 'id',
-                        Group_User::getTable() => 'users_id',
-                    ],
-                ],
-            ],
-            'WHERE' => [
-                Group_User::getTable() . '.groups_id' => $managed_groups,
-                'glpi_users.is_active'                => 1,
-                'glpi_users.is_deleted'               => 0,
-            ],
-        ]);
-
-        $out = [];
-        foreach ($rows as $row) {
-            $id = (int) $row['id'];
-            if ($id !== $manager_id) {
-                $out[] = $id;
-            }
-        }
-
-        return self::$managed_group_members_cache[$manager_id] = $out;
-    }
-
-    /**
-     * Se o observador tem, agora, pelo menos um grupo gerenciado com membros
-     * a mostrar — condição para a tela oferecer o alternador de "modo gerente
-     * de grupo" em Minha Agenda.
-     */
-    public static function canUseGroupManagerMode(?int $viewer_id = null): bool
-    {
-        $viewer_id ??= (int) Session::getLoginUserID();
-
-        if ($viewer_id <= 0 || !Right::has(Right::READ_MANAGED_GROUP)) {
-            return false;
-        }
-
-        return self::getManagedGroupMembers($viewer_id) !== [];
-    }
 
     // -----------------------------------------------------------------------
     // Utilidades
@@ -511,13 +467,12 @@ final class AccessPolicy
     public static function getReasonLabel(string $reason): string
     {
         return match ($reason) {
-            self::REASON_SELF          => __('My schedule', 'refactorytools'),
-            self::REASON_ALL           => __('Administrative access', 'refactorytools'),
-            self::REASON_TEAM          => __('My team', 'refactorytools'),
-            self::REASON_GROUP         => __('My group', 'refactorytools'),
-            self::REASON_GROUP_MANAGER => __('Group I manage', 'refactorytools'),
-            self::REASON_SHARE         => __('Shared with me', 'refactorytools'),
-            default                    => '',
+            self::REASON_SELF  => __('My schedule', 'refactorytools'),
+            self::REASON_ALL   => __('Administrative access', 'refactorytools'),
+            self::REASON_TEAM  => __('My team', 'refactorytools'),
+            self::REASON_GROUP => __('My group', 'refactorytools'),
+            self::REASON_SHARE => __('Shared with me', 'refactorytools'),
+            default            => '',
         };
     }
 }
