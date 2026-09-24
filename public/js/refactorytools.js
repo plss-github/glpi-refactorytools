@@ -776,6 +776,64 @@ var GlpiRefactoryTools = {
                 .appendTo($pop);
         }
 
+        // Convidados de uma Reunião (ver `MeetingGuest`). Cada avatar leva um
+        // selo no canto: X vermelho para quem recusou, cinza-escuro para
+        // quem ainda não respondeu e tem outro compromisso no mesmo horário
+        // (checado no servidor, `props.guests[].conflict`) — os dois casos
+        // têm um `title` explicando o motivo, que já serve de "pop avisando
+        // a indisponibilidade" sem precisar de um segundo popover.
+        var guests = props.guests || [];
+        if (guests.length) {
+            var $guests = $('<div class="refactorytools-popover-guests"></div>');
+            $('<div class="refactorytools-popover-note-label"></div>')
+                .text(self.label('guests') || 'Attendees')
+                .appendTo($guests);
+
+            var $list = $('<div class="refactorytools-popover-guest-list"></div>');
+            guests.forEach(function (guest) {
+                var $avatar = $('<span class="refactorytools-avatar refactorytools-avatar-sm refactorytools-popover-guest"></span>')
+                    .text(self.actorInitials({ actorName: guest.name }));
+
+                var badge_title = guest.mandatory
+                    ? (self.label('mandatory') || 'Required')
+                    : (self.label('optional') || 'Optional');
+
+                if (guest.status === 'declined') {
+                    $avatar.addClass('refactorytools-guest-declined');
+                    badge_title = (self.label('declined_by') || 'Declined by') + ' ' + guest.name;
+                } else if (guest.conflict) {
+                    $avatar.addClass('refactorytools-guest-conflict');
+                    badge_title = (self.label('conflict_for') || 'Has another commitment at this time') + ': ' + guest.name;
+                } else {
+                    badge_title += ' — ' + guest.name;
+                }
+
+                $avatar.attr('title', badge_title);
+                $list.append($avatar);
+            });
+            $guests.append($list);
+            $guests.appendTo($pop);
+
+            if (props.canRespond) {
+                var $respond = $('<div class="refactorytools-popover-actions"></div>');
+                $('<button type="button" class="btn btn-sm btn-success"></button>')
+                    .html('<i class="ti ti-check"></i> ' + (self.label('accept') || 'Accept'))
+                    .on('click', function (e) {
+                        e.stopPropagation();
+                        self.respondMeeting(props.items_id, 'accepted');
+                    })
+                    .appendTo($respond);
+                $('<button type="button" class="btn btn-sm btn-ghost-danger"></button>')
+                    .html('<i class="ti ti-x"></i> ' + (self.label('decline') || "Can't attend"))
+                    .on('click', function (e) {
+                        e.stopPropagation();
+                        self.respondMeeting(props.items_id, 'declined');
+                    })
+                    .appendTo($respond);
+                $respond.appendTo($pop);
+            }
+        }
+
         // Notas do compromisso: histórico, não um campo só — várias pessoas
         // com `canManageNote` (ver `AccessPolicy::canManageNoteFor()`) podem
         // ter deixado uma cada, ou a mesma pessoa várias ao longo do tempo. O
@@ -1000,6 +1058,31 @@ var GlpiRefactoryTools = {
             }
         }).fail(function () {
             self.notify('error', self.label('cancel_item_failed') || '');
+        });
+    },
+
+    /**
+     * Responde a um convite de Reunião ("Aceitar" / "Não posso participar")
+     * — `ajax/respond_meeting.php` só grava a resposta de quem está logado.
+     */
+    respondMeeting: function (items_id, status) {
+        var self = this;
+
+        $.post(
+            (self.config.root_doc || '') + '/plugins/refactorytools/ajax/respond_meeting.php',
+            { items_id: items_id, status: status }
+        ).done(function (response) {
+            if (response && response.ok) {
+                self.notify('info', self.label('response_saved') || '');
+                self.hidePopover();
+                if (self.calendar) {
+                    self.calendar.refetchEvents();
+                }
+            } else {
+                self.notify('error', self.label('response_failed') || '');
+            }
+        }).fail(function () {
+            self.notify('error', self.label('response_failed') || '');
         });
     },
 

@@ -21,6 +21,7 @@
  */
 
 use GlpiPlugin\Refactorytools\EventTypes;
+use GlpiPlugin\Refactorytools\MeetingGuest;
 use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\Settings;
 use GlpiPlugin\Refactorytools\VisitLink;
@@ -93,7 +94,32 @@ if ($itemtype === PlanningExternalEvent::class) {
     }
 }
 
+// Convidados: só para Reunião. `users_id_guests` é um campo NATIVO de
+// `PlanningExternalEvent` — o core já espelha o compromisso na agenda de
+// cada convidado sozinho (ver `Glpi\Features\PlanningEvent::populatePlanning()`,
+// que inclui o convidado no filtro `who`). O que o plugin acrescenta é só o
+// controle de obrigatório/opcional e a resposta de cada um — ver
+// `MeetingGuest`.
+$guests_mandatory = [];
+$guests_optional  = [];
+if ($kind === EventTypes::EVENT_MEETING) {
+    $guests_mandatory = array_map('intval', (array) ($_POST['guests_mandatory'] ?? []));
+    $guests_optional  = array_map('intval', (array) ($_POST['guests_optional'] ?? []));
+    $all_guests       = array_values(array_unique(array_filter(
+        array_merge($guests_mandatory, $guests_optional),
+        static fn($id) => $id > 0
+    )));
+
+    if ($all_guests !== []) {
+        $input['users_id_guests'] = $all_guests;
+    }
+}
+
 $new_id = $item->add($input);
+
+if ($new_id && $kind === EventTypes::EVENT_MEETING) {
+    MeetingGuest::setGuests((int) $new_id, $guests_mandatory, $guests_optional);
+}
 
 // Visita: liga o compromisso recém-criado à reserva escolhida no modal, se
 // alguma foi escolhida — opcional de propósito. `VisitLink::link()` já
