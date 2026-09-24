@@ -3,6 +3,22 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.9] - 2026-09-24
+
+### Adicionado
+
+- Configuração do Plugin: nova seção para habilitar/desabilitar cada tipo
+  de compromisso (some do filtro/legenda e de "+ Novo compromisso", nunca
+  dos compromissos já existentes).
+- Configuração do Plugin: switch para mostrar/esconder o painel "Meus
+  chamados como técnico" (horas + link "Ver todos os meus chamados").
+
+### Corrigido
+
+- `Html::displayRightError()`, depreciado desde o GLPI 11, trocado por
+  lançar `AccessDeniedHttpException` diretamente (`front/reservations.php`,
+  `front/reservation_report.php`).
+
 ## [0.11.8] - 2026-09-24
 
 ### Adicionado
