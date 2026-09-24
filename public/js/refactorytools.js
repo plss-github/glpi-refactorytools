@@ -25,6 +25,9 @@ var GlpiRefactoryTools = {
     calendar: null,
     config: {},
 
+    /** Itemtypes com Editar/Cancelar no popover — ver `renderPopover()`. */
+    CANCELABLE_ITEMTYPES: ['Reminder', 'PlanningExternalEvent', 'Reservation'],
+
     /** 'calendar' | 'list' | 'kanban' */
     mode: 'calendar',
 
@@ -816,6 +819,35 @@ var GlpiRefactoryTools = {
                 .appendTo($pop);
         }
 
+        // Editar/Cancelar: só para os itemtypes que o plugin cria pelo
+        // próprio formulário (Lembrete, Evento, Reserva) — Chamado/Mudança/
+        // Problema não têm essas ações aqui, a tarefa vive presa ao item pai
+        // (ver `ajax/cancel_item.php`). `event.editable` já é a mesma
+        // checagem de `canUpdateItem()` que o arrastar usa; `props.mine`
+        // cobre reservas, que chegam com `editable: false` de propósito (só
+        // para desligar o arrastar, não a edição/cancelamento).
+        if (props.itemtype && self.CANCELABLE_ITEMTYPES.indexOf(props.itemtype) !== -1
+            && (event.editable || props.mine)) {
+            var $actions = $('<div class="refactorytools-popover-actions"></div>');
+
+            if (props.url) {
+                $('<a class="btn btn-sm btn-ghost-secondary"></a>')
+                    .attr('href', props.url)
+                    .html('<i class="ti ti-pencil"></i> ' + (self.label('edit_item') || 'Edit'))
+                    .appendTo($actions);
+            }
+
+            $('<button type="button" class="btn btn-sm btn-ghost-danger"></button>')
+                .html('<i class="ti ti-calendar-cancel"></i> ' + (self.label('cancel_item') || 'Cancel'))
+                .on('click', function (e) {
+                    e.stopPropagation();
+                    self.cancelItem(props.itemtype, props.items_id);
+                })
+                .appendTo($actions);
+
+            $actions.appendTo($pop);
+        }
+
         // O popover é anexado a `body`, fora de `$el` — sem isto, o cursor
         // saindo de `$el` a caminho do próprio popover (para clicar em
         // "Adicionar nota", por exemplo) fecharia tudo antes de chegar lá.
@@ -927,6 +959,36 @@ var GlpiRefactoryTools = {
         this.cancelPopoverHide();
         this.notePinned = false;
         $('.refactorytools-popover').remove();
+    },
+
+    /**
+     * Cancela (apaga) um compromisso/reserva — `ajax/cancel_item.php` é a
+     * autoridade de verdade sobre quem pode; aqui só confirma com a pessoa e
+     * atualiza a tela depois.
+     */
+    cancelItem: function (itemtype, items_id) {
+        var self = this;
+
+        if (!window.confirm(self.label('confirm_cancel_item') || 'Cancel this appointment?')) {
+            return;
+        }
+
+        $.post(
+            (self.config.root_doc || '') + '/plugins/refactorytools/ajax/cancel_item.php',
+            { itemtype: itemtype, items_id: items_id }
+        ).done(function (response) {
+            if (response && response.ok) {
+                self.notify('info', self.label('item_cancelled') || '');
+                self.hidePopover();
+                if (self.calendar) {
+                    self.calendar.refetchEvents();
+                }
+            } else {
+                self.notify('error', self.label('cancel_item_failed') || '');
+            }
+        }).fail(function () {
+            self.notify('error', self.label('cancel_item_failed') || '');
+        });
     },
 
     // -----------------------------------------------------------------

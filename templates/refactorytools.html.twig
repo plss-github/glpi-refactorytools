@@ -417,7 +417,13 @@
                 $('#refactorytools-event-begin, #refactorytools-event-end').flatpickr({
                     enableTime: true,
                     time_24hr: true,
+                    // `dateFormat` é o valor de verdade, que vai no POST
+                    // (o que o servidor espera, sem conversão). `altInput` +
+                    // `altFormat` mostram DD-MM-AAAA HH:MM pra pessoa, sem
+                    // mudar o que é enviado.
                     dateFormat: 'Y-m-d H:i:s',
+                    altInput: true,
+                    altFormat: 'd-m-Y H:i',
                     allowInput: true
                 });
             }
@@ -468,7 +474,12 @@
                 edit_note: {{ __('Edit note', 'refactorytools')|json_encode|raw }},
                 note_saved: {{ __('Note saved.', 'refactorytools')|json_encode|raw }},
                 save: {{ __('Save', 'refactorytools')|json_encode|raw }},
-                cancel: {{ __('Cancel', 'refactorytools')|json_encode|raw }}
+                cancel: {{ __('Cancel', 'refactorytools')|json_encode|raw }},
+                edit_item: {{ __('Edit', 'refactorytools')|json_encode|raw }},
+                cancel_item: {{ __('Cancel appointment', 'refactorytools')|json_encode|raw }},
+                confirm_cancel_item: {{ __('Cancel this appointment? This cannot be undone.', 'refactorytools')|json_encode|raw }},
+                item_cancelled: {{ __('Appointment cancelled.', 'refactorytools')|json_encode|raw }},
+                cancel_item_failed: {{ __('Could not cancel this appointment.', 'refactorytools')|json_encode|raw }}
             }
         });
     });
