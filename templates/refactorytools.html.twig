@@ -409,6 +409,36 @@
                         </select>
                     </div>
 
+                    {# Só para Reunião: convida outras pessoas — o compromisso
+                       passa a aparecer na agenda delas também (campo nativo
+                       `users_id_guests`, ver `ajax/create_event.php`).
+                       Obrigatório/opcional é o que o core não tem, e o que o
+                       plugin guarda (`MeetingGuest`). #}
+                    <div class="mb-3 refactorytools-event-meeting-guests refactorytools-picker" hidden id="refactorytools-event-guests-mandatory-wrap">
+                        <label class="form-label" for="refactorytools-event-guests-mandatory">{{ __('Required attendees', 'refactorytools') }}</label>
+                        {{ 'User'|itemtype_dropdown({
+                            name: 'guests_mandatory[]',
+                            id: 'refactorytools-event-guests-mandatory',
+                            values: [],
+                            multiple: true,
+                            entity: session('glpiactive_entity'),
+                            entity_sons: session('glpiactive_entity_recursive'),
+                            width: '100%'
+                        }) }}
+                    </div>
+                    <div class="mb-3 refactorytools-event-meeting-guests refactorytools-picker" hidden id="refactorytools-event-guests-optional-wrap">
+                        <label class="form-label" for="refactorytools-event-guests-optional">{{ __('Optional attendees', 'refactorytools') }}</label>
+                        {{ 'User'|itemtype_dropdown({
+                            name: 'guests_optional[]',
+                            id: 'refactorytools-event-guests-optional',
+                            values: [],
+                            multiple: true,
+                            entity: session('glpiactive_entity'),
+                            entity_sons: session('glpiactive_entity_recursive'),
+                            width: '100%'
+                        }) }}
+                    </div>
+
                     {# Recorrência: só se aplica às 4 variantes de Evento — o
                        widget nativo (`showRepetitionForm`) escreve os campos
                        `rrule[...]`, que `PlanningExternalEvent::add()` já
@@ -442,6 +472,7 @@
             var $kindSelect = $('#refactorytools-event-kind');
             var $rrule = $('#refactorytools-event-rrule-wrap');
             var $visitReservation = $('#refactorytools-event-visit-reservation');
+            var $meetingGuests = $('.refactorytools-event-meeting-guests');
 
             if ($.fn.flatpickr) {
                 $('#refactorytools-event-begin, #refactorytools-event-end').flatpickr({
@@ -466,6 +497,9 @@
 
                 // "Reserva vinculada" só faz sentido para Visita.
                 $visitReservation.prop('hidden', $kindSelect.val() !== {{ constant('GlpiPlugin\\Refactorytools\\EventTypes::EVENT_VISIT')|json_encode|raw }});
+
+                // Convidados só fazem sentido para Reunião.
+                $meetingGuests.prop('hidden', $kindSelect.val() !== {{ constant('GlpiPlugin\\Refactorytools\\EventTypes::EVENT_MEETING')|json_encode|raw }});
             }
 
             $kindSelect.on('change', toggleRrule);
@@ -505,6 +539,15 @@
                 note_by: {{ __('By', 'refactorytools')|json_encode|raw }},
                 ticket_duration: {{ __('Total time on this ticket', 'refactorytools')|json_encode|raw }},
                 linked_reservation: {{ __('Linked reservation', 'refactorytools')|json_encode|raw }},
+                guests: {{ __('Attendees', 'refactorytools')|json_encode|raw }},
+                mandatory: {{ __('Required', 'refactorytools')|json_encode|raw }},
+                optional: {{ __('Optional', 'refactorytools')|json_encode|raw }},
+                declined_by: {{ __('Declined by', 'refactorytools')|json_encode|raw }},
+                conflict_for: {{ __('Has another commitment at this time', 'refactorytools')|json_encode|raw }},
+                accept: {{ __('Accept', 'refactorytools')|json_encode|raw }},
+                decline: {{ __("Can't attend", 'refactorytools')|json_encode|raw }},
+                response_saved: {{ __('Response saved.', 'refactorytools')|json_encode|raw }},
+                response_failed: {{ __('Could not save your response.', 'refactorytools')|json_encode|raw }},
                 add_note: {{ __('Add a note', 'refactorytools')|json_encode|raw }},
                 edit_note: {{ __('Edit note', 'refactorytools')|json_encode|raw }},
                 note_saved: {{ __('Note saved.', 'refactorytools')|json_encode|raw }},

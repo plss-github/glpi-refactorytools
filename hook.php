@@ -10,6 +10,7 @@ use GlpiPlugin\Refactorytools\EventNoteItem;
 use GlpiPlugin\Refactorytools\EventNotes;
 use GlpiPlugin\Refactorytools\EventTypes;
 use GlpiPlugin\Refactorytools\KanbanPrefs;
+use GlpiPlugin\Refactorytools\MeetingGuest;
 use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\Settings;
 use GlpiPlugin\Refactorytools\Share;
@@ -38,6 +39,7 @@ function plugin_refactorytools_install(): bool
     EventNotes::install($migration);
     KanbanPrefs::install($migration);
     VisitLink::install($migration);
+    MeetingGuest::install($migration);
 
     $migration->executeMigration();
 
@@ -236,6 +238,7 @@ function plugin_refactorytools_uninstall(): bool
     EventNotes::uninstall();
     KanbanPrefs::uninstall();
     VisitLink::uninstall();
+    MeetingGuest::uninstall();
 
     ProfileRight::deleteProfileRights([Right::NAME]);
 

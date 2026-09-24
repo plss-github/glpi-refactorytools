@@ -1158,3 +1158,45 @@
     font-weight: 700;
     line-height: 1.2;
 }
+
+/* Convidados de uma Reunião (ver `MeetingGuest`), no popover do compromisso. */
+.refactorytools-popover-guests {
+    margin-top: 0.5rem;
+}
+
+.refactorytools-popover-guest-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+.refactorytools-popover-guest {
+    position: relative;
+    cursor: default;
+}
+
+/* Selo no canto SUPERIOR do avatar — X vermelho para quem recusou. */
+.refactorytools-guest-declined::after {
+    content: '';
+    position: absolute;
+    top: -0.25rem;
+    right: -0.25rem;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    background: var(--tblr-danger);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3Cline x1='6' y1='18' x2='18' y2='6'/%3E%3C/svg%3E");
+    background-size: 65%;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 2px solid var(--tblr-bg-surface);
+}
+
+/* Quem ainda não respondeu mas já tem outro compromisso no horário: avatar
+   inteiro em cinza-escuro, não só um selo — é um aviso mais forte que "ainda
+   não respondeu". */
+.refactorytools-guest-conflict {
+    background: #495057 !important;
+    color: #fff !important;
+    opacity: 0.85;
+}

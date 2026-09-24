@@ -144,6 +144,7 @@ final class EventProvider
         self::attachNotes($events, $viewer_id);
         self::attachTicketDurations($events);
         self::attachVisitReservations($events);
+        self::attachMeetingGuests($events, $viewer_id);
 
         return $events;
     }
@@ -189,6 +190,105 @@ final class EventProvider
                 $events[$key]['extendedProps']['visitReservation'] = $links[$items_id]['label'];
             }
         }
+    }
+
+    /**
+     * Anexa, em lote, a lista de convidados de cada Reunião (ver
+     * `MeetingGuest`) — quem o popover mostra com o selo de
+     * obrigatório/opcional e a resposta (aceito/recusado/pendente).
+     * `canRespond` marca se QUEM ESTÁ OLHANDO é um dos convidados ainda sem
+     * resposta — só nesse caso o popover oferece os botões de responder.
+     */
+    private static function attachMeetingGuests(array &$events, ?int $viewer_id): void
+    {
+        $items_ids = [];
+        foreach ($events as $event) {
+            if (($event['extendedProps']['virtualType'] ?? '') === EventTypes::EVENT_MEETING) {
+                $items_ids[] = (int) $event['extendedProps']['items_id'];
+            }
+        }
+
+        if ($items_ids === []) {
+            return;
+        }
+
+        $guests_by_item = MeetingGuest::getForItems(array_values(array_unique($items_ids)));
+        if ($guests_by_item === []) {
+            return;
+        }
+
+        $viewer_id ??= (int) Session::getLoginUserID();
+
+        foreach ($events as $key => $event) {
+            $items_id = (int) $event['extendedProps']['items_id'];
+            $guests   = $guests_by_item[$items_id] ?? [];
+            if ($guests === []) {
+                continue;
+            }
+
+            $can_respond = false;
+            $begin       = (string) $event['start'];
+            $end         = (string) $event['end'];
+            foreach ($guests as &$guest) {
+                if ($guest['users_id'] === $viewer_id && $guest['status'] === MeetingGuest::STATUS_PENDING) {
+                    $can_respond = true;
+                }
+                // Só checa conflito para quem ainda não respondeu — quem já
+                // aceitou ou recusou não precisa do aviso automático, a
+                // resposta manual já diz tudo que importa.
+                $guest['conflict'] = $guest['status'] === MeetingGuest::STATUS_PENDING
+                    && self::hasConflict($guest['users_id'], $begin, $end, $items_id);
+            }
+            unset($guest);
+
+            $events[$key]['extendedProps']['guests']     = $guests;
+            $events[$key]['extendedProps']['canRespond']  = $can_respond;
+        }
+    }
+
+    /**
+     * Se `$users_id` tem outro compromisso (Evento/Lembrete/tarefa de
+     * Chamado/Projeto) sobrepondo `$begin`/`$end` — o aviso automático de
+     * indisponibilidade do convidado que ainda não respondeu. Consulta direta
+     * nas tabelas, não o pipeline completo de `getEvents()`: aqui só interessa
+     * "tem ou não tem", não o conteúdo de cada compromisso, e evita chamar
+     * `attachMeetingGuests()` de novo por baixo (mesmo método que está
+     * chamando este aqui).
+     */
+    private static function hasConflict(int $users_id, string $begin, string $end, int $exclude_event_id): bool
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        $overlap = ['begin' => ['<', $end], 'end' => ['>', $begin]];
+
+        $checks = [
+            ['table' => 'glpi_tickettasks', 'user_field' => 'users_id_tech'],
+            ['table' => 'glpi_projecttasks', 'user_field' => 'users_id'],
+            ['table' => 'glpi_reminders', 'user_field' => 'users_id'],
+        ];
+
+        foreach ($checks as $check) {
+            if (!$DB->fieldExists($check['table'], 'begin')) {
+                continue;
+            }
+            $count = (int) $DB->request([
+                'COUNT' => 'c',
+                'FROM'  => $check['table'],
+                'WHERE' => [$check['user_field'] => $users_id] + $overlap,
+            ])->current()['c'];
+            if ($count > 0) {
+                return true;
+            }
+        }
+
+        $count = (int) $DB->request([
+            'COUNT' => 'c',
+            'FROM'  => 'glpi_planningexternalevents',
+            'WHERE' => ['users_id' => $users_id, 'id' => ['<>', $exclude_event_id]] + $overlap,
+        ])->current()['c'];
+
+        return $count > 0;
     }
 
     private static function attachTicketDurations(array &$events): void
@@ -529,6 +629,8 @@ final class EventProvider
                 'notes'          => [],
                 'ticketDuration' => '',
                 'visitReservation' => '',
+                'guests'         => [],
+                'canRespond'     => false,
                 'canManageNote' => $is_details && $itemtype !== ''
                                    ? AccessPolicy::canManageNoteFor($users_id, $viewer_id)
                                    : false,
