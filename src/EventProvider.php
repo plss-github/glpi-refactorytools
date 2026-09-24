@@ -865,6 +865,10 @@ final class EventProvider
 
         $out = [];
         foreach (EventTypes::getAll() as $key) {
+            if (!Settings::isTypeEnabled($key)) {
+                continue;
+            }
+
             $real = EventTypes::realItemtype($key);
 
             if ($real === PlanningExternalEvent::class) {
@@ -920,6 +924,7 @@ final class EventProvider
                 'icon'     => EventTypes::getIcon($key),
                 'color'    => $admin_colors[$key] ?? EventTypes::getDefaultColor($key),
                 'default'  => EventTypes::getDefaultColor($key),
+                'enabled'  => Settings::isTypeEnabled($key),
             ];
         }
 

@@ -86,6 +86,26 @@
 
             <hr>
 
+            <h4 class="mb-2">{{ __('Enabled commitment types', 'refactorytools') }}</h4>
+
+            <div class="mb-3">
+                <div class="form-hint mb-2">
+                    {{ __('A disabled type disappears from the sidebar filter, the legend and "+ New commitment" — it never disappears from an existing commitment, only from being filtered or created new.', 'refactorytools') }}
+                </div>
+                <div class="refactorytools-color-grid">
+                    {% for type in types %}
+                        <label class="refactorytools-color-row">
+                            <input type="checkbox" class="form-check-input" name="enabled_types[]"
+                                   value="{{ type.itemtype }}" {{ type.enabled ? 'checked' : '' }}>
+                            <span class="refactorytools-color-name">{{ type.label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="enabled_types_defined" value="1">
+            </div>
+
+            <hr>
+
             <h4 class="mb-2">{{ __('Event type colours', 'refactorytools') }}</h4>
 
             <div class="mb-3">
@@ -205,6 +225,20 @@
                         {{ __('Open the schedule with the team already selected', 'refactorytools') }}
                     </span>
                 </label>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-check form-switch">
+                    <input type="hidden" name="technician_panel_enabled" value="0">
+                    <input type="checkbox" class="form-check-input" name="technician_panel_enabled" value="1"
+                           {{ settings.technician_panel_enabled == '1' ? 'checked' : '' }}>
+                    <span class="form-check-label">
+                        {{ __('Show the "My tickets as a technician" panel', 'refactorytools') }}
+                    </span>
+                </label>
+                <div class="form-hint">
+                    {{ __('Turns off both the hours shown and the "See all my tickets" link, in the schedule sidebar.', 'refactorytools') }}
+                </div>
             </div>
 
         </div>

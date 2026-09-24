@@ -10,11 +10,16 @@
  * podia reservar. O direito do plugin governa a agenda, que é outro assunto.
  */
 
+use Glpi\Exception\Http\AccessDeniedHttpException;
 use GlpiPlugin\Refactorytools\ReservationMenu;
 use GlpiPlugin\Refactorytools\ReservationView;
 
 if (!ReservationView::canView()) {
-    Html::displayRightError();
+    // `Html::displayRightError()` está depreciado desde o GLPI 11 (avisa e
+    // faz exatamente isto por baixo) — lançar direto evita o aviso de
+    // depreciação no log a cada acesso sem direito, e continua funcionando
+    // se o método for removido numa versão futura do core.
+    throw new AccessDeniedHttpException();
 }
 
 Html::header(

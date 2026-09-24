@@ -12,6 +12,7 @@
 
 use Glpi\Application\View\TemplateRenderer;
 use GlpiPlugin\Refactorytools\EventProvider;
+use GlpiPlugin\Refactorytools\EventTypes;
 use GlpiPlugin\Refactorytools\Menu;
 use GlpiPlugin\Refactorytools\ReservationView;
 use GlpiPlugin\Refactorytools\Right;
@@ -50,6 +51,15 @@ if (isset($_POST['update'])) {
     if (($_POST['reservation_report_user_ids_defined'] ?? '') === '1') {
         $users = $_POST['reservation_report_user_ids'] ?? [];
         Settings::saveReservationReportUserIds(is_array($users) ? $users : [$users]);
+    }
+
+    // Mesma convenção de `_defined` acima: sem ela, desmarcar TODOS os tipos
+    // chegaria como "campo ausente" e nenhum ficaria realmente desligado.
+    if (($_POST['enabled_types_defined'] ?? '') === '1') {
+        $enabled = $_POST['enabled_types'] ?? [];
+        $enabled = is_array($enabled) ? $enabled : [$enabled];
+        $disabled = array_diff(EventTypes::getAll(), $enabled);
+        Settings::saveDisabledTypes($disabled);
     }
 
     Session::addMessageAfterRedirect(
