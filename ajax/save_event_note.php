@@ -19,8 +19,6 @@
  * item, a nota só se grava contra quem de fato é o dono daquele registro.
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\AccessPolicy;
 use GlpiPlugin\Refactorytools\EventNotes;
 use GlpiPlugin\Refactorytools\Right;

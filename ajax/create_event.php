@@ -20,8 +20,6 @@
  * Ver `EventTypes::CREATABLE`.
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\EventTypes;
 use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\Settings;

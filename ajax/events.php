@@ -14,8 +14,6 @@
  * pode vê-la.
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\AccessPolicy;
 use GlpiPlugin\Refactorytools\EventProvider;
 use GlpiPlugin\Refactorytools\Right;

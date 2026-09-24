@@ -12,8 +12,6 @@
  * lista de busca não oferece.
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\Menu;
 use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\Share;

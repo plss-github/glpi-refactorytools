@@ -23,8 +23,6 @@
  * que este plugin envia o token em seus formulários.
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\Settings;
 use GlpiPlugin\Refactorytools\Share;

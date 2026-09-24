@@ -8,8 +8,6 @@
  * tela de outra pessoa.
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\KanbanPrefs;
 use GlpiPlugin\Refactorytools\Right;
 

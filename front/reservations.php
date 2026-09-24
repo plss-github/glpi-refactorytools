@@ -10,8 +10,6 @@
  * podia reservar. O direito do plugin governa a agenda, que é outro assunto.
  */
 
-include('../../../inc/includes.php');
-
 use GlpiPlugin\Refactorytools\ReservationMenu;
 use GlpiPlugin\Refactorytools\ReservationView;
 
