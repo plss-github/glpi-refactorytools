@@ -1,5 +1,5 @@
 /*
- * Planner — estilos da agenda remodelada.
+ * RefactoryTools — estilos da agenda remodelada.
  *
  * Todas as cores saem das variáveis do Tabler que o GLPI 11 já define
  * (--tblr-*), nunca de valores fixos. É o que faz a tela seguir o tema
@@ -14,14 +14,14 @@
 /* Layout                                                                 */
 /* --------------------------------------------------------------------- */
 
-.planner-page {
+.refactorytools-page {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     min-height: 0;
 }
 
-.planner-topbar {
+.refactorytools-topbar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -29,14 +29,14 @@
     gap: 0.75rem;
 }
 
-.planner-body {
+.refactorytools-body {
     display: flex;
     align-items: stretch;
     gap: 0.75rem;
     min-height: 0;
 }
 
-.planner-sidebar {
+.refactorytools-sidebar {
     flex: 0 0 264px;
     max-width: 264px;
     overflow: hidden;
@@ -49,11 +49,11 @@
    o usuário tinha que rolar a lateral para achar "Gerenciar compartilhamentos"
    enquanto o resto da tela estava parado. Uma lista de agendas é curta; não
    vale um contêiner rolável só para ela. */
-.planner-sidebar-scroll {
+.refactorytools-sidebar-scroll {
     padding: 0.875rem;
 }
 
-.planner-main {
+.refactorytools-main {
     flex: 1 1 auto;
     min-width: 0;
     padding: 0.5rem 0.75rem 0.75rem;
@@ -62,11 +62,11 @@
 
 /* Um painel por modo. O do calendário fica no DOM mesmo escondido: o
    FullCalendar é o motor de datas dos três modos e precisa continuar vivo. */
-.planner-pane[hidden] {
+.refactorytools-pane[hidden] {
     display: none;
 }
 
-.planner-subbar {
+.refactorytools-subbar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -74,32 +74,32 @@
     gap: 0.75rem;
 }
 
-.planner-subopts {
+.refactorytools-subopts {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem;
 }
 
-.planner-subbar-label {
+.refactorytools-subbar-label {
     font-size: 0.75rem;
     color: var(--tblr-secondary);
     margin-right: 0.25rem;
 }
 
-.planner-nav {
+.refactorytools-nav {
     display: flex;
     align-items: center;
     gap: 0.75rem;
 }
 
-.planner-period {
+.refactorytools-period {
     font-size: 1.0625rem;
     font-weight: 600;
     text-transform: capitalize;
 }
 
-.planner-hint {
+.refactorytools-hint {
     display: flex;
     gap: 0.375rem;
     font-size: 0.75rem;
@@ -108,7 +108,7 @@
     margin-bottom: 0.5rem;
 }
 
-.planner-hint .ti {
+.refactorytools-hint .ti {
     flex: 0 0 auto;
     margin-top: 0.1rem;
 }
@@ -117,11 +117,11 @@
    os nomes em linha — numa tela estreita, um calendário de 200px não serve
    para nada, e a lista de agendas é curta. */
 @media (max-width: 991.98px) {
-    .planner-body {
+    .refactorytools-body {
         flex-direction: column;
     }
 
-    .planner-sidebar {
+    .refactorytools-sidebar {
         flex: 1 1 auto;
         max-width: none;
     }
@@ -129,7 +129,7 @@
     /* Em tela estreita a barra lateral vira uma faixa acima do calendário.
        Aqui a rolagem própria faz sentido: sem ela, a lista empurraria o
        calendário inteiro para fora da primeira dobra. */
-    .planner-sidebar-scroll {
+    .refactorytools-sidebar-scroll {
         max-height: 18rem;
         overflow-y: auto;
     }
@@ -139,13 +139,13 @@
 /* Indicadores                                                            */
 /* --------------------------------------------------------------------- */
 
-.planner-kpis {
+.refactorytools-kpis {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
 }
 
-.planner-kpi {
+.refactorytools-kpi {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -156,14 +156,14 @@
     background: var(--tblr-card-bg, var(--tblr-bg-surface));
 }
 
-.planner-kpi-value {
+.refactorytools-kpi-value {
     font-size: 1.375rem;
     font-weight: 600;
     line-height: 1.1;
     font-variant-numeric: tabular-nums;
 }
 
-.planner-kpi-label {
+.refactorytools-kpi-label {
     font-size: 0.75rem;
     color: var(--tblr-secondary);
     text-transform: uppercase;
@@ -174,11 +174,11 @@
 /* Seletor de visão                                                       */
 /* --------------------------------------------------------------------- */
 
-.planner-modes .btn,
-.planner-team-toggle,
-.planner-ranges .btn,
-.planner-kanban-opts .btn,
-.planner-nav .btn {
+.refactorytools-modes .btn,
+.refactorytools-team-toggle,
+.refactorytools-ranges .btn,
+.refactorytools-kanban-opts .btn,
+.refactorytools-nav .btn {
     border: 1px solid var(--tblr-border-color);
     background: var(--tblr-card-bg, var(--tblr-bg-surface));
     color: var(--tblr-body-color);
@@ -191,17 +191,17 @@
    o quanto são clicados. `!important` só no padding/fonte porque a marcação
    continua com `.btn-sm` (mantém os ícones e o espaçamento entre eles
    coerentes com o resto do GLPI); o que muda aqui é só a área de toque. */
-.planner-topbar .btn,
-.planner-subbar .btn,
-#planner-group-manager-toggle {
+.refactorytools-topbar .btn,
+.refactorytools-subbar .btn,
+#refactorytools-group-manager-toggle {
     padding: 0.5rem 0.875rem !important;
     font-size: 0.9375rem !important;
     line-height: 1.4 !important;
 }
 
-.planner-topbar .btn .ti,
-.planner-subbar .btn .ti,
-#planner-group-manager-toggle .ti {
+.refactorytools-topbar .btn .ti,
+.refactorytools-subbar .btn .ti,
+#refactorytools-group-manager-toggle .ti {
     font-size: 1.0625rem;
     vertical-align: -0.15em;
 }
@@ -216,36 +216,36 @@
    (o `<i>` é sempre o único filho ELEMENTO do botão, texto ao lado é nó de
    texto, não conta) — por isso a exceção abaixo, pelas classes dos botões
    que são só o ícone (navegação de período). */
-.planner-topbar .btn .ti,
-.planner-subbar .btn .ti,
-#planner-group-manager-toggle .ti,
-.planner-sidebar .btn .ti,
+.refactorytools-topbar .btn .ti,
+.refactorytools-subbar .btn .ti,
+#refactorytools-group-manager-toggle .ti,
+.refactorytools-sidebar .btn .ti,
 .modal .btn .ti {
     margin-right: 0.375rem;
 }
 
-.planner-prev .ti,
-.planner-next .ti {
+.refactorytools-prev .ti,
+.refactorytools-next .ti {
     margin-right: 0;
 }
 
 /* Aqui o ícone vem DEPOIS do texto ("See all my tickets →"), não antes. */
-.planner-tech-seeall .ti {
+.refactorytools-tech-seeall .ti {
     margin-left: 0.375rem;
 }
 
-.planner-modes .btn.active,
-.planner-ranges .btn.active,
-.planner-kanban-opts .btn.active {
+.refactorytools-modes .btn.active,
+.refactorytools-ranges .btn.active,
+.refactorytools-kanban-opts .btn.active {
     background: var(--tblr-primary);
     border-color: var(--tblr-primary);
     color: #fff;
 }
 
-.planner-modes .btn:hover:not(.active),
-.planner-ranges .btn:hover:not(.active),
-.planner-kanban-opts .btn:hover:not(.active),
-.planner-nav .btn:hover {
+.refactorytools-modes .btn:hover:not(.active),
+.refactorytools-ranges .btn:hover:not(.active),
+.refactorytools-kanban-opts .btn:hover:not(.active),
+.refactorytools-nav .btn:hover {
     background: var(--tblr-active-bg, rgba(0, 0, 0, 0.04));
 }
 
@@ -253,13 +253,13 @@
 /* Barra lateral                                                          */
 /* --------------------------------------------------------------------- */
 
-.planner-section + .planner-section {
+.refactorytools-section + .refactorytools-section {
     margin-top: 1.125rem;
     padding-top: 1.125rem;
     border-top: 1px solid var(--tblr-border-color);
 }
 
-.planner-section-title {
+.refactorytools-section-title {
     font-size: 0.6875rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -269,23 +269,23 @@
 }
 
 /* Subdivisão dentro de UMA seção (ex.: "Tipos de ativo" dentro de
-   "Filtros") — mais discreta que `.planner-section-title`, que já marca o
+   "Filtros") — mais discreta que `.refactorytools-section-title`, que já marca o
    início de um bloco novo. */
-.planner-section-subtitle {
+.refactorytools-section-subtitle {
     font-size: 0.6875rem;
     color: var(--tblr-secondary);
     margin: 0.5rem 0 0.25rem;
 }
 
-.planner-actors,
-.planner-types {
+.refactorytools-actors,
+.refactorytools-types {
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-.planner-actor-label,
-.planner-type-label {
+.refactorytools-actor-label,
+.refactorytools-type-label {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -297,26 +297,26 @@
     font-size: 0.875rem;
 }
 
-.planner-actor-label:hover,
-.planner-type-label:hover {
+.refactorytools-actor-label:hover,
+.refactorytools-type-label:hover {
     background: var(--tblr-active-bg, rgba(var(--tblr-secondary-rgb, 110, 117, 130), 0.08));
 }
 
-.planner-actor-name {
+.refactorytools-actor-name {
     flex: 1 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.planner-actor-badge {
+.refactorytools-actor-badge {
     font-size: 0.625rem;
     flex: 0 0 auto;
 }
 
 /* Avatar: a cor da pessoa é a mesma usada na borda dos eventos dela, para
    ligar visualmente a barra lateral ao calendário sem precisar de legenda. */
-.planner-avatar {
+.refactorytools-avatar {
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
@@ -327,11 +327,11 @@
     font-size: 0.6875rem;
     font-weight: 600;
     color: #fff;
-    background: var(--planner-actor-color, var(--tblr-secondary));
+    background: var(--refactorytools-actor-color, var(--tblr-secondary));
     overflow: hidden;
 }
 
-.planner-avatar img {
+.refactorytools-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -340,7 +340,7 @@
 /* Selo de iniciais no PRÓPRIO evento do calendário, só quando o compromisso
    é de outra pessoa (ver `decorateEvent()`) — resolve "de quem é isso?" sem
    precisar abrir o popover ou comparar a cor da borda com a barra lateral. */
-.planner-event-avatar {
+.refactorytools-event-avatar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -352,22 +352,22 @@
     font-weight: 700;
     line-height: 1;
     color: #fff;
-    background: var(--planner-actor-color, var(--tblr-secondary));
+    background: var(--refactorytools-actor-color, var(--tblr-secondary));
     vertical-align: -0.2em;
 }
 
-.planner-type-dot {
+.refactorytools-type-dot {
     flex: 0 0 auto;
     width: 0.625rem;
     height: 0.625rem;
     border-radius: 3px;
 }
 
-.planner-section-footer {
+.refactorytools-section-footer {
     margin-top: 1rem;
 }
 
-.planner-picker .select2-container {
+.refactorytools-picker .select2-container {
     width: 100% !important;
 }
 
@@ -375,12 +375,12 @@
 /* Calendário (FullCalendar 4, o embarcado no GLPI 11)                    */
 /* --------------------------------------------------------------------- */
 
-.planner-main .fc-toolbar h2 {
+.refactorytools-main .fc-toolbar h2 {
     font-size: 1.0625rem;
     font-weight: 600;
 }
 
-.planner-main .fc-toolbar .fc-button {
+.refactorytools-main .fc-toolbar .fc-button {
     background: transparent;
     border: 1px solid var(--tblr-border-color);
     color: var(--tblr-body-color);
@@ -390,27 +390,27 @@
     padding: 0.25rem 0.625rem;
 }
 
-.planner-main .fc-toolbar .fc-button:hover {
+.refactorytools-main .fc-toolbar .fc-button:hover {
     background: var(--tblr-active-bg, rgba(0, 0, 0, 0.04));
 }
 
-.planner-main .fc-toolbar .fc-button-active,
-.planner-main .fc-toolbar .fc-button:active {
+.refactorytools-main .fc-toolbar .fc-button-active,
+.refactorytools-main .fc-toolbar .fc-button:active {
     background: var(--tblr-primary);
     border-color: var(--tblr-primary);
     color: #fff;
 }
 
-.planner-main .fc-view-container {
+.refactorytools-main .fc-view-container {
     background: transparent;
 }
 
-.planner-main .fc-widget-header,
-.planner-main .fc-widget-content {
+.refactorytools-main .fc-widget-header,
+.refactorytools-main .fc-widget-content {
     border-color: var(--tblr-border-color);
 }
 
-.planner-main .fc-day-header {
+.refactorytools-main .fc-day-header {
     padding: 0.5rem 0;
     font-size: 0.75rem;
     font-weight: 600;
@@ -420,12 +420,12 @@
     border-color: var(--tblr-border-color);
 }
 
-.planner-main .fc-today {
+.refactorytools-main .fc-today {
     background: rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.06) !important;
 }
 
-.planner-main .fc-axis,
-.planner-main .fc-time-grid .fc-slats td {
+.refactorytools-main .fc-axis,
+.refactorytools-main .fc-time-grid .fc-slats td {
     font-size: 0.75rem;
     color: var(--tblr-secondary);
 }
@@ -433,7 +433,7 @@
 /* Eventos: cantos arredondados, sem borda dura, e uma barra à esquerda na
    cor da pessoa — é o que permite distinguir de quem é o compromisso nas
    visões sobrepostas (dia/semana), onde não existe uma raia por pessoa. */
-.planner-main .fc-event {
+.refactorytools-main .fc-event {
     border: none;
     border-left: 3px solid var(--tblr-border-color);
     border-radius: 5px;
@@ -443,12 +443,12 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-.planner-main .fc-event .fc-title {
+.refactorytools-main .fc-event .fc-title {
     font-weight: 600;
     white-space: normal;
 }
 
-.planner-main .fc-event .planner-event-meta {
+.refactorytools-main .fc-event .refactorytools-event-meta {
     display: block;
     font-size: 0.6875rem;
     opacity: 0.85;
@@ -457,7 +457,7 @@
     white-space: nowrap;
 }
 
-.planner-main .fc-event.planner-event-done {
+.refactorytools-main .fc-event.refactorytools-event-done {
     opacity: 0.6;
 }
 
@@ -465,13 +465,13 @@
    Numa reserva, "encerrada" quer dizer apenas que o período passou — riscar
    sugeriria que ela foi cancelada, que é outra coisa. Lá basta a opacidade
    menor da regra acima. */
-.planner-page:not(.planner-page-reservations) .fc-event.planner-event-done .fc-title {
+.refactorytools-page:not(.refactorytools-page-reservations) .fc-event.refactorytools-event-done .fc-title {
     text-decoration: line-through;
 }
 
 /* Evento livre/ocupado: sem conteúdo, hachurado para sinalizar que o
    detalhe existe mas não está sendo mostrado a quem olha. */
-.planner-main .fc-event.planner-event-busy {
+.refactorytools-main .fc-event.refactorytools-event-busy {
     background-image: repeating-linear-gradient(
         45deg,
         rgba(255, 255, 255, 0.18) 0,
@@ -482,13 +482,13 @@
 }
 
 /* Visão de equipe: cabeçalho de raia com o nome da pessoa. */
-.planner-main .fc-resource-area .fc-cell-text {
+.refactorytools-main .fc-resource-area .fc-cell-text {
     font-size: 0.8125rem;
     font-weight: 500;
 }
 
-.planner-main .fc-resource-area th,
-.planner-main .fc-resource-area td {
+.refactorytools-main .fc-resource-area th,
+.refactorytools-main .fc-resource-area td {
     border-color: var(--tblr-border-color);
 }
 
@@ -496,7 +496,7 @@
 /* Estados                                                                */
 /* --------------------------------------------------------------------- */
 
-.planner-loading {
+.refactorytools-loading {
     position: absolute;
     top: 0.5rem;
     right: 1rem;
@@ -508,7 +508,7 @@
     color: var(--tblr-secondary);
 }
 
-.planner-empty {
+.refactorytools-empty {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -519,14 +519,14 @@
     text-align: center;
 }
 
-.planner-empty .ti {
+.refactorytools-empty .ti {
     font-size: 2rem;
     opacity: 0.5;
 }
 
 /* Tooltip do evento (qtip do core não é usado aqui — um popover simples
    evita depender de uma lib que o GLPI pode trocar). */
-.planner-popover {
+.refactorytools-popover {
     position: absolute;
     z-index: 1080;
     min-width: 18rem;
@@ -539,26 +539,26 @@
     font-size: 0.875rem;
 }
 
-.planner-popover-title {
+.refactorytools-popover-title {
     font-weight: 600;
     margin-bottom: 0.25rem;
 }
 
-.planner-popover-meta {
+.refactorytools-popover-meta {
     color: var(--tblr-secondary);
     font-size: 0.75rem;
     margin-bottom: 0.5rem;
 }
 
-.planner-popover-content {
+.refactorytools-popover-content {
     max-height: 9rem;
     overflow: auto;
 }
 
 /* Nota do gestor: destacada com uma borda à esquerda para não ser confundida
-   com a descrição do próprio compromisso (`.planner-popover-content`), que
+   com a descrição do próprio compromisso (`.refactorytools-popover-content`), que
    vem do item e não de outra pessoa. */
-.planner-popover-note {
+.refactorytools-popover-note {
     margin-top: 0.5rem;
     padding: 0.5rem 0.625rem;
     border-left: 3px solid var(--tblr-warning);
@@ -579,12 +579,12 @@
 
 /* Várias notas empilhadas (histórico) usam a mesma margem que uma nota só
    tinha entre si e o conteúdo acima; entre elas próprias já é a margem de
-   `.planner-popover-note`. */
-.planner-popover-notes .planner-popover-note:first-child {
+   `.refactorytools-popover-note`. */
+.refactorytools-popover-notes .refactorytools-popover-note:first-child {
     margin-top: 0.5rem;
 }
 
-.planner-popover-note-label {
+.refactorytools-popover-note-label {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -595,19 +595,19 @@
     margin-bottom: 0.125rem;
 }
 
-.planner-popover-note-edit-one {
+.refactorytools-popover-note-edit-one {
     width: 1.25rem;
     height: 1.25rem;
     padding: 0;
     text-transform: none;
 }
 
-.planner-popover-note-text {
+.refactorytools-popover-note-text {
     white-space: pre-wrap;
     word-break: break-word;
 }
 
-.planner-popover-note-author {
+.refactorytools-popover-note-author {
     margin-top: 0.25rem;
     font-size: 0.6875rem;
     /* Mesmo risco de `--tblr-secondary` (cor de texto GERAL, não pareada com
@@ -617,19 +617,19 @@
     opacity: 0.75;
 }
 
-.planner-popover-note-edit {
+.refactorytools-popover-note-edit {
     margin-top: 0.5rem;
 }
 
-.planner-popover-note-edit .ti {
+.refactorytools-popover-note-edit .ti {
     margin-right: 0.375rem;
 }
 
-.planner-popover-note-form {
+.refactorytools-popover-note-form {
     margin-top: 0.5rem;
 }
 
-.planner-popover-note-actions {
+.refactorytools-popover-note-actions {
     display: flex;
     justify-content: flex-end;
     gap: 0.375rem;
@@ -640,17 +640,17 @@
 /* Modo Lista                                                             */
 /* --------------------------------------------------------------------- */
 
-.planner-list {
+.refactorytools-list {
     padding: 0.25rem 0 0.5rem;
 }
 
-.planner-list-day + .planner-list-day {
+.refactorytools-list-day + .refactorytools-list-day {
     margin-top: 1.25rem;
 }
 
 /* O dia fica "grudado" no topo ao rolar: numa lista longa, sem isso o
    usuário perde a referência de qual data está lendo. */
-.planner-list-daytitle {
+.refactorytools-list-daytitle {
     position: sticky;
     top: 0;
     z-index: 2;
@@ -664,11 +664,11 @@
     border-bottom: 1px solid var(--tblr-border-color);
 }
 
-.planner-list-table {
+.refactorytools-list-table {
     margin-bottom: 0;
 }
 
-.planner-list-table th {
+.refactorytools-list-table th {
     font-size: 0.6875rem;
     text-transform: uppercase;
     letter-spacing: 0.02em;
@@ -677,44 +677,44 @@
     border-color: var(--tblr-border-color);
 }
 
-.planner-list-table td {
+.refactorytools-list-table td {
     vertical-align: middle;
     border-color: var(--tblr-border-color);
 }
 
-.planner-list-when {
+.refactorytools-list-when {
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
     width: 1%;
 }
 
-.planner-list-who,
-.planner-list-type {
+.refactorytools-list-who,
+.refactorytools-list-type {
     white-space: nowrap;
     width: 1%;
 }
 
-.planner-list-who,
-.planner-list-type {
+.refactorytools-list-who,
+.refactorytools-list-type {
     display: table-cell;
 }
 
-.planner-list-who > span,
-.planner-list-type > span {
+.refactorytools-list-who > span,
+.refactorytools-list-type > span {
     vertical-align: middle;
 }
 
-.planner-list-who .planner-avatar,
-.planner-list-type .planner-type-dot {
+.refactorytools-list-who .refactorytools-avatar,
+.refactorytools-list-type .refactorytools-type-dot {
     margin-right: 0.375rem;
 }
 
-.planner-list-state {
+.refactorytools-list-state {
     width: 1%;
     white-space: nowrap;
 }
 
-.planner-avatar-sm {
+.refactorytools-avatar-sm {
     width: 1.375rem;
     height: 1.375rem;
     font-size: 0.5625rem;
@@ -724,7 +724,7 @@
 /* Modo Kanban                                                            */
 /* --------------------------------------------------------------------- */
 
-.planner-kanban {
+.refactorytools-kanban {
     display: flex;
     gap: 0.75rem;
     align-items: flex-start;
@@ -732,7 +732,7 @@
     padding: 0.25rem 0 0.75rem;
 }
 
-.planner-kanban-col {
+.refactorytools-kanban-col {
     flex: 0 0 17rem;
     max-width: 17rem;
     display: flex;
@@ -742,7 +742,7 @@
     background: var(--tblr-active-bg, rgba(var(--tblr-secondary-rgb, 110, 117, 130), 0.05));
 }
 
-.planner-kanban-head {
+.refactorytools-kanban-head {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -750,14 +750,14 @@
     border-bottom: 1px solid var(--tblr-border-color);
 }
 
-.planner-kanban-dot {
+.refactorytools-kanban-dot {
     flex: 0 0 auto;
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
 }
 
-.planner-kanban-title {
+.refactorytools-kanban-title {
     flex: 1 1 auto;
     font-size: 0.8125rem;
     font-weight: 600;
@@ -766,7 +766,7 @@
     white-space: nowrap;
 }
 
-.planner-kanban-count {
+.refactorytools-kanban-count {
     flex: 0 0 auto;
     min-width: 1.5rem;
     padding: 0 0.375rem;
@@ -778,7 +778,7 @@
     border-radius: 999px;
 }
 
-.planner-kanban-body {
+.refactorytools-kanban-body {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -788,36 +788,36 @@
     overflow-y: auto;
 }
 
-.planner-kanban-empty {
+.refactorytools-kanban-empty {
     min-height: 2rem;
     border: 1px dashed var(--tblr-border-color);
     border-radius: var(--tblr-border-radius);
 }
 
-.planner-kanban-card[draggable="true"] {
+.refactorytools-kanban-card[draggable="true"] {
     cursor: grab;
 }
 
-.planner-kanban-card.is-dragging {
+.refactorytools-kanban-card.is-dragging {
     opacity: 0.4;
 }
 
-.planner-kanban-head-draggable {
+.refactorytools-kanban-head-draggable {
     cursor: grab;
 }
 
-.planner-kanban-col.is-dragging {
+.refactorytools-kanban-col.is-dragging {
     opacity: 0.4;
 }
 
-.planner-kanban-col.is-drop-target .planner-kanban-body {
+.refactorytools-kanban-col.is-drop-target .refactorytools-kanban-body {
     background: rgba(var(--tblr-primary-rgb, 32, 107, 196), 0.08);
     outline: 2px dashed var(--tblr-primary);
     outline-offset: -2px;
     border-radius: var(--tblr-border-radius);
 }
 
-.planner-kanban-card {
+.refactorytools-kanban-card {
     padding: 0.5rem 0.625rem;
     border: 1px solid var(--tblr-border-color);
     border-left: 3px solid var(--tblr-border-color);
@@ -826,31 +826,31 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-.planner-kanban-when {
+.refactorytools-kanban-when {
     font-size: 0.6875rem;
     color: var(--tblr-secondary);
     font-variant-numeric: tabular-nums;
     text-transform: capitalize;
 }
 
-.planner-kanban-cardtitle {
+.refactorytools-kanban-cardtitle {
     font-size: 0.8125rem;
     font-weight: 600;
     line-height: 1.3;
     margin: 0.125rem 0 0.375rem;
 }
 
-.planner-kanban-cardtitle a {
+.refactorytools-kanban-cardtitle a {
     color: inherit;
 }
 
-.planner-kanban-foot {
+.refactorytools-kanban-foot {
     display: flex;
     align-items: center;
     gap: 0.375rem;
 }
 
-.planner-kanban-type {
+.refactorytools-kanban-type {
     font-size: 0.6875rem;
     color: var(--tblr-secondary);
     overflow: hidden;
@@ -860,13 +860,13 @@
 
 /* Livre/ocupado no Kanban: mesma hachura do calendário, para o usuário
    reconhecer que ali existe um compromisso cujo detalhe ele não vê. */
-.planner-kanban-card.planner-event-busy .planner-kanban-cardtitle {
+.refactorytools-kanban-card.refactorytools-event-busy .refactorytools-kanban-cardtitle {
     color: var(--tblr-secondary);
     font-style: italic;
 }
 
 @media (max-width: 575.98px) {
-    .planner-kanban-col {
+    .refactorytools-kanban-col {
         flex: 0 0 85vw;
         max-width: 85vw;
     }
@@ -881,8 +881,8 @@
    `.btn` do Tabler define `display:inline-block`. Sem esta regra, o botão
    "Equipe" continuaria visível fora do modo Calendário e os painéis dos
    modos inativos apareceriam empilhados. */
-.planner-page [hidden],
-.planner-shares [hidden] {
+.refactorytools-page [hidden],
+.refactorytools-shares [hidden] {
     display: none !important;
 }
 
@@ -890,13 +890,13 @@
    quanto nas células da tabela do modo Lista. Em `<td>` o contexto não é
    flex, então `flex: 0 0 auto` não dá dimensão a um span vazio e o ponto
    some — daí o display explícito. */
-.planner-type-dot {
+.refactorytools-type-dot {
     display: inline-block;
     vertical-align: middle;
 }
 
-.planner-team-toggle.active,
-#planner-group-manager-toggle.active {
+.refactorytools-team-toggle.active,
+#refactorytools-group-manager-toggle.active {
     background: var(--tblr-primary);
     border-color: var(--tblr-primary);
     color: #fff;
@@ -904,7 +904,7 @@
 
 /* Tag de tipo do modo gerente de grupo: no evento a cor já é da PESSOA, então
    o tipo vira um rótulo de texto discreto em vez de uma cor própria. */
-.planner-type-tag {
+.refactorytools-type-tag {
     display: inline-block;
     vertical-align: middle;
     margin-left: 0.375rem;
@@ -916,15 +916,15 @@
     border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-.planner-list-type .planner-type-tag,
-.planner-kanban-type.planner-type-tag {
+.refactorytools-list-type .refactorytools-type-tag,
+.refactorytools-kanban-type.refactorytools-type-tag {
     background: var(--tblr-secondary-lt);
     border-color: transparent;
     color: var(--tblr-secondary);
 }
 
 /* Ícone de informação ao lado de um título de seção da barra lateral. */
-.planner-info {
+.refactorytools-info {
     margin-left: 0.25rem;
     color: var(--tblr-secondary);
     cursor: help;
@@ -933,7 +933,7 @@
 
 /* Rodapé do cartão do Kanban: avatar, nome e tipo numa linha só. O nome
    encolhe antes do tipo, que é curto e serve de contexto. */
-.planner-kanban-actor {
+.refactorytools-kanban-actor {
     flex: 1 1 auto;
     min-width: 0;
     font-size: 0.6875rem;
@@ -943,7 +943,7 @@
     white-space: nowrap;
 }
 
-.planner-kanban-type {
+.refactorytools-kanban-type {
     flex: 0 0 auto;
     max-width: 45%;
 }
@@ -952,13 +952,13 @@
 /* Chamados como técnico                                                  */
 /* --------------------------------------------------------------------- */
 
-.planner-tech-kpis {
+.refactorytools-tech-kpis {
     display: flex;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
 }
 
-.planner-tech-kpi {
+.refactorytools-tech-kpi {
     flex: 1 1 0;
     text-align: center;
     padding: 0.375rem 0.25rem;
@@ -966,20 +966,20 @@
     background: var(--tblr-active-bg, rgba(var(--tblr-secondary-rgb, 110, 117, 130), 0.08));
 }
 
-.planner-tech-kpi-value {
+.refactorytools-tech-kpi-value {
     display: block;
     font-weight: 600;
     font-size: 0.9375rem;
 }
 
-.planner-tech-kpi-label {
+.refactorytools-tech-kpi-label {
     display: block;
     font-size: 0.625rem;
     color: var(--tblr-secondary);
     text-transform: uppercase;
 }
 
-.planner-tech-seeall {
+.refactorytools-tech-seeall {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -992,13 +992,13 @@
 /* Configuração: cores por tipo                                           */
 /* --------------------------------------------------------------------- */
 
-.planner-color-grid {
+.refactorytools-color-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
     gap: 0.375rem 1rem;
 }
 
-.planner-color-row {
+.refactorytools-color-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -1008,11 +1008,11 @@
     cursor: pointer;
 }
 
-.planner-color-row:hover {
+.refactorytools-color-row:hover {
     background: var(--tblr-active-bg, rgba(var(--tblr-secondary-rgb, 110, 117, 130), 0.08));
 }
 
-.planner-color-row input[type="color"] {
+.refactorytools-color-row input[type="color"] {
     flex: 0 0 auto;
     width: 2.25rem;
     height: 1.75rem;
@@ -1023,7 +1023,7 @@
     cursor: pointer;
 }
 
-.planner-color-name {
+.refactorytools-color-name {
     flex: 1 1 auto;
     min-width: 0;
     font-size: 0.875rem;
@@ -1032,20 +1032,20 @@
     white-space: nowrap;
 }
 
-.planner-color-reset {
+.refactorytools-color-reset {
     flex: 0 0 auto;
     opacity: 0;
     transition: opacity .12s;
 }
 
-.planner-color-row:hover .planner-color-reset {
+.refactorytools-color-row:hover .refactorytools-color-reset {
     opacity: 1;
 }
 
 /* Marcador de item reservável. Quadrado arredondado em vez de círculo: o
    avatar redondo é convenção de pessoa, e a tela de reservas lida com ativos.
    A diferença de forma evita confundir as duas telas de relance. */
-.planner-avatar-square {
+.refactorytools-avatar-square {
     border-radius: 5px;
     letter-spacing: -0.02em;
 }
@@ -1054,25 +1054,25 @@
 /* Formulário de nova reserva                                             */
 /* --------------------------------------------------------------------- */
 
-.planner-res-form .form-label {
+.refactorytools-res-form .form-label {
     font-weight: 500;
     margin-bottom: 0.25rem;
 }
 
 /* O campo datetime-local traz o ícone de calendário do navegador, que no
    tema escuro fica quase invisível. O filtro inverte só esse ícone. */
-.planner-res-form input[type="datetime-local"] {
+.refactorytools-res-form input[type="datetime-local"] {
     min-height: 2.375rem;
 }
 
-:root[data-bs-theme="dark"] .planner-res-form input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-:root[data-theme="dark"] .planner-res-form input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+:root[data-bs-theme="dark"] .refactorytools-res-form input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+:root[data-theme="dark"] .refactorytools-res-form input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     filter: invert(1) opacity(0.7);
 }
 
 /* Aviso de rodapé do formulário: informativo, não um erro. Fundo suave em
    vez da borda vermelha que um `alert-danger` traria. */
-.planner-res-note {
+.refactorytools-res-note {
     display: flex;
     gap: 0.5rem;
     align-items: flex-start;
@@ -1084,13 +1084,13 @@
     color: var(--tblr-secondary);
 }
 
-.planner-res-note .ti {
+.refactorytools-res-note .ti {
     flex: 0 0 auto;
     margin-top: 0.1rem;
 }
 
 /* Marcador de TIPO na barra lateral: recebe um ícone em vez de iniciais. */
-.planner-avatar .ti {
+.refactorytools-avatar .ti {
     font-size: 0.9375rem;
     line-height: 1;
 }
@@ -1098,7 +1098,7 @@
 /* Versão pequena do marcador quadrado, usada na lista de tipos de
    compromisso — ali o marcador é só um selo de cor, não precisa do tamanho
    do avatar de pessoa/item. */
-.planner-avatar-xs {
+.refactorytools-avatar-xs {
     width: 1.25rem;
     height: 1.25rem;
     font-size: 0.6875rem;
@@ -1107,7 +1107,7 @@
 /* Dias da semana da recorrência de reserva: pílulas clicáveis, não uma
    tabela de checkboxes soltos — mais fácil de escanear numa fileira curta
    de sete opções. */
-.planner-res-day-toggle {
+.refactorytools-res-day-toggle {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
@@ -1121,14 +1121,14 @@
 
 /* `:has()` cobre a maioria dos navegadores atuais; `.is-checked` (alternada
    via JS) é o reforço para quem ainda não tem suporte. */
-.planner-res-day-toggle:has(input:checked),
-.planner-res-day-toggle.is-checked {
+.refactorytools-res-day-toggle:has(input:checked),
+.refactorytools-res-day-toggle.is-checked {
     background: var(--tblr-primary);
     border-color: var(--tblr-primary);
     color: #fff;
 }
 
-.planner-res-day-toggle input {
+.refactorytools-res-day-toggle input {
     position: absolute;
     opacity: 0;
     width: 0;

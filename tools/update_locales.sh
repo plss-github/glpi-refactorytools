@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Planner — atualiza os catálogos de tradução.
+# RefactoryTools — atualiza os catálogos de tradução.
 #
 # As saidas usam --no-wrap: uma entrada por linha, sem quebra automatica.
 # Facilita revisar o diff de uma traducao e scriptar sobre o .po.
@@ -24,7 +24,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-DOMAIN="planner"
+DOMAIN="refactorytools"
 LOCALES="locales"
 POT="$LOCALES/$DOMAIN.pot"
 SHADOW_DIR=".locales-shadow"
@@ -71,7 +71,7 @@ xgettext \
     --keyword=_x:1c,2 \
     --keyword=_nx:1c,2,3 \
     --keyword=__s \
-    --package-name="GLPI Planner plugin" \
+    --package-name="GLPI RefactoryTools plugin" \
     --msgid-bugs-address="suporte@pellissari.com.br" \
     --add-comments=TRANSLATORS \
     --no-wrap \
