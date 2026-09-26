@@ -434,12 +434,12 @@
                        plugin guarda (`MeetingGuest`). #}
                     <div class="mb-3 refactorytools-event-meeting-guests refactorytools-picker" hidden id="refactorytools-event-guests-mandatory-wrap">
                         <label class="form-label" for="refactorytools-event-guests-mandatory">{{ __('Required attendees', 'refactorytools') }}</label>
+                        {# Ver o comentário em config.html.twig: `value`
+                           (singular), não `values`, para pré-seleção com
+                           `multiple: true`. #}
                         {{ 'User'|itemtype_dropdown({
                             name: 'guests_mandatory[]',
                             id: 'refactorytools-event-guests-mandatory',
-                            {# Ver o comentário em config.html.twig: `value`
-                               (singular), não `values`, para pré-seleção
-                               com `multiple: true`. #}
                             value: [],
                             multiple: true,
                             entity: session('glpiactive_entity'),

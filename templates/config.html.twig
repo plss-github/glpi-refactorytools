@@ -239,16 +239,16 @@
                 <div class="mb-3">
                     <label class="form-label">{{ __('Who can see the reservation report', 'refactorytools') }}</label>
                     <div class="refactorytools-picker">
+                        {# `User::dropdown()` com `multiple: true` lê a
+                           pré-seleção de `value` (singular!), não de
+                           `values` — ele SOBRESCREVE `values` internamente
+                           com `value ?? []` antes de montar o dropdown.
+                           Passar em `values` aqui (como o nome sugeriria)
+                           faz esse array virar a string vazia default de
+                           `value`, e o `array_combine()` do core quebra a
+                           tela inteira. #}
                         {{ 'User'|itemtype_dropdown({
                             name: 'reservation_report_user_ids',
-                            {# `User::dropdown()` com `multiple: true` lê a
-                               pré-seleção de `value` (singular!), não de
-                               `values` — ele SOBRESCREVE `values` internamente
-                               com `value ?? []` antes de montar o dropdown.
-                               Passar em `values` aqui (como o nome sugeriria)
-                               faz esse array virar a string vazia default de
-                               `value`, e o `array_combine()` do core quebra a
-                               tela inteira. #}
                             value: reservation_report_user_ids,
                             multiple: true,
                             entity: session('glpiactive_entity'),
