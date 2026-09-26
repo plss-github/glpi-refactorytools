@@ -16,6 +16,23 @@
             </h3>
         </div>
 
+        {% if reservation_types is not empty %}
+            <ul class="nav nav-tabs px-3 pt-2">
+                <li class="nav-item">
+                    <a class="nav-link {{ section != 'reservations' ? 'active' : '' }}"
+                       href="{{ root_doc }}/plugins/refactorytools/front/config.form.php">
+                        {{ __('Planning', 'refactorytools') }}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ section == 'reservations' ? 'active' : '' }}"
+                       href="{{ root_doc }}/plugins/refactorytools/front/config.form.php?section=reservations">
+                        {{ __('Reservations', 'refactorytools') }}
+                    </a>
+                </li>
+            </ul>
+        {% endif %}
+
         <div class="card-body">
 
             {% if section != 'reservations' %}
@@ -189,9 +206,7 @@
             </div>
             {% endif %}
 
-            {% if reservation_types is not empty %}
-                <hr>
-
+            {% if section == 'reservations' and reservation_types is not empty %}
                 <h4 class="mb-2">{{ __('Reservations', 'refactorytools') }}</h4>
 
                 <div class="mb-3">

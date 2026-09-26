@@ -3,6 +3,18 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [1.0.0] - 2026-09-26
+
+### Corrigido
+
+- Traduções (pt_BR/en_GB) não refletiam o idioma do usuário: os arquivos
+  `.mo` estavam desatualizados em relação aos `.po` — strings novas ou
+  alteradas caíam de volta pro texto em inglês. `.mo` recompilados.
+- Configuração do Plugin: a aba de Reservas aparecia misturada com a de
+  Planejamento na mesma tela, sem nenhuma navegação entre elas. Agora
+  cada uma é uma aba própria (Planejamento / Reservas), e os campos de
+  cada seção só aparecem na aba correspondente.
+
 ## [0.11.11] - 2026-09-26
 
 ### Corrigido
