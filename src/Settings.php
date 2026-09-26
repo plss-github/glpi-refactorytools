@@ -87,6 +87,23 @@ final class Settings
             // + link "Ver todos os meus chamados") na barra lateral do
             // Planejamento.
             'technician_panel_enabled' => '1',
+            // Mapa id de ReservationItem => cor hexadecimal, em JSON. Mais
+            // específico que `reservation_type_colors`: pinta UM aparelho
+            // (ex: "Carro ONIX 1"), não o tipo inteiro. Vazio = cada
+            // aparelho mantém a cor do tipo (se houver) ou a calculada por
+            // hash — a mesma ordem de precedência de sempre.
+            'reservation_item_colors' => '',
+            // Desliga a checagem de dono nativa do GLPI para editar/cancelar
+            // uma reserva pelo popover: com isto ligado, qualquer pessoa com
+            // acesso à tela de Reservas pode editar/cancelar QUALQUER
+            // reserva, não só a própria. Depende da cultura da empresa —
+            // por isso configurável, não fixo num sentido ou outro.
+            'reservation_allow_edit_all' => '0',
+            // Histórico de reservas (quem criou/editou/cancelou o quê):
+            // visível só para quem tem "Ver todas as agendas" por padrão.
+            // Ligar isto libera a aba para qualquer pessoa com acesso à
+            // tela de Reservas.
+            'reservation_history_visible_to_all' => '0',
         ];
     }
 
@@ -219,6 +236,78 @@ final class Settings
         Config::setConfigurationValues(self::CONTEXT, [
             'reservation_type_colors' => $clean === [] ? '' : json_encode($clean),
         ]);
+    }
+
+    /**
+     * Cores por APARELHO reservável — mais específica que
+     * `getReservationTypeColors()`.
+     *
+     * @return array<int, string> id de ReservationItem => cor hexadecimal
+     */
+    public static function getReservationItemColors(): array
+    {
+        $raw = self::get('reservation_item_colors');
+        if ($raw === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($decoded as $id => $color) {
+            if (self::isHexColor((string) $color)) {
+                $out[(int) $id] = strtolower((string) $color);
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param array<int|string, string> $colors id de ReservationItem =>
+     *                                          cor; valor vazio ou inválido
+     *                                          remove a customização
+     */
+    public static function saveReservationItemColors(array $colors): void
+    {
+        $clean = [];
+        foreach ($colors as $id => $color) {
+            $color = trim((string) $color);
+            $id    = (int) $id;
+            if ($id > 0 && $color !== '' && self::isHexColor($color)) {
+                $clean[$id] = strtolower($color);
+            }
+        }
+
+        Config::setConfigurationValues(self::CONTEXT, [
+            'reservation_item_colors' => $clean === [] ? '' : json_encode($clean),
+        ]);
+    }
+
+    /**
+     * Se qualquer pessoa com acesso à tela de Reservas pode editar/cancelar
+     * QUALQUER reserva pelo popover, não só a própria.
+     */
+    public static function canEditAnyReservation(): bool
+    {
+        return self::isTrue('reservation_allow_edit_all');
+    }
+
+    /**
+     * Mesmo padrão de `canViewReservationReport()`: quem tem READ_ALL vê
+     * sempre; a chave de configuração libera o histórico para os demais.
+     */
+    public static function canViewReservationHistory(?int $user_id = null): bool
+    {
+        $user_id ??= (int) Session::getLoginUserID();
+        if ($user_id <= 0) {
+            return false;
+        }
+
+        return Right::has(Right::READ_ALL) || self::isTrue('reservation_history_visible_to_all');
     }
 
     /** Modos de visualização da tela principal. */

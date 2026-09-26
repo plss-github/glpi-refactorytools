@@ -11,6 +11,7 @@ use GlpiPlugin\Refactorytools\EventNotes;
 use GlpiPlugin\Refactorytools\EventTypes;
 use GlpiPlugin\Refactorytools\KanbanPrefs;
 use GlpiPlugin\Refactorytools\MeetingGuest;
+use GlpiPlugin\Refactorytools\ReservationHistory;
 use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\Settings;
 use GlpiPlugin\Refactorytools\Share;
@@ -40,6 +41,7 @@ function plugin_refactorytools_install(): bool
     KanbanPrefs::install($migration);
     VisitLink::install($migration);
     MeetingGuest::install($migration);
+    ReservationHistory::install($migration);
 
     $migration->executeMigration();
 
@@ -239,6 +241,7 @@ function plugin_refactorytools_uninstall(): bool
     KanbanPrefs::uninstall();
     VisitLink::uninstall();
     MeetingGuest::uninstall();
+    ReservationHistory::uninstall();
 
     ProfileRight::deleteProfileRights([Right::NAME]);
 
@@ -295,4 +298,24 @@ function plugin_refactorytools_getrights(): array
     return [
         Right::NAME => __('Planning (Pellissari RefactoryTools)', 'refactorytools'),
     ];
+}
+
+/**
+ * Histórico de reservas (ver `ReservationHistory`) — os três hooks abaixo
+ * cobrem criar, editar e cancelar/apagar, INCLUSIVE pelo formulário nativo
+ * de reserva, que o plugin não controla diretamente.
+ */
+function plugin_refactorytools_reservation_add(Reservation $reservation): void
+{
+    ReservationHistory::log($reservation, ReservationHistory::ACTION_ADD);
+}
+
+function plugin_refactorytools_reservation_update(Reservation $reservation): void
+{
+    ReservationHistory::log($reservation, ReservationHistory::ACTION_UPDATE);
+}
+
+function plugin_refactorytools_reservation_purge(Reservation $reservation): void
+{
+    ReservationHistory::log($reservation, ReservationHistory::ACTION_PURGE);
 }

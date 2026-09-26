@@ -314,6 +314,56 @@
     flex: 0 0 auto;
 }
 
+/* Expandir/recolher os aparelhos individuais de um tipo (ver
+   templates/reservations.html.twig) — botão separado da caixa do tipo, para
+   um clique nele não marcar/desmarcar o tipo por engano. */
+.refactorytools-actor {
+    position: relative;
+}
+
+.refactorytools-actor:has(.refactorytools-actor-expand) > .refactorytools-actor-label {
+    padding-right: 1.75rem;
+}
+
+.refactorytools-actor-expand {
+    position: absolute;
+    top: 0.3125rem;
+    right: 0.375rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--tblr-secondary);
+    border-radius: var(--tblr-border-radius);
+    cursor: pointer;
+}
+
+.refactorytools-actor-expand:hover {
+    background: var(--tblr-active-bg, rgba(var(--tblr-secondary-rgb, 110, 117, 130), 0.08));
+}
+
+.refactorytools-actor-expand .ti {
+    transition: transform 0.15s ease;
+}
+
+.refactorytools-actor-expand.is-open .ti {
+    transform: rotate(180deg);
+}
+
+.refactorytools-actor-items {
+    padding-left: 2rem;
+    margin-bottom: 0.25rem;
+}
+
+.refactorytools-actor-item-label {
+    font-size: 0.8125rem;
+    padding-top: 0.1875rem;
+    padding-bottom: 0.1875rem;
+}
+
 /* Avatar: a cor da pessoa é a mesma usada na borda dos eventos dela, para
    ligar visualmente a barra lateral ao calendário sem precisar de legenda. */
 .refactorytools-avatar {

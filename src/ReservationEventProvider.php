@@ -126,6 +126,8 @@ final class ReservationEventProvider
         // aparelho continua existindo, só que noutro lugar: a visão Por
         // item, cujas faixas (`getResources()`) usam a cor por dispositivo.
         $type_colors = Settings::getReservationTypeColors();
+        $item_colors = Settings::getReservationItemColors();
+        $edit_all    = Settings::canEditAnyReservation();
 
         foreach ($rows as $row) {
             $res_item_id = (int) $row['reservationitems_id'];
@@ -134,13 +136,19 @@ final class ReservationEventProvider
             $end_at      = (string) $row['end'];
 
             $state = self::getState($begin_at, $end_at, $now);
-            $mine  = $users_id === $me;
+            // "Minha", pro popover de Editar/Cancelar: sempre verdade para o
+            // dono; para todo mundo quando o administrador ligou
+            // `reservation_allow_edit_all` (ver Settings) — a checagem de
+            // verdade continua sendo `$item->can($id, DELETE)` no servidor
+            // (`ajax/cancel_item.php`), isto aqui só decide MOSTRAR o botão.
+            $mine = $users_id === $me || $edit_all;
 
             $item_info  = $items_by_resid[$res_item_id] ?? null;
             $itemtype   = $item_info['itemtype'] ?? null;
-            $color      = ($itemtype !== null && isset($type_colors[$itemtype]))
-                ? $type_colors[$itemtype]
-                : EventProvider::getActorColor(crc32($itemtype ?? Reservation::class));
+            // Precedência: cor do APARELHO > cor do TIPO > hash do tipo.
+            $color      = $item_colors[$res_item_id]
+                ?? ($itemtype !== null ? ($type_colors[$itemtype] ?? null) : null)
+                ?? EventProvider::getActorColor(crc32($itemtype ?? Reservation::class));
             $item_name  = $item_info['name'] ?? sprintf(__('Reserved item #%d', 'refactorytools'), $res_item_id);
             $item_label = $item_info !== null
                 ? sprintf('%s - %s', $item_info['type_name'], $item_info['name'])

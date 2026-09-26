@@ -11,11 +11,14 @@
         <input type="hidden" name="_glpi_csrf_token" value="{{ csrf }}">
 
         <div class="card-header">
-            <h3 class="card-title">{{ __('Plugin configuration', 'refactorytools') }}</h3>
+            <h3 class="card-title">
+                {{ section == 'reservations' ? __('Reservation configuration', 'refactorytools') : __('Plugin configuration', 'refactorytools') }}
+            </h3>
         </div>
 
         <div class="card-body">
 
+            {% if section != 'reservations' %}
             <h4 class="mb-2">{{ __('Team', 'refactorytools') }}</h4>
 
             <div class="mb-3">
@@ -127,33 +130,9 @@
                     {% endfor %}
                 </div>
             </div>
-
-            {% if reservation_types is not empty %}
-                <hr>
-
-                <h4 class="mb-2">{{ __('Reservable asset type colours', 'refactorytools') }}</h4>
-
-                <div class="mb-3">
-                    <div class="form-hint mb-2">
-                        {{ __('The colour identifies every reservation of that asset type on the calendar and in the list, regardless of which specific item was reserved. Leave a type untouched to keep each item its own colour.', 'refactorytools') }}
-                    </div>
-                    <div class="refactorytools-color-grid">
-                        {% for type in reservation_types %}
-                            <label class="refactorytools-color-row">
-                                <input type="color" name="reservation_type_color[{{ type.itemtype }}]"
-                                       value="{{ type.color }}"
-                                       data-refactorytools-default="{{ type.default }}">
-                                <span class="refactorytools-color-name">{{ type.label }}</span>
-                                <button type="button" class="btn btn-sm btn-ghost-secondary refactorytools-color-reset"
-                                        title="{{ __('Back to default', 'refactorytools') }}">
-                                    <i class="ti ti-rotate"></i>
-                                </button>
-                            </label>
-                        {% endfor %}
-                    </div>
-                </div>
             {% endif %}
 
+            {% if section != 'reservations' %}
             <hr>
 
             <h4 class="mb-2">{{ __('Screen', 'refactorytools') }}</h4>
@@ -169,38 +148,6 @@
                 </label>
                 <div class="form-hint">
                     {{ __('When on, the "Planning" entry under Assistance opens this screen, and anyone reaching the old URL is redirected. The menu label stays "Planning": "RefactoryTools" is the plugin name, not the entry name. When off, the native planning is restored and RefactoryTools appears as a separate entry, which is useful to compare both screens.', 'refactorytools') }}
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-check form-switch">
-                    <input type="hidden" name="override_native_reservation" value="0">
-                    <input type="checkbox" class="form-check-input" name="override_native_reservation" value="1"
-                           {{ settings.override_native_reservation == '1' ? 'checked' : '' }}>
-                    <span class="form-check-label">
-                        {{ __('Replace the native Reservations', 'refactorytools') }}
-                    </span>
-                </label>
-                <div class="form-hint">
-                    {{ __('When on, the "Reservations" entry under Tools opens this screen, and anyone reaching the old URL is redirected. Reserving a specific item still goes to the native form, which checks for conflicts.', 'refactorytools') }}
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">{{ __('Who can see the reservation report', 'refactorytools') }}</label>
-                <div class="refactorytools-picker">
-                    {{ 'User'|itemtype_dropdown({
-                        name: 'reservation_report_user_ids',
-                        values: reservation_report_user_ids,
-                        multiple: true,
-                        entity: session('glpiactive_entity'),
-                        entity_sons: session('glpiactive_entity_recursive'),
-                        width: '100%'
-                    }) }}
-                </div>
-                <input type="hidden" name="reservation_report_user_ids_defined" value="1">
-                <div class="form-hint">
-                    {{ __('Anyone with "See all schedules" can already see it. This list is for giving access to people who don\'t have that administrative right.', 'refactorytools') }}
                 </div>
             </div>
 
@@ -240,6 +187,125 @@
                     {{ __('Turns off both the hours shown and the "See all my tickets" link, in the schedule sidebar.', 'refactorytools') }}
                 </div>
             </div>
+            {% endif %}
+
+            {% if reservation_types is not empty %}
+                <hr>
+
+                <h4 class="mb-2">{{ __('Reservations', 'refactorytools') }}</h4>
+
+                <div class="mb-3">
+                    <label class="form-check form-switch">
+                        <input type="hidden" name="override_native_reservation" value="0">
+                        <input type="checkbox" class="form-check-input" name="override_native_reservation" value="1"
+                               {{ settings.override_native_reservation == '1' ? 'checked' : '' }}>
+                        <span class="form-check-label">
+                            {{ __('Replace the native Reservations', 'refactorytools') }}
+                        </span>
+                    </label>
+                    <div class="form-hint">
+                        {{ __('When on, the "Reservations" entry under Tools opens this screen, and anyone reaching the old URL is redirected. Reserving a specific item still goes to the native form, which checks for conflicts.', 'refactorytools') }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-check form-switch">
+                        <input type="hidden" name="reservation_allow_edit_all" value="0">
+                        <input type="checkbox" class="form-check-input" name="reservation_allow_edit_all" value="1"
+                               {{ settings.reservation_allow_edit_all == '1' ? 'checked' : '' }}>
+                        <span class="form-check-label">
+                            {{ __('Anyone can edit or cancel any reservation', 'refactorytools') }}
+                        </span>
+                    </label>
+                    <div class="form-hint">
+                        {{ __('Off (default): only the person who made the reservation can edit or cancel it. On: anyone with access to the Reservations screen can edit or cancel anyone\'s reservation.', 'refactorytools') }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-check form-switch">
+                        <input type="hidden" name="reservation_history_visible_to_all" value="0">
+                        <input type="checkbox" class="form-check-input" name="reservation_history_visible_to_all" value="1"
+                               {{ settings.reservation_history_visible_to_all == '1' ? 'checked' : '' }}>
+                        <span class="form-check-label">
+                            {{ __('Anyone can see the reservation history', 'refactorytools') }}
+                        </span>
+                    </label>
+                    <div class="form-hint">
+                        {{ __('Anyone with "See all schedules" can already see it. This turns it on for everyone else with access to the Reservations screen too.', 'refactorytools') }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">{{ __('Who can see the reservation report', 'refactorytools') }}</label>
+                    <div class="refactorytools-picker">
+                        {{ 'User'|itemtype_dropdown({
+                            name: 'reservation_report_user_ids',
+                            {# `User::dropdown()` com `multiple: true` lê a
+                               pré-seleção de `value` (singular!), não de
+                               `values` — ele SOBRESCREVE `values` internamente
+                               com `value ?? []` antes de montar o dropdown.
+                               Passar em `values` aqui (como o nome sugeriria)
+                               faz esse array virar a string vazia default de
+                               `value`, e o `array_combine()` do core quebra a
+                               tela inteira. #}
+                            value: reservation_report_user_ids,
+                            multiple: true,
+                            entity: session('glpiactive_entity'),
+                            entity_sons: session('glpiactive_entity_recursive'),
+                            width: '100%'
+                        }) }}
+                    </div>
+                    <input type="hidden" name="reservation_report_user_ids_defined" value="1">
+                    <div class="form-hint">
+                        {{ __('Anyone with "See all schedules" can already see it. This list is for giving access to people who don\'t have that administrative right.', 'refactorytools') }}
+                    </div>
+                </div>
+
+                <h4 class="mb-2 mt-3">{{ __('Reservable asset type colours', 'refactorytools') }}</h4>
+
+                <div class="mb-3">
+                    <div class="form-hint mb-2">
+                        {{ __('The colour identifies every reservation of that asset type on the calendar and in the list, regardless of which specific item was reserved. Leave a type untouched to keep each item its own colour.', 'refactorytools') }}
+                    </div>
+                    <div class="refactorytools-color-grid">
+                        {% for type in reservation_types %}
+                            <label class="refactorytools-color-row">
+                                <input type="color" name="reservation_type_color[{{ type.itemtype }}]"
+                                       value="{{ type.color }}"
+                                       data-refactorytools-default="{{ type.default }}">
+                                <span class="refactorytools-color-name">{{ type.label }}</span>
+                                <button type="button" class="btn btn-sm btn-ghost-secondary refactorytools-color-reset"
+                                        title="{{ __('Back to default', 'refactorytools') }}">
+                                    <i class="ti ti-rotate"></i>
+                                </button>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <h4 class="mb-2 mt-3">{{ __('Individual reservable asset colours', 'refactorytools') }}</h4>
+
+                <div class="mb-3">
+                    <div class="form-hint mb-2">
+                        {{ __('Overrides the type colour above for one specific asset — useful to tell apart two assets of the same type on the calendar (e.g. two different cars).', 'refactorytools') }}
+                    </div>
+                    <div class="refactorytools-color-grid">
+                        {% for item in reservation_items %}
+                            <label class="refactorytools-color-row">
+                                <input type="color" name="reservation_item_color[{{ item.id }}]"
+                                       value="{{ item.color }}"
+                                       data-refactorytools-default="{{ item.default }}">
+                                <span class="refactorytools-color-name">{{ item.type_name }} — {{ item.name }}</span>
+                                <button type="button" class="btn btn-sm btn-ghost-secondary refactorytools-color-reset"
+                                        title="{{ __('Back to default', 'refactorytools') }}">
+                                    <i class="ti ti-rotate"></i>
+                                </button>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
 
         </div>
 

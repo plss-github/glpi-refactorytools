@@ -96,6 +96,11 @@ final class ReservationView
             'items_count'  => count($items),
             'can_reserve'  => self::canReserve(),
             'can_manage'   => self::canManageItems(),
+            // Mesmo direito que `front/config.form.php` exige — sem isto o
+            // botão "Configuração" apareceria para quem clica e cai num
+            // "acesso negado".
+            'reads_all'    => Right::has(Right::READ_ALL),
+            'can_view_history' => Settings::canViewReservationHistory(),
             'me'           => (int) Session::getLoginUserID(),
             'today'        => date('Y-m-d'),
             // O Kanban não é oferecido aqui: ele agrupa em colunas, e uma
@@ -231,6 +236,19 @@ final class ReservationView
     }
 
     /**
+     * Itens reserváveis para a grade de cores POR APARELHO da tela de
+     * Configuração — usa `queryReservableItems()` pelo mesmo motivo de
+     * `getReservableTypesForAdmin()`: não depende do direito PESSOAL
+     * `reservation` de quem está configurando.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function getReservableItemsForAdmin(): array
+    {
+        return self::queryReservableItems();
+    }
+
+    /**
      * Cache do processo (uma requisição PHP), não persistente entre
      * requisições. Existe porque `getReservableItems()` é chamada VÁRIAS
      * vezes na mesma requisição — a tela pede a lista direto e de novo via
@@ -295,36 +313,71 @@ final class ReservationView
             ] + getEntitiesRestrictCriteria($table, '', '', true),
         ]);
 
+        $item_colors = Settings::getReservationItemColors();
+        $type_colors = Settings::getReservationTypeColors();
+
         $items = [];
 
         foreach ($rows as $row) {
             $itemtype = (string) $row['itemtype'];
-            $item     = getItemForItemtype($itemtype);
 
-            // Item apagado sem limpar a linha de reservável: não há o que
-            // mostrar, e exibir "#42" só confundiria.
-            if ($item === false || !$item->getFromDB((int) $row['items_id'])) {
+            // Cada linha é isolada de propósito: um itemtype problemático
+            // (por exemplo, uma classe de Definição de Ativo do GLPI 11 que
+            // ainda não terminou de "bootar" nesta requisição, ou que foi
+            // apagada mas deixou a linha de reservável para trás) não pode
+            // derrubar a consulta INTEIRA — sem isto, um item ruim entre
+            // muitos apagaria a lista de itens reserváveis por completo,
+            // silenciosamente, e é exatamente esse o sintoma relatado
+            // ("não reconhecia reservas/ativos"). Falhas ficam no log em vez
+            // de desaparecerem sem rastro.
+            try {
+                $item = getItemForItemtype($itemtype);
+
+                // Item apagado sem limpar a linha de reservável: não há o
+                // que mostrar, e exibir "#42" só confundiria.
+                if ($item === false || !$item->getFromDB((int) $row['items_id'])) {
+                    continue;
+                }
+
+                $id   = (int) $row['id'];
+                $name = $item->getName();
+
+                $items[] = [
+                    'id'         => $id,
+                    'itemtype'   => $itemtype,
+                    // O id do ATIVO por trás do item reservável — diferente
+                    // de `id` acima, que é o id da linha de
+                    // `ReservationItem`. Sem isto, nada nesta lista permite
+                    // achar um item pelo par (itemtype, id do ativo), que é
+                    // como uma reserva referencia o que foi reservado (ver
+                    // `ReservationProvider::describeReservedItems()`).
+                    'items_id'   => (int) $row['items_id'],
+                    'name'       => $name,
+                    'type_name'  => $item::getTypeName(1),
+                    'type_label' => $item::getTypeName(2),
+                    // Mesma precedência de `ReservationEventProvider::getEvents()`:
+                    // cor do APARELHO > cor do TIPO > hash do aparelho.
+                    'color'      => $item_colors[$id]
+                        ?? $type_colors[$itemtype]
+                        ?? EventProvider::getActorColor($id),
+                    // Só para a grade de cores da Configuração (botão
+                    // "voltar ao padrão") — a cor que o item teria sem
+                    // nenhuma customização, nem de aparelho nem de tipo.
+                    'default'    => EventProvider::getActorColor($id),
+                    'initials'   => self::getInitials($name),
+                ];
+            } catch (\Throwable $e) {
+                /** @var \Psr\Log\LoggerInterface $PHPLOGGER */
+                global $PHPLOGGER;
+                $PHPLOGGER->error(sprintf(
+                    'RefactoryTools: could not resolve reservable item #%d (itemtype "%s", asset id %d): %s',
+                    (int) $row['id'],
+                    $itemtype,
+                    (int) $row['items_id'],
+                    $e->getMessage()
+                ), ['exception' => $e]);
                 continue;
             }
-
-            $id   = (int) $row['id'];
-            $name = $item->getName();
-
-            $items[] = [
-                'id'         => $id,
-                'itemtype'   => $itemtype,
-                // O id do ATIVO por trás do item reservável — diferente de
-                // `id` acima, que é o id da linha de `ReservationItem`. Sem
-                // isto, nada nesta lista permite achar um item pelo par
-                // (itemtype, id do ativo), que é como uma reserva referencia
-                // o que foi reservado (ver `ReservationProvider::describeReservedItems()`).
-                'items_id'   => (int) $row['items_id'],
-                'name'       => $name,
-                'type_name'  => $item::getTypeName(1),
-                'type_label' => $item::getTypeName(2),
-                'color'      => EventProvider::getActorColor($id),
-                'initials'   => self::getInitials($name),
-            ];
         }
 
         usort($items, static function (array $a, array $b): int {

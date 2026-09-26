@@ -1,0 +1,34 @@
+{#
+ # RefactoryTools — histórico de reservas (só para quem foi autorizado).
+ #}
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>{{ __('When', 'refactorytools') }}</th>
+                    <th>{{ __('Action', 'refactorytools') }}</th>
+                    <th>{{ __('Asset', 'refactorytools') }}</th>
+                    <th>{{ __('Reservation owner', 'refactorytools') }}</th>
+                    <th>{{ __('Done by', 'refactorytools') }}</th>
+                    <th>{{ __('Period', 'refactorytools') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                    <tr>
+                        <td>{{ entry.date }}</td>
+                        <td>{{ entry.action_label }}</td>
+                        <td>{{ entry.item_label }}</td>
+                        <td>{{ entry.owner }}</td>
+                        <td>{{ entry.author }}</td>
+                        <td>{{ entry.begin }} — {{ entry.end }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-muted">{{ __('No entries yet.', 'refactorytools') }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
