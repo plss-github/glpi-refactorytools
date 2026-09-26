@@ -3,6 +3,37 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.10] - 2026-09-26
+
+### Adicionado
+
+- Reservas: tipos de ativo com mais de um aparelho ganharam um botão para
+  expandir e filtrar aparelhos individuais (além do tipo inteiro).
+- Configuração de Reservas própria (botão na tela de Reservas): cores por
+  aparelho individual, permissão global de editar/cancelar qualquer
+  reserva, e histórico de quem criou/editou/cancelou cada uma.
+
+### Corrigido
+
+- **Segurança**: `ajax/cancel_item.php` usava a checagem de permissão
+  errada (`DELETE`, que não verifica dono para Lembrete/Evento/Reserva) em
+  vez de `PURGE` (a que os três realmente sobrescrevem com a checagem de
+  dono) — qualquer pessoa com o direito básico de criar podia cancelar o
+  compromisso/reserva de qualquer outra pessoa.
+- Configuração do Plugin quebrava com "array_combine(): Argument #1 must be
+  of type array, string given" ao abrir a tela — `User::dropdown()` com
+  `multiple: true` lê a pré-seleção de `value`, não de `values`.
+- Popover do compromisso/reserva trocava para o vizinho ao só passar o
+  mouse por cima, quando dois estavam próximos.
+- Calendário em inglês (AM/PM) e limitado a 19h — agora usa o idioma ativo
+  da sessão e mostra o dia inteiro.
+- Um item reservável problemático podia apagar a lista inteira de itens
+  reserváveis, silenciosamente — isolado por item, com log de erro.
+- Filtros "Somente as minhas reservas" e "Mostrar encerradas" agora vêm
+  desmarcados por padrão.
+- Campo "Criar compromisso vinculado" removido do formulário de nova
+  reserva (fica para depois).
+
 ## [0.11.9] - 2026-09-24
 
 ### Adicionado
