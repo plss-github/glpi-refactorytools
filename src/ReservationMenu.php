@@ -87,6 +87,16 @@ class ReservationMenu extends CommonGLPI
                 ],
             ];
         }
+        if (Settings::canViewReservationHistory()) {
+            $options['refactorytools_reservation_history'] = [
+                'title' => __('Reservation history', 'refactorytools'),
+                'page'  => '/plugins/refactorytools/front/reservation_history.php',
+                'icon'  => 'ti ti-history',
+                'links' => [
+                    'search' => '/plugins/refactorytools/front/reservation_history.php',
+                ],
+            ];
+        }
 
         $menu['tools']['content'][self::NATIVE_KEY] = array_merge($native, [
             'page'    => self::getPage(),

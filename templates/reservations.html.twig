@@ -100,20 +100,22 @@
                             {# `data-refactorytools-flag` faz o JavaScript mandar esta
                                caixa como parâmetro na busca de eventos, sem
                                precisar de código específico desta tela.
-                               Marcada por padrão: o uso mais comum da tela é
-                               conferir as próprias reservas. #}
+                               Desmarcada por padrão: a tela abre mostrando
+                               TODO MUNDO — quem quer só as próprias reservas
+                               marca por conta própria. #}
                             <input type="checkbox" class="form-check-input refactorytools-type-toggle"
-                                   id="refactorytools-only-mine" data-refactorytools-flag="only_mine" checked>
+                                   id="refactorytools-only-mine" data-refactorytools-flag="only_mine">
                             <span>{{ __('Only my reservations', 'refactorytools') }}</span>
                         </label>
                         <label class="refactorytools-type-label">
-                            <input type="checkbox" class="form-check-input" id="refactorytools-show-done" checked>
+                            <input type="checkbox" class="form-check-input" id="refactorytools-show-done">
                             <span>{{ __('Show finished', 'refactorytools') }}</span>
                         </label>
 
                         <div class="refactorytools-section-subtitle">{{ __('Asset types', 'refactorytools') }}</div>
                         <ul class="refactorytools-actors">
                             {% for type in types %}
+                                {% set type_items = items|filter(i => i.itemtype == type.itemtype) %}
                                 <li class="refactorytools-actor" data-actor="{{ type.itemtype }}">
                                     <label class="refactorytools-actor-label">
                                         <input type="checkbox" class="form-check-input refactorytools-actor-toggle"
@@ -127,19 +129,57 @@
                                         <span class="refactorytools-actor-name">{{ type.label }}</span>
                                         <span class="badge bg-secondary-lt refactorytools-actor-badge">{{ type.count }}</span>
                                     </label>
+                                    {# Expande a lista de APARELHOS desse tipo, cada um com
+                                       a própria caixa — marcar o tipo já mostra todos; abrir
+                                       aqui é só para quem quer ver/filtrar UM aparelho em
+                                       específico, sem precisar desmarcar o tipo inteiro. #}
+                                    {% if type_items|length > 1 %}
+                                        <button type="button" class="refactorytools-actor-expand"
+                                                title="{{ __('Show individual assets', 'refactorytools') }}">
+                                            <i class="ti ti-chevron-down"></i>
+                                        </button>
+                                        <ul class="refactorytools-actor-items" hidden>
+                                            {% for item in type_items %}
+                                                <li>
+                                                    <label class="refactorytools-actor-label refactorytools-actor-item-label">
+                                                        <input type="checkbox" class="form-check-input refactorytools-item-toggle"
+                                                               value="{{ item.id }}"
+                                                               data-itemtype="{{ item.itemtype }}" checked>
+                                                        <span class="refactorytools-actor-name">{{ item.name }}</span>
+                                                    </label>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
                                 </li>
                             {% endfor %}
                         </ul>
                     </div>
                 {% endif %}
 
-                {% if can_manage %}
+                {% if can_view_history or can_manage or reads_all %}
                     <div class="refactorytools-section refactorytools-section-footer">
-                        <a href="{{ root_doc }}/front/reservationitem.php"
-                           class="btn btn-sm btn-ghost-secondary w-100">
-                            <i class="ti ti-settings"></i>
-                            {{ __('Manage reservable items', 'refactorytools') }}
-                        </a>
+                        {% if can_view_history %}
+                            <a href="{{ root_doc }}/plugins/refactorytools/front/reservation_history.php"
+                               class="btn btn-sm btn-ghost-secondary w-100 mb-1">
+                                <i class="ti ti-history"></i>
+                                {{ __('History', 'refactorytools') }}
+                            </a>
+                        {% endif %}
+                        {% if can_manage %}
+                            <a href="{{ root_doc }}/front/reservationitem.php"
+                               class="btn btn-sm btn-ghost-secondary w-100 mb-1">
+                                <i class="ti ti-settings"></i>
+                                {{ __('Manage reservable items', 'refactorytools') }}
+                            </a>
+                        {% endif %}
+                        {% if reads_all %}
+                            <a href="{{ root_doc }}/plugins/refactorytools/front/config.form.php?section=reservations"
+                               class="btn btn-sm btn-ghost-secondary w-100">
+                                <i class="ti ti-adjustments"></i>
+                                {{ __('Plugin configuration', 'refactorytools') }}
+                            </a>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>
@@ -238,21 +278,12 @@
                                   placeholder="{{ __('What is it for?', 'refactorytools') }}" required></textarea>
                     </div>
 
-                    {# Cria uma Visita/Viagem junto com a reserva, já ligada a
-                       ela (ver `VisitLink`) — só funciona reservando UM item
-                       sem repetição; com mais de um item ou recorrência
-                       marcada, `ajax/create_reservation.php` ignora esta
-                       escolha (não dá para saber a qual das reservas geradas
-                       ligar). #}
-                    <div class="mb-3">
-                        <label class="form-label" for="refactorytools-res-linked-kind">{{ __('Create linked commitment', 'refactorytools') }}</label>
-                        <select class="form-select" id="refactorytools-res-linked-kind" name="linked_kind">
-                            <option value="">{{ __('None', 'refactorytools') }}</option>
-                            <option value="{{ constant('GlpiPlugin\\Refactorytools\\EventTypes::EVENT_VISIT') }}">{{ __('Visit', 'refactorytools') }}</option>
-                            <option value="{{ constant('GlpiPlugin\\Refactorytools\\EventTypes::EVENT_TRAVEL') }}">{{ __('Travel', 'refactorytools') }}</option>
-                        </select>
-                        <div class="form-hint">{{ __('Only when reserving a single item, without repetition.', 'refactorytools') }}</div>
-                    </div>
+                    {# "Criar compromisso vinculado" desativado a pedido —
+                       fica para depois. O campo `name="linked_kind"` nunca é
+                       enviado sem este `<select>`, então
+                       `ajax/create_reservation.php` (que já lida com a
+                       ausência do campo) não precisa de nenhuma mudança para
+                       isto voltar quando for reativado. #}
 
                     {# Recorrência: mesmos nomes de campo (`periodicity[...]`)
                        que o formulário nativo de reserva usa, então

@@ -87,6 +87,21 @@ function plugin_init_refactorytools(): void
     // também precisa cair na tela nova — o hook de menu sozinho não cobre isso.
     $PLUGIN_HOOKS[Hooks::POST_INIT]['refactorytools'] = NativeRedirect::class . '::handle';
 
+    // Histórico de reservas (ver `ReservationHistory`): `Reservation` não
+    // tem `$dohistory` nativo, então isto é alimentado por hook em vez de
+    // ler `glpi_logs` (que nunca teria uma linha de reserva para ler). Os
+    // três hooks cobrem criar, editar (inclusive pelo formulário NATIVO,
+    // que o plugin não controla) e cancelar/apagar.
+    $PLUGIN_HOOKS[Hooks::ITEM_ADD]['refactorytools'] = [
+        Reservation::class => 'plugin_refactorytools_reservation_add',
+    ];
+    $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['refactorytools'] = [
+        Reservation::class => 'plugin_refactorytools_reservation_update',
+    ];
+    $PLUGIN_HOOKS[Hooks::ITEM_PURGE]['refactorytools'] = [
+        Reservation::class => 'plugin_refactorytools_reservation_purge',
+    ];
+
     // O GLPI só carrega o FullCalendar quando a lib está declarada em
     // $CFG_GLPI['javascript'][setor][item] (ver Html::header(), que também
     // injeta lib/fullcalendar.css nesse caso). `$item` é passado em minúsculas

@@ -437,7 +437,10 @@
                         {{ 'User'|itemtype_dropdown({
                             name: 'guests_mandatory[]',
                             id: 'refactorytools-event-guests-mandatory',
-                            values: [],
+                            {# Ver o comentário em config.html.twig: `value`
+                               (singular), não `values`, para pré-seleção
+                               com `multiple: true`. #}
+                            value: [],
                             multiple: true,
                             entity: session('glpiactive_entity'),
                             entity_sons: session('glpiactive_entity_recursive'),
@@ -449,7 +452,7 @@
                         {{ 'User'|itemtype_dropdown({
                             name: 'guests_optional[]',
                             id: 'refactorytools-event-guests-optional',
-                            values: [],
+                            value: [],
                             multiple: true,
                             entity: session('glpiactive_entity'),
                             entity_sons: session('glpiactive_entity_recursive'),

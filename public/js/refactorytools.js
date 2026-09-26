@@ -142,6 +142,40 @@ var GlpiRefactoryTools = {
 
             return value ? value : null;
         }).get();
+
+        // Aparelhos individuais desmarcados na lista expandida de um tipo
+        // (ver templates/reservations.html.twig) — filtro por cima do que já
+        // veio do servidor para aquele TIPO, aplicado inteiramente no
+        // cliente (ver `filterHiddenReservationItems()`), sem mudar o que é
+        // pedido ao servidor.
+        self.hiddenReservationItems = {};
+        $('.refactorytools-item-toggle').not(':checked').each(function () {
+            self.hiddenReservationItems[$(this).val()] = true;
+        });
+    },
+
+    /**
+     * Tira da lista os itens reserváveis que a pessoa desmarcou
+     * individualmente — usado tanto para os RECURSOS (faixas da visão Por
+     * item) quanto para os EVENTOS (Calendário/Lista/Kanban), que são as
+     * duas listas onde um "aparelho #42 escondido" precisa desaparecer.
+     *
+     * @param {Array} list
+     * @param {function} getResourceId função que extrai o id do recurso
+     *        (sem o prefixo `resourcePrefix()`) de um item da lista
+     */
+    filterHiddenReservationItems: function (list, getResourceId) {
+        var self = this;
+        var hidden = self.hiddenReservationItems || {};
+
+        if (!Object.keys(hidden).length) {
+            return list;
+        }
+
+        return list.filter(function (entry) {
+            var id = getResourceId(entry);
+            return !id || !hidden[id];
+        });
     },
 
     /**
@@ -164,8 +198,13 @@ var GlpiRefactoryTools = {
         // Quando o servidor manda as faixas, são elas que valem. É o caso da
         // tela de reservas: a barra lateral marca TIPOS de ativo, e cada faixa
         // é um APARELHO daquele tipo — a barra lateral não tem essa lista.
+        // O filtro por aparelho individual (ver `readSidebar()`) é aplicado
+        // aqui, por cima do que veio do servidor.
         if (self.serverResources) {
-            return self.serverResources;
+            var prefix = self.resourcePrefix();
+            return self.filterHiddenReservationItems(self.serverResources, function (resource) {
+                return String(resource.id).indexOf(prefix) === 0 ? String(resource.id).slice(prefix.length) : null;
+            });
         }
 
         $('.refactorytools-actor-toggle:checked').each(function () {
@@ -241,8 +280,21 @@ var GlpiRefactoryTools = {
             // números e conteúdo falando do mesmo período.
             lazyFetching: false,
             hiddenDays: hidden_days,
-            minTime: (typeof CFG_GLPI !== 'undefined' && CFG_GLPI.planning_begin) || '08:00:00',
-            maxTime: (typeof CFG_GLPI !== 'undefined' && CFG_GLPI.planning_end) || '20:00:00',
+            // Dia inteiro visível, não só o "horário comercial"
+            // (`CFG_GLPI.planning_begin/end`, pensado para tarefas): uma
+            // reserva de sala/veículo não respeita esse horário — a captura
+            // que motivou a mudança tinha uma reserva das 8h às 2h do dia
+            // seguinte, cortada pela grade antiga (8h-20h).
+            minTime: '00:00:00',
+            maxTime: '24:00:00',
+            // Sem isto o FullCalendar cai no locale padrão (inglês, 12h
+            // AM/PM) mesmo com o pacote de idioma certo carregado — é o
+            // MESMO `FullCalendarLocales` que `Html::requireJs('fullcalendar')`
+            // já carrega no idioma ativo da sessão (ver `Html::requireJs()`
+            // no core); só faltava dizer ao FullCalendar para usá-lo.
+            locale: (typeof FullCalendarLocales !== 'undefined' && Object.keys(FullCalendarLocales).length === 1)
+                ? Object.keys(FullCalendarLocales)[0]
+                : undefined,
             // Cabeçalho próprio (na barra superior do template), para os três
             // modos compartilharem a mesma navegação de período.
             header: false,
@@ -415,7 +467,15 @@ var GlpiRefactoryTools = {
                 }
             }
 
-            success(response.events || []);
+            // Mesmo filtro por aparelho individual de `getResources()` —
+            // aqui pelo `resourceId` de cada evento, não pelo id de recurso.
+            var events = self.filterHiddenReservationItems(response.events || [], function (ev) {
+                var resource_id = String(ev.resourceId || '');
+                var prefix = self.resourcePrefix();
+                return resource_id.indexOf(prefix) === 0 ? resource_id.slice(prefix.length) : null;
+            });
+
+            success(events);
             setTimeout(function () { self.renderPanes(); }, 0);
         }).fail(function (xhr) {
             self.updateKpis({});
@@ -695,6 +755,7 @@ var GlpiRefactoryTools = {
     bindPopover: function ($el, event) {
         var self = this;
         var props = event.extendedProps || {};
+        var show_timer = null;
 
         $el.on('mouseenter', function () {
             // Pinado: um editor de nota está aberto neste ou noutro
@@ -705,9 +766,26 @@ var GlpiRefactoryTools = {
                 return;
             }
             self.cancelPopoverHide();
-            self.hidePopover();
-            self.renderPopover(this, event, props);
+
+            // "Hover intent": com dois compromissos vizinhos (mesmo horário,
+            // ativos/pessoas diferentes, ou o mesmo ativo com reservas
+            // seguidas), o caminho do mouse até o popover de UM passa por
+            // CIMA do cartão do OUTRO — sem este atraso, esse simples passar
+            // por cima já trocava o popover pelo do vizinho, antes mesmo do
+            // cursor chegar aonde ia. Só quem fica sobre o cartão por um
+            // instante (intenção de ver aquele, não só de passagem) abre o
+            // popover dele.
+            var anchor = this;
+            show_timer = setTimeout(function () {
+                self.hidePopover();
+                self.renderPopover(anchor, event, props);
+            }, 180);
         }).on('mouseleave', function () {
+            if (show_timer) {
+                clearTimeout(show_timer);
+                show_timer = null;
+            }
+
             if (self.notePinned) {
                 return;
             }
@@ -1789,6 +1867,28 @@ var GlpiRefactoryTools = {
             if (self.calendar) {
                 self.calendar.refetchEvents();
             }
+        });
+
+        // Aparelho individual desmarcado/marcado dentro da lista expandida
+        // de um tipo (ver `filterHiddenReservationItems()`).
+        $(document).on('change', '.refactorytools-item-toggle', function () {
+            self.readSidebar();
+            if (self.calendar) {
+                self.calendar.refetchResources();
+                self.calendar.refetchEvents();
+            }
+        });
+
+        // Expandir/recolher a lista de aparelhos de um tipo. Não mexe nas
+        // caixas — só mostra/esconde a lista; marcar/desmarcar tipo e
+        // aparelho continuam independentes.
+        $(document).on('click', '.refactorytools-actor-expand', function () {
+            var $btn = $(this);
+            $btn.toggleClass('is-open');
+            $btn.closest('.refactorytools-actor').find('.refactorytools-actor-items').prop(
+                'hidden',
+                !$btn.hasClass('is-open')
+            );
         });
     },
 

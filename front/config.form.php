@@ -37,6 +37,9 @@ if (isset($_POST['update'])) {
     if (isset($_POST['reservation_type_color']) && is_array($_POST['reservation_type_color'])) {
         Settings::saveReservationTypeColors($_POST['reservation_type_color']);
     }
+    if (isset($_POST['reservation_item_color']) && is_array($_POST['reservation_item_color'])) {
+        Settings::saveReservationItemColors($_POST['reservation_item_color']);
+    }
 
     // Nome de campo DIFERENTE da chave de configuração (`reservation_report_users`,
     // uma string CSV) de propósito: `Settings::save()` já rodou acima e só
@@ -71,6 +74,11 @@ if (isset($_POST['update'])) {
     return;
 }
 
+// Só duas seções fazem sentido: a completa (link do menu de Planejamento) e
+// "reservations" (botão da própria tela de Reservas, ver
+// `ReservationView::show()`) — qualquer outro valor cai na completa.
+$section = ($_GET['section'] ?? '') === 'reservations' ? 'reservations' : '';
+
 Html::header(
     __('Plugin configuration', 'refactorytools'),
     $_SERVER['PHP_SELF'],
@@ -80,11 +88,13 @@ Html::header(
 );
 
 TemplateRenderer::getInstance()->display('@refactorytools/config.html.twig', [
+    'section'      => $section,
     'settings'     => Settings::getAll(),
     'level_labels' => Share::getLevelLabels(),
     'mode_labels'  => Settings::getModeLabels(),
     'types'        => EventProvider::getAvailableTypesForAdmin(),
     'reservation_types' => ReservationView::getReservableTypesForAdmin(),
+    'reservation_items' => ReservationView::getReservableItemsForAdmin(),
     'reservation_report_user_ids' => Settings::getReservationReportUserIds(),
     'csrf'         => Session::getNewCSRFToken(),
 ]);
