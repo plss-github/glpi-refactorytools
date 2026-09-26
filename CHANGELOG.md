@@ -3,6 +3,15 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [0.11.11] - 2026-09-26
+
+### Corrigido
+
+- Configuração do Plugin > aba Reservas quebrava com "Unexpected character
+  `\`` " — um comentário Twig tinha ficado dentro de uma expressão `{{ }}`
+  (o objeto passado pro filtro `itemtype_dropdown`), sintaxe inválida.
+  Mesmo padrão corrigido no modal de convidados de Reunião/Viagem/Visita.
+
 ## [0.11.10] - 2026-09-26
 
 ### Adicionado
