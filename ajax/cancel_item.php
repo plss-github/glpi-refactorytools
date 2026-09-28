@@ -13,6 +13,12 @@
  * pai (ver `EventTypes::CREATABLE`), cancelá-la aqui seria mexer no chamado
  * de outra pessoa por um atalho que não passa pelas regras do chamado.
  *
+ * Lembrete/Evento recorrentes: se `occurrence_date` vier preenchido, cancela
+ * só aquele dia (`PlanningEvent::deleteInstance()`, do core — grava a data em
+ * `rrule['exceptions']` e ATUALIZA a série, nunca apaga a linha). Sem
+ * `occurrence_date`, cancela a série inteira como antes. Reserva nunca tem
+ * recorrência, então `occurrence_date` é ignorado para ela.
+ *
  * A permissão de verdade não é do plugin — é `$item->can($id, PURGE)`, a
  * mesma checagem que o formulário nativo de cada itemtype já faz. O direito
  * do plugin (`Right::USE_REFACTORYTOOLS`) só garante que quem chama está
@@ -43,8 +49,9 @@ const CANCELABLE_ITEMTYPES = [
     'Reservation',
 ];
 
-$itemtype = (string) ($_POST['itemtype'] ?? '');
-$items_id = (int) ($_POST['items_id'] ?? 0);
+$itemtype        = (string) ($_POST['itemtype'] ?? '');
+$items_id        = (int) ($_POST['items_id'] ?? 0);
+$occurrence_date = (string) ($_POST['occurrence_date'] ?? '');
 
 $ok = false;
 
@@ -59,7 +66,15 @@ if (in_array($itemtype, CANCELABLE_ITEMTYPES, true) && $items_id > 0) {
         $bypass_owner = $itemtype === 'Reservation' && Settings::canEditAnyReservation();
 
         if ($bypass_owner ? Reservation::canDelete() : $item->can($items_id, PURGE)) {
-            $ok = (bool) $item->delete(['id' => $items_id]);
+            $is_recurring = $itemtype !== 'Reservation'
+                && method_exists($item, 'deleteInstance')
+                && ($item->fields['rrule'] ?? '') !== '';
+
+            if ($is_recurring && $occurrence_date !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $occurrence_date)) {
+                $ok = (bool) $item->deleteInstance($items_id, $occurrence_date);
+            } else {
+                $ok = (bool) $item->delete(['id' => $items_id]);
+            }
         }
     }
 }

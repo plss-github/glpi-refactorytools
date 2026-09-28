@@ -929,6 +929,38 @@ msgstr "Compartilhamento é só uma das formas de acesso. Sua equipe (pelo campo
 #~ msgid "If the item is already reserved for this period, GLPI refuses the reservation and says so."
 #~ msgstr "Se o item já estiver reservado neste período, o GLPI recusa a reserva e avisa."
 
+#: templates/refactorytools.html.twig:630
+msgid "Cancel appointment"
+msgstr "Cancelar compromisso"
+
+#: templates/refactorytools.html.twig:631
+msgid "Cancel this appointment? This cannot be undone."
+msgstr "Cancelar este compromisso? Isso não pode ser desfeito."
+
+#: templates/refactorytools.html.twig:632
+msgid "Appointment cancelled."
+msgstr "Compromisso cancelado."
+
+#: templates/refactorytools.html.twig:633
+msgid "Could not cancel this appointment."
+msgstr "Não foi possível cancelar este compromisso."
+
+#: templates/refactorytools.html.twig:634
+msgid "Cancel this day"
+msgstr "Cancelar este dia"
+
+#: templates/refactorytools.html.twig:635
+msgid "Cancel entire series"
+msgstr "Cancelar a série inteira"
+
+#: templates/refactorytools.html.twig:636
+msgid "Cancel just this day? The rest of the series stays. This cannot be undone."
+msgstr "Cancelar só este dia? O resto da série continua. Isso não pode ser desfeito."
+
+#: templates/refactorytools.html.twig:637
+msgid "That day was cancelled."
+msgstr "Aquele dia foi cancelado."
+
 #~ msgid "Upcoming"
 #~ msgstr "Próximas"
 
