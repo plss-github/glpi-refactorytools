@@ -391,7 +391,16 @@
                         altInput: true,
                         altFormat: 'd-m-Y H:i',
                         allowInput: true,
-                        onClose: function () { $el.trigger('change'); }
+                        // `onClose` sozinho não bastava: digitando a data à
+                        // mão e saindo do campo com Tab (sem o calendário
+                        // chegar a abrir), `onClose` nunca dispara — o
+                        // `change` nunca chegava em `refreshAvailability()`,
+                        // e os selects de Tipo/Item ficavam desabilitados
+                        // pra sempre, mesmo com as duas datas preenchidas.
+                        // `onValueUpdate` cobre a digitação manual também,
+                        // não só fechar o calendário.
+                        onClose: function () { $el.trigger('change'); },
+                        onValueUpdate: function () { $el.trigger('change'); }
                     });
                 }
             }

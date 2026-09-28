@@ -74,19 +74,29 @@ function plugin_refactorytools_install(): bool
     // configuração mostre o estado real desde a primeira abertura em vez de
     // valores que só existem em memória.
     //
-    // Os 3 IDs de categoria ficam de FORA deste save: `plugin_refactorytools_install()`
-    // roda de novo em toda ATUALIZAÇÃO de versão (não só na instalação), e um
-    // `getDefaults()` sempre traz esses 3 campos como string vazia. Se
-    // entrassem aqui, cada atualização apagaria o ID guardado ANTES de
-    // `plugin_refactorytools_seed_event_categories()` rodar — e como essa função só
-    // recria a categoria quando não encontra um ID válido, o resultado seria
-    // uma categoria NOVA a cada atualização, duplicando "Evento Interno" /
-    // "Viagem" / "Reunião" indefinidamente.
+    // SÓ para as chaves que AINDA NÃO EXISTEM no `glpi_configs`: esta função
+    // roda de novo em toda ATUALIZAÇÃO de versão (não só na instalação), e
+    // `Config::setConfigurationValues()` faz UPDATE/INSERT cego — passar
+    // `Settings::getDefaults()` inteiro aqui, como este código fazia antes,
+    // reescrevia por cima de QUALQUER configuração já feita pelo
+    // administrador (cores de tipo/aparelho, "qualquer um pode
+    // editar/cancelar", etc.) a cada bump de versão, voltando tudo pro
+    // padrão de fábrica silenciosamente. `array_diff_key` contra o que já
+    // está gravado é o que evita isso.
+    //
+    // Os 3 IDs de categoria continuam de fora por um motivo à parte: um
+    // `getDefaults()` sempre traz esses 3 campos como string vazia, e
+    // `plugin_refactorytools_seed_event_categories()` decide se recria a
+    // categoria com base em não achar um ID válido — se entrassem aqui
+    // (mesmo só nas chaves ausentes, o que nunca seria o caso depois da
+    // primeira instalação) o efeito seria o mesmo problema de sempre: uma
+    // categoria NOVA a cada atualização.
     $defaults = Settings::getDefaults();
     foreach (['category_internal_id', 'category_travel_id', 'category_meeting_id', 'category_visit_id'] as $key) {
         unset($defaults[$key]);
     }
-    Settings::save($defaults);
+    $already_set = Config::getConfigurationValues(Settings::CONTEXT, array_keys($defaults));
+    Settings::save(array_diff_key($defaults, $already_set));
 
     // Só depois de os defaults estarem gravados (e os 3 campos de categoria
     // preservados, por não terem sido tocados acima) é que a semeadura roda —
