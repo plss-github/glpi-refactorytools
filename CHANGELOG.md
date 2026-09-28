@@ -3,6 +3,27 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [1.0.5] - 2026-09-28
+
+### Corrigido
+
+- **Configuração resetando em toda atualização de versão** (a causa real
+  por trás de "as cores e o 'qualquer um pode editar' sumiram depois de
+  atualizar"): `hook.php` gravava TODOS os valores padrão de fábrica toda
+  vez que o plugin era instalado/atualizado — não só na primeira
+  instalação —, e `Config::setConfigurationValues()` do core sempre
+  sobrescreve, nunca pula uma chave que já existe. Resultado: qualquer
+  configuração feita pelo administrador (cores por tipo, cores por
+  aparelho, "qualquer um pode editar/cancelar qualquer reserva", nível de
+  detalhe da equipe, etc.) voltava ao padrão a cada bump de versão. Agora
+  só grava o padrão nas chaves que AINDA não têm valor gravado.
+- Novo compromisso/reserva: preencher as datas de início/fim manualmente
+  (digitando, sem abrir o calendário do flatpickr) às vezes deixava os
+  selects de "Tipo de ativo" e "Item reservável" travados para sempre —
+  a busca de disponibilidade só disparava no fechamento do calendário
+  (`onClose`), que não acontece quando a pessoa só digita e sai do campo
+  com Tab. Agora também escuta `onValueUpdate`.
+
 ## [1.0.4] - 2026-09-28
 
 ### Corrigido
