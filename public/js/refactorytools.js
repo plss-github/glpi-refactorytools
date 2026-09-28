@@ -124,13 +124,34 @@ var GlpiRefactoryTools = {
     readSidebar: function () {
         var self = this;
 
+        // A caixa do TIPO ("Carro") é um atalho de "marcar/desmarcar todos os
+        // aparelhos dele" — não um filtro próprio. Desmarcá-la não deveria
+        // esconder aparelhos que a pessoa deixou marcados na lista expandida
+        // (ver `templates/reservations.html.twig`); o tipo só sai de vez da
+        // busca quando NENHUM aparelho dele sobra marcado. Tipos com um
+        // aparelho só (sem lista expandida) continuam com a própria caixa
+        // como único controle — não há o que combinar com nada.
         self.actors = {};
-        $('.refactorytools-actor-toggle:checked').each(function () {
-            self.actors[$(this).val()] = {
-                id: parseInt($(this).val(), 10),
-                name: $(this).data('name'),
-                color: $(this).data('color')
-            };
+        $('.refactorytools-actor-toggle').each(function () {
+            var $actor = $(this);
+            var value = $actor.val();
+
+            if (!value) {
+                return;
+            }
+
+            var $items = $actor.closest('.refactorytools-actor').find('.refactorytools-item-toggle');
+            var include = $items.length
+                ? $items.filter(':checked').length > 0
+                : $actor.is(':checked');
+
+            if (include) {
+                self.actors[value] = {
+                    id: parseInt(value, 10),
+                    name: $actor.data('name'),
+                    color: $actor.data('color')
+                };
+            }
         });
 
         // Só caixas com `value` próprio entram como filtro de tipo. As caixas
@@ -777,6 +798,17 @@ var GlpiRefactoryTools = {
             // popover dele.
             var anchor = this;
             show_timer = setTimeout(function () {
+                // Na Lista, `renderList()` RECONSTRÓI a tabela inteira a cada
+                // busca nova (troca de filtro, "mostrar encerradas"...) — se
+                // isso acontecer nesses 180ms, `anchor` é o `<tr>` ANTIGO, já
+                // fora do documento. `getBoundingClientRect()` de um elemento
+                // desconectado devolve tudo zerado, e o popover em
+                // `renderPopover()` acaba fixado no canto superior esquerdo em
+                // vez de perto do que passou o mouse — daí não abrir nada é
+                // melhor que abrir descentralizado.
+                if (!anchor.isConnected) {
+                    return;
+                }
                 self.hidePopover();
                 self.renderPopover(anchor, event, props);
             }, 180);

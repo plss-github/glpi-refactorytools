@@ -3,6 +3,30 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [1.0.3] - 2026-09-28
+
+### Corrigido
+
+- Traduções: 49 textos usados na tela de Reservas (Histórico, Editar,
+  Cancelar reserva, filtros, rótulos de configuração, mensagens de nota/
+  convidado etc.) nunca tinham entrado nos arquivos `.po` — apareciam
+  sempre em inglês, não importa o idioma da sessão. Adicionados aos dois
+  idiomas (pt_BR/en_GB) e `.mo` recompilados. É por isso que "Histórico"
+  aparecia como "History".
+- Filtro por tipo de ativo (aba "Por item" e calendário de Reservas): a
+  caixa do TIPO ("Carro") era o único filtro enviado ao servidor —
+  desmarcá-la escondia TODAS as reservas daquele tipo, mesmo com os
+  aparelhos individuais (Carro 1, Carro 2...) ainda marcados na lista
+  expandida. Agora a caixa do tipo só serve pra marcar/desmarcar todos de
+  uma vez; o que decide o que é buscado é: tipo marcado OU pelo menos um
+  aparelho dele ainda marcado.
+- Popover no modo Lista aparecendo fixado no canto superior esquerdo da
+  tela, longe da linha sobre a qual o mouse estava: se a lista fosse
+  reconstruída (troca de filtro) durante o pequeno atraso antes do
+  popover abrir, ele calculava a posição em cima de um `<tr>` que já não
+  existia mais na página. Agora, nesse caso, o popover simplesmente não
+  abre em vez de abrir descentralizado.
+
 ## [1.0.2] - 2026-09-28
 
 ### Nota

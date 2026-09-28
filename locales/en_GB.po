@@ -941,3 +941,151 @@ msgstr "Cancel just this day? The rest of the series stays. This cannot be undon
 #: templates/refactorytools.html.twig:637
 msgid "That day was cancelled."
 msgstr "That day was cancelled."
+
+msgid "Action"
+msgstr "Action"
+
+msgid "Anyone can edit or cancel any reservation"
+msgstr "Anyone can edit or cancel any reservation"
+
+msgid "Anyone can see the reservation history"
+msgstr "Anyone can see the reservation history"
+
+msgid "Asset"
+msgstr "Asset"
+
+msgid "Attendees"
+msgstr "Attendees"
+
+msgid "By asset type"
+msgstr "By asset type"
+
+msgid "Cancel reservation"
+msgstr "Cancel reservation"
+
+msgid "Cancel this reservation? This cannot be undone."
+msgstr "Cancel this reservation? This cannot be undone."
+
+msgid "Cancelled"
+msgstr "Cancelled"
+
+msgid "Choose a group"
+msgstr "Choose a group"
+
+msgid "Could not cancel this reservation."
+msgstr "Could not cancel this reservation."
+
+msgid "Could not save your response."
+msgstr "Could not save your response."
+
+msgid "Created"
+msgstr "Created"
+
+msgid "Declined by"
+msgstr "Declined by"
+
+msgid "Description is required."
+msgstr "Description is required."
+
+msgid "Done by"
+msgstr "Done by"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "Edited"
+msgstr "Edited"
+
+msgid "Enabled commitment types"
+msgstr "Enabled commitment types"
+
+msgid "Filter"
+msgstr "Filter"
+
+msgid "From"
+msgstr "From"
+
+msgid "Has another commitment at this time"
+msgstr "Has another commitment at this time"
+
+msgid "History"
+msgstr "History"
+
+msgid "Individual reservable asset colours"
+msgstr "Individual reservable asset colours"
+
+msgid "Linked reservation"
+msgstr "Linked reservation"
+
+msgid "No entries yet."
+msgstr "No entries yet."
+
+msgid "None"
+msgstr "None"
+
+msgid "Optional"
+msgstr "Optional"
+
+msgid "Optional attendees"
+msgstr "Optional attendees"
+
+msgid "Or create a new reservation for this commitment:"
+msgstr "Or create a new reservation for this commitment:"
+
+msgid "Overrides the type colour above for one specific asset — useful to tell apart two assets of the same type on the calendar (e.g. two different cars)."
+msgstr "Overrides the type colour above for one specific asset — useful to tell apart two assets of the same type on the calendar (e.g. two different cars)."
+
+msgid "Pellissari RefactoryTools"
+msgstr "Pellissari RefactoryTools"
+
+msgid "Period"
+msgstr "Period"
+
+msgid "Planning"
+msgstr "Planning"
+
+msgid "Planning (Pellissari RefactoryTools)"
+msgstr "Planning (Pellissari RefactoryTools)"
+
+msgid "Required"
+msgstr "Required"
+
+msgid "Required attendees"
+msgstr "Required attendees"
+
+msgid "Reservation cancelled."
+msgstr "Reservation cancelled."
+
+msgid "Reservation configuration"
+msgstr "Reservation configuration"
+
+msgid "Reservation history"
+msgstr "Reservation history"
+
+msgid "Reservation owner"
+msgstr "Reservation owner"
+
+msgid "Reservation report"
+msgstr "Reservation report"
+
+msgid "Response saved."
+msgstr "Response saved."
+
+msgid "Show individual assets"
+msgstr "Show individual assets"
+
+msgid "To"
+msgstr "To"
+
+msgid "Total reservations in this period"
+msgstr "Total reservations in this period"
+
+msgid "Use Pellissari RefactoryTools"
+msgstr "Use Pellissari RefactoryTools"
+
+msgid "Visit"
+msgstr "Visit"
+
+msgid "Who can see the reservation report"
+msgstr "Who can see the reservation report"
+

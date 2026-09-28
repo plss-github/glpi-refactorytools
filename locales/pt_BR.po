@@ -961,6 +961,154 @@ msgstr "Cancelar só este dia? O resto da série continua. Isso não pode ser de
 msgid "That day was cancelled."
 msgstr "Aquele dia foi cancelado."
 
+
+msgid "Action"
+msgstr "Ação"
+
+msgid "Anyone can edit or cancel any reservation"
+msgstr "Qualquer um pode editar ou cancelar qualquer reserva"
+
+msgid "Anyone can see the reservation history"
+msgstr "Qualquer um pode ver o histórico de reservas"
+
+msgid "Asset"
+msgstr "Ativo"
+
+msgid "Attendees"
+msgstr "Convidados"
+
+msgid "By asset type"
+msgstr "Por tipo de ativo"
+
+msgid "Cancel reservation"
+msgstr "Cancelar reserva"
+
+msgid "Cancel this reservation? This cannot be undone."
+msgstr "Cancelar esta reserva? Isso não pode ser desfeito."
+
+msgid "Cancelled"
+msgstr "Cancelada"
+
+msgid "Choose a group"
+msgstr "Escolha um grupo"
+
+msgid "Could not cancel this reservation."
+msgstr "Não foi possível cancelar esta reserva."
+
+msgid "Could not save your response."
+msgstr "Não foi possível salvar sua resposta."
+
+msgid "Created"
+msgstr "Criada"
+
+msgid "Declined by"
+msgstr "Recusado por"
+
+msgid "Description is required."
+msgstr "A descrição é obrigatória."
+
+msgid "Done by"
+msgstr "Feito por"
+
+msgid "Edit"
+msgstr "Editar"
+
+msgid "Edited"
+msgstr "Editada"
+
+msgid "Enabled commitment types"
+msgstr "Tipos de compromisso habilitados"
+
+msgid "Filter"
+msgstr "Filtro"
+
+msgid "From"
+msgstr "De"
+
+msgid "Has another commitment at this time"
+msgstr "Tem outro compromisso nesse horário"
+
+msgid "History"
+msgstr "Histórico"
+
+msgid "Individual reservable asset colours"
+msgstr "Cores individuais de ativo reservável"
+
+msgid "Linked reservation"
+msgstr "Reserva vinculada"
+
+msgid "No entries yet."
+msgstr "Nenhum registro ainda."
+
+msgid "None"
+msgstr "Nenhum"
+
+msgid "Optional"
+msgstr "Opcional"
+
+msgid "Optional attendees"
+msgstr "Convidados opcionais"
+
+msgid "Or create a new reservation for this commitment:"
+msgstr "Ou crie uma nova reserva para este compromisso:"
+
+msgid "Overrides the type colour above for one specific asset — useful to tell apart two assets of the same type on the calendar (e.g. two different cars)."
+msgstr "Sobrescreve a cor do tipo acima para um ativo específico — útil para diferenciar dois ativos do mesmo tipo no calendário (ex.: dois carros diferentes)."
+
+msgid "Pellissari RefactoryTools"
+msgstr "Pellissari RefactoryTools"
+
+msgid "Period"
+msgstr "Período"
+
+msgid "Planning"
+msgstr "Planejamento"
+
+msgid "Planning (Pellissari RefactoryTools)"
+msgstr "Planejamento (Pellissari RefactoryTools)"
+
+msgid "Required"
+msgstr "Obrigatório"
+
+msgid "Required attendees"
+msgstr "Convidados obrigatórios"
+
+msgid "Reservation cancelled."
+msgstr "Reserva cancelada."
+
+msgid "Reservation configuration"
+msgstr "Configuração de reservas"
+
+msgid "Reservation history"
+msgstr "Histórico de reservas"
+
+msgid "Reservation owner"
+msgstr "Dono da reserva"
+
+msgid "Reservation report"
+msgstr "Relatório de reservas"
+
+msgid "Response saved."
+msgstr "Resposta salva."
+
+msgid "Show individual assets"
+msgstr "Mostrar ativos individuais"
+
+msgid "To"
+msgstr "Até"
+
+msgid "Total reservations in this period"
+msgstr "Total de reservas neste período"
+
+msgid "Use Pellissari RefactoryTools"
+msgstr "Usar Pellissari RefactoryTools"
+
+msgid "Visit"
+msgstr "Visita"
+
+msgid "Who can see the reservation report"
+msgstr "Quem pode ver o relatório de reservas"
+
 #~ msgid "Upcoming"
 #~ msgstr "Próximas"
 
