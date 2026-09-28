@@ -3,6 +3,18 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [1.0.2] - 2026-09-28
+
+### Nota
+
+- Relato de que a 1.0.1 "não aplicou" as mudanças da 1.0.0 em produção.
+  Conferido o `.tar.gz` publicado da release 1.0.1 e o histórico do git: as
+  mudanças de 1.0.0 (abas de configuração, traduções) e as de 1.0.1
+  (cancelar ocorrência, auditoria de reservas) estão todas no pacote e no
+  código — não há revert nem arquivo faltando. Bump apenas para forçar
+  invalidação de cache (OPcache/Twig) nos ambientes afetados; nenhuma
+  mudança de código nesta versão.
+
 ## [1.0.1] - 2026-09-28
 
 ### Adicionado
