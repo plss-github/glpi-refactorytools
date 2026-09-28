@@ -95,7 +95,59 @@ function plugin_refactorytools_install(): bool
 
     plugin_refactorytools_seed_note_notification();
 
+    plugin_refactorytools_check_reservation_integrity();
+
     return true;
+}
+
+/**
+ * Só REGISTRA (nunca apaga) reservas cujo itemtype não resolve mais para uma
+ * classe existente — ex.: uma Definição de Ativo que virou outro nome ou foi
+ * removida. `ReservationItem`/`Reservation` são tabelas do CORE, e nada neste
+ * plugin ou no `hook.php` do core as apaga numa atualização; a única forma de
+ * uma reserva "sumir" é o itemtype dela parar de existir, o que só quem
+ * mexeu na Definição de Ativo pode ter causado — não este plugin.
+ *
+ * Roda a cada instalação/atualização (é chamada de dentro de
+ * `plugin_refactorytools_install()`) para que o problema apareça no log assim
+ * que acontecer, em vez de só quando alguém notar uma reserva "sumida" na
+ * tela.
+ */
+function plugin_refactorytools_check_reservation_integrity(): void
+{
+    /** @var \DBmysql $DB */
+    global $DB;
+
+    if (!$DB->tableExists('glpi_reservationitems')) {
+        return;
+    }
+
+    $itemtypes = $DB->request([
+        'SELECT'   => 'itemtype',
+        'DISTINCT' => true,
+        'FROM'     => 'glpi_reservationitems',
+    ]);
+
+    foreach ($itemtypes as $row) {
+        $itemtype = $row['itemtype'];
+
+        if ($itemtype === '' || class_exists($itemtype)) {
+            continue;
+        }
+
+        $count = countElementsInTable('glpi_reservationitems', ['itemtype' => $itemtype]);
+
+        Toolbox::logInFile(
+            'refactorytools',
+            sprintf(
+                "%d reservable item(s) and their reservations reference itemtype '%s', which no longer "
+                . "resolves to a class (likely a renamed/removed Asset Definition). Nothing was deleted; "
+                . "fix the Asset Definition's system name or contact support before it goes unnoticed.\n",
+                $count,
+                $itemtype
+            )
+        );
+    }
 }
 
 /**

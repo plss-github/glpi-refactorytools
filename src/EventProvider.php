@@ -636,6 +636,13 @@ final class EventProvider
                 'canManageNote' => $is_details && $itemtype !== ''
                                    ? AccessPolicy::canManageNoteFor($users_id, $viewer_id)
                                    : false,
+                'recurring'     => !empty($row['rrule']) && is_array($row['rrule']),
+                // Mesma permissão de `editable` (canUpdateItem()), mas SEM o
+                // `empty($row['rrule'])` que só existe pra desligar o
+                // arrastar. Sem isto, o popover de um evento recorrente não
+                // mostrava nem "Editar" nem "Cancelar" — `event.editable` já
+                // vem falso de propósito pra ele.
+                'canManage'     => $is_details && (bool) ($row['editable'] ?? false),
             ],
         ];
 
@@ -643,7 +650,24 @@ final class EventProvider
         // FullCalendar embarcado já vem com o plugin 'rrule' registrado (é o
         // que o planejamento nativo usa), então basta repassar.
         if (!empty($row['rrule']) && is_array($row['rrule'])) {
-            $event['rrule'] = array_merge($row['rrule'], ['dtstart' => $event['start']]);
+            $rrule = $row['rrule'];
+
+            // O core (`PlanningEvent::deleteInstance()`) grava ocorrências
+            // canceladas em `rrule['exceptions']` (lista de datas `Y-m-d`).
+            // O plugin `rrule` do FullCalendar não conhece essa chave — só
+            // `exdate`, uma lista de datas/horas completas — então sem esta
+            // conversão a ocorrência cancelada reaparece no calendário
+            // mesmo já excluída no banco.
+            if (!empty($rrule['exceptions']) && is_array($rrule['exceptions'])) {
+                $time = substr($event['start'], 11);
+                $rrule['exdate'] = array_map(
+                    static fn($day) => $day . 'T' . $time,
+                    $rrule['exceptions']
+                );
+                unset($rrule['exceptions']);
+            }
+
+            $event['rrule'] = array_merge($rrule, ['dtstart' => $event['start']]);
             $event['duration'] = self::getDuration($begin, $end);
             unset($event['start'], $event['end']);
         }

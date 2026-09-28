@@ -3,6 +3,32 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [1.0.1] - 2026-09-28
+
+### Adicionado
+
+- Compromisso recorrente (Lembrete/Evento): agora dá para cancelar só UM dia
+  da série, sem mexer no resto — dois botões no popover, "Cancelar este dia"
+  e "Cancelar a série inteira" (usa `PlanningEvent::deleteInstance()`, do
+  próprio core, que grava a exceção na série em vez de apagar tudo).
+- Auditoria de integridade das reservas: a cada instalação/atualização, o
+  plugin registra no log (nunca apaga nada) se alguma reserva ficou
+  referenciando um itemtype que não existe mais — sinal de uma Definição de
+  Ativo renomeada ou removida por fora do plugin.
+
+### Corrigido
+
+- O popover de um compromisso recorrente não mostrava nem "Editar" nem
+  "Cancelar": a checagem usava `event.editable`, que o plugin desliga de
+  propósito pra série recorrente (só pra não deixar arrastar), e isso também
+  escondia os botões que não tinham nada a ver com arrastar.
+- Evento recorrente com uma ocorrência já cancelada (`rrule.exceptions`, do
+  core) continuava aparecendo no calendário: o FullCalendar só entende
+  `exdate`, então a conversão que faltava foi adicionada.
+- Traduções: 8 textos do popover de compromissos (cancelar, confirmações)
+  nunca tinham sido adicionados aos arquivos `.po` — apareciam sempre em
+  inglês para qualquer idioma.
+
 ## [1.0.0] - 2026-09-26
 
 ### Corrigido

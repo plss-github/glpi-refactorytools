@@ -909,3 +909,35 @@ msgstr "No schedule has been shared with you."
 #: templates/shares.html.twig:227
 msgid "Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > RefactoryTools."
 msgstr "Sharing is only one of the access paths. Your team (from the user Supervisor field), your groups and administrative access are granted by the profile, under Administration > Profiles > RefactoryTools."
+
+#: templates/refactorytools.html.twig:630
+msgid "Cancel appointment"
+msgstr "Cancel appointment"
+
+#: templates/refactorytools.html.twig:631
+msgid "Cancel this appointment? This cannot be undone."
+msgstr "Cancel this appointment? This cannot be undone."
+
+#: templates/refactorytools.html.twig:632
+msgid "Appointment cancelled."
+msgstr "Appointment cancelled."
+
+#: templates/refactorytools.html.twig:633
+msgid "Could not cancel this appointment."
+msgstr "Could not cancel this appointment."
+
+#: templates/refactorytools.html.twig:634
+msgid "Cancel this day"
+msgstr "Cancel this day"
+
+#: templates/refactorytools.html.twig:635
+msgid "Cancel entire series"
+msgstr "Cancel entire series"
+
+#: templates/refactorytools.html.twig:636
+msgid "Cancel just this day? The rest of the series stays. This cannot be undone."
+msgstr "Cancel just this day? The rest of the series stays. This cannot be undone."
+
+#: templates/refactorytools.html.twig:637
+msgid "That day was cancelled."
+msgstr "That day was cancelled."

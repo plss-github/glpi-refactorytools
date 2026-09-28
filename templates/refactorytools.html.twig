@@ -630,7 +630,11 @@
                 cancel_item: {{ __('Cancel appointment', 'refactorytools')|json_encode|raw }},
                 confirm_cancel_item: {{ __('Cancel this appointment? This cannot be undone.', 'refactorytools')|json_encode|raw }},
                 item_cancelled: {{ __('Appointment cancelled.', 'refactorytools')|json_encode|raw }},
-                cancel_item_failed: {{ __('Could not cancel this appointment.', 'refactorytools')|json_encode|raw }}
+                cancel_item_failed: {{ __('Could not cancel this appointment.', 'refactorytools')|json_encode|raw }},
+                cancel_occurrence: {{ __('Cancel this day', 'refactorytools')|json_encode|raw }},
+                cancel_series: {{ __('Cancel entire series', 'refactorytools')|json_encode|raw }},
+                confirm_cancel_occurrence: {{ __('Cancel just this day? The rest of the series stays. This cannot be undone.', 'refactorytools')|json_encode|raw }},
+                occurrence_cancelled: {{ __('That day was cancelled.', 'refactorytools')|json_encode|raw }}
             }
         });
     });

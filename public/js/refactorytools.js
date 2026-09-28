@@ -975,7 +975,7 @@ var GlpiRefactoryTools = {
         // cobre reservas, que chegam com `editable: false` de propósito (só
         // para desligar o arrastar, não a edição/cancelamento).
         if (props.itemtype && self.CANCELABLE_ITEMTYPES.indexOf(props.itemtype) !== -1
-            && (event.editable || props.mine)) {
+            && (event.editable || props.mine || props.canManage)) {
             var $actions = $('<div class="refactorytools-popover-actions"></div>');
 
             if (props.url) {
@@ -985,13 +985,34 @@ var GlpiRefactoryTools = {
                     .appendTo($actions);
             }
 
-            $('<button type="button" class="btn btn-sm btn-ghost-danger"></button>')
-                .html('<i class="ti ti-calendar-cancel"></i> ' + (self.label('cancel_item') || 'Cancel'))
-                .on('click', function (e) {
-                    e.stopPropagation();
-                    self.cancelItem(props.itemtype, props.items_id);
-                })
-                .appendTo($actions);
+            if (props.recurring) {
+                // Série recorrente: "cancelar" sozinho é ambíguo (só este dia
+                // ou a série toda?) — dois botões em vez de um só, cada um já
+                // dizendo o que faz.
+                $('<button type="button" class="btn btn-sm btn-ghost-danger"></button>')
+                    .html('<i class="ti ti-calendar-cancel"></i> ' + (self.label('cancel_occurrence') || 'Cancel this day'))
+                    .on('click', function (e) {
+                        e.stopPropagation();
+                        self.cancelItem(props.itemtype, props.items_id, event.start);
+                    })
+                    .appendTo($actions);
+
+                $('<button type="button" class="btn btn-sm btn-ghost-danger"></button>')
+                    .html('<i class="ti ti-calendar-x"></i> ' + (self.label('cancel_series') || 'Cancel entire series'))
+                    .on('click', function (e) {
+                        e.stopPropagation();
+                        self.cancelItem(props.itemtype, props.items_id, null);
+                    })
+                    .appendTo($actions);
+            } else {
+                $('<button type="button" class="btn btn-sm btn-ghost-danger"></button>')
+                    .html('<i class="ti ti-calendar-cancel"></i> ' + (self.label('cancel_item') || 'Cancel'))
+                    .on('click', function (e) {
+                        e.stopPropagation();
+                        self.cancelItem(props.itemtype, props.items_id, null);
+                    })
+                    .appendTo($actions);
+            }
 
             $actions.appendTo($pop);
         }
@@ -1110,23 +1131,46 @@ var GlpiRefactoryTools = {
     },
 
     /**
-     * Cancela (apaga) um compromisso/reserva — `ajax/cancel_item.php` é a
-     * autoridade de verdade sobre quem pode; aqui só confirma com a pessoa e
-     * atualiza a tela depois.
+     * Cancela um compromisso/reserva — `ajax/cancel_item.php` é a autoridade
+     * de verdade sobre quem pode; aqui só confirma com a pessoa e atualiza a
+     * tela depois.
+     *
+     * `occurrenceStart`, quando presente, é a data (objeto Date, o próprio
+     * `event.start` da ocorrência clicada) de UM dia de uma série recorrente
+     * — cancela só aquele dia. `null`/omitido cancela a série toda (ou o
+     * item, se ele nem for recorrente).
      */
-    cancelItem: function (itemtype, items_id) {
+    cancelItem: function (itemtype, items_id, occurrenceStart) {
         var self = this;
+        var isOccurrence = !!occurrenceStart;
 
-        if (!window.confirm(self.label('confirm_cancel_item') || 'Cancel this appointment?')) {
+        var confirmMsg = isOccurrence
+            ? (self.label('confirm_cancel_occurrence') || 'Cancel just this day?')
+            : (self.label('confirm_cancel_item') || 'Cancel this appointment?');
+
+        if (!window.confirm(confirmMsg)) {
             return;
+        }
+
+        var data = { itemtype: itemtype, items_id: items_id };
+        if (isOccurrence) {
+            // Data local (não UTC) do dia clicado no calendário — é o que
+            // `PlanningEvent::deleteInstance()` compara contra as datas já
+            // gravadas em `rrule['exceptions']`.
+            var y = occurrenceStart.getFullYear();
+            var m = String(occurrenceStart.getMonth() + 1).padStart(2, '0');
+            var d = String(occurrenceStart.getDate()).padStart(2, '0');
+            data.occurrence_date = y + '-' + m + '-' + d;
         }
 
         $.post(
             (self.config.root_doc || '') + '/plugins/refactorytools/ajax/cancel_item.php',
-            { itemtype: itemtype, items_id: items_id }
+            data
         ).done(function (response) {
             if (response && response.ok) {
-                self.notify('info', self.label('item_cancelled') || '');
+                self.notify('info', isOccurrence
+                    ? (self.label('occurrence_cancelled') || self.label('item_cancelled') || '')
+                    : (self.label('item_cancelled') || ''));
                 self.hidePopover();
                 if (self.calendar) {
                     self.calendar.refetchEvents();
