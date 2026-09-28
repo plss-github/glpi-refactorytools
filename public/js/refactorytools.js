@@ -1929,6 +1929,15 @@ var GlpiRefactoryTools = {
         var self = this;
 
         $(document).on('change', '.refactorytools-actor-toggle', function () {
+            // A caixa do TIPO é "marcar/desmarcar todos os aparelhos dele"
+            // (ver `readSidebar()`) — sem cascatear pros filhos, marcar
+            // "Carros" de volta não reabilitava nada se os aparelhos
+            // individuais tivessem ficado desmarcados: o tipo entrava na
+            // busca só quando sobrava algum FILHO marcado, e nenhum sobrava.
+            $(this).closest('.refactorytools-actor')
+                .find('.refactorytools-item-toggle')
+                .prop('checked', $(this).is(':checked'));
+
             self.readSidebar();
             // refetchResources redesenha as raias da visão de equipe;
             // refetchEvents recarrega o conteúdo e, no fim, os painéis.

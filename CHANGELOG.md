@@ -3,6 +3,17 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [1.0.4] - 2026-09-28
+
+### Corrigido
+
+- Filtro por tipo de ativo (Reservas): marcar a caixa do TIPO ("Carro") de
+  volta não reabilitava os aparelhos dele — desde a 1.0.3, o tipo só entra
+  na busca se sobrar algum aparelho individual marcado, mas nada marcava
+  os aparelhos de volta quando a pessoa clicava no tipo. Agora clicar na
+  caixa do tipo marca/desmarca todos os aparelhos dele de uma vez, do
+  jeito que sempre devia ter sido um "selecionar tudo".
+
 ## [1.0.3] - 2026-09-28
 
 ### Corrigido
