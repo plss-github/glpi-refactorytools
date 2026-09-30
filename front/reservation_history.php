@@ -3,15 +3,17 @@
 /**
  * RefactoryTools
  * -----------------------------------------------------------------------------
- * Histórico de reservas — quem criou/editou/cancelou cada uma. Só para quem
- * o administrador autorizou (ver `Settings::canViewReservationHistory()`).
+ * Histórico de reservas — quem criou/editou/cancelou cada uma.
+ * Qualquer pessoa com acesso à tela de Reservas pode ver o histórico.
  */
 
-use Glpi\Application\View\TemplateRenderer;
 use Glpi\Exception\Http\AccessDeniedHttpException;
-use GlpiPlugin\Refactorytools\ReservationHistory;
+use GlpiPlugin\Refactorytools\ReservationAuditSearch;
 use GlpiPlugin\Refactorytools\ReservationMenu;
 use GlpiPlugin\Refactorytools\Settings;
+
+/** @var array $CFG_GLPI */
+global $CFG_GLPI;
 
 Session::checkLoginUser();
 
@@ -27,8 +29,16 @@ Html::header(
     'refactorytools_reservation_history'
 );
 
-TemplateRenderer::getInstance()->display('@refactorytools/reservation_history.html.twig', [
-    'entries' => ReservationHistory::getEntries(),
-]);
+// Tab nav
+$can_report = Settings::canViewReservationReport();
+echo '<ul class="nav nav-tabs mb-0 px-3 pt-2">';
+echo '<li class="nav-item"><a class="nav-link" href="' . htmlescape($CFG_GLPI['root_doc']) . '/plugins/refactorytools/front/reservations.php"><i class="ti ti-calendar me-1"></i>' . htmlescape(__('Reservations', 'refactorytools')) . '</a></li>';
+echo '<li class="nav-item"><a class="nav-link active" href="#"><i class="ti ti-history me-1"></i>' . htmlescape(__('History', 'refactorytools')) . '</a></li>';
+if ($can_report) {
+    echo '<li class="nav-item"><a class="nav-link" href="' . htmlescape($CFG_GLPI['root_doc']) . '/plugins/refactorytools/front/reservation_report.php"><i class="ti ti-chart-bar me-1"></i>' . htmlescape(__('Reports', 'refactorytools')) . '</a></li>';
+}
+echo '</ul>';
+
+Search::show(ReservationAuditSearch::class);
 
 Html::footer();

@@ -11,7 +11,9 @@ use GlpiPlugin\Refactorytools\EventNotes;
 use GlpiPlugin\Refactorytools\EventTypes;
 use GlpiPlugin\Refactorytools\KanbanPrefs;
 use GlpiPlugin\Refactorytools\MeetingGuest;
+use GlpiPlugin\Refactorytools\ReservationBehalf;
 use GlpiPlugin\Refactorytools\ReservationHistory;
+use GlpiPlugin\Refactorytools\ReservationHistoryCron;
 use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\Settings;
 use GlpiPlugin\Refactorytools\Share;
@@ -42,8 +44,14 @@ function plugin_refactorytools_install(): bool
     VisitLink::install($migration);
     MeetingGuest::install($migration);
     ReservationHistory::install($migration);
+    ReservationBehalf::install($migration);
 
     $migration->executeMigration();
+
+    CronTask::Register('refactorytools', 'clearhistory', DAY_TIMESTAMP, [
+        'comment' => '',
+        'mode'    => CronTask::MODE_INTERNAL,
+    ]);
 
     // A cor de tipo de compromisso deixou de ser personalizável por usuário
     // (ver `EventProvider::getTypeColor()`): só o administrador define, para
@@ -304,6 +312,7 @@ function plugin_refactorytools_uninstall(): bool
     VisitLink::uninstall();
     MeetingGuest::uninstall();
     ReservationHistory::uninstall();
+    ReservationBehalf::uninstall();
 
     ProfileRight::deleteProfileRights([Right::NAME]);
 
@@ -367,9 +376,20 @@ function plugin_refactorytools_getrights(): array
  * cobrem criar, editar e cancelar/apagar, INCLUSIVE pelo formulário nativo
  * de reserva, que o plugin não controla diretamente.
  */
+function plugin_refactorytools_reservation_pre_add(Reservation $item): void
+{
+    $for_id = ReservationBehalf::getPendingForUserId();
+    if ($for_id > 0) {
+        $item->input['users_id'] = $for_id;
+    }
+}
+
 function plugin_refactorytools_reservation_add(Reservation $reservation): void
 {
     ReservationHistory::log($reservation, ReservationHistory::ACTION_ADD);
+    if (ReservationBehalf::hasPending()) {
+        ReservationBehalf::record((int) ($reservation->fields['id'] ?? 0));
+    }
 }
 
 function plugin_refactorytools_reservation_update(Reservation $reservation): void

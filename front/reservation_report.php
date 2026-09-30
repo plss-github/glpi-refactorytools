@@ -10,13 +10,15 @@
 
 use Glpi\Exception\Http\AccessDeniedHttpException;
 use GlpiPlugin\Refactorytools\ReservationMenu;
-use GlpiPlugin\Refactorytools\ReservationReport;
+use GlpiPlugin\Refactorytools\ReservationSearchView;
+use GlpiPlugin\Refactorytools\Settings;
+
+/** @var array $CFG_GLPI */
+global $CFG_GLPI;
 
 Session::checkLoginUser();
 
-if (!ReservationReport::canView()) {
-    // Ver front/reservations.php — `Html::displayRightError()` está
-    // depreciado desde o GLPI 11.
+if (!Settings::canViewReservationReport()) {
     throw new AccessDeniedHttpException();
 }
 
@@ -28,6 +30,13 @@ Html::header(
     'refactorytools_reservation_report'
 );
 
-ReservationReport::show();
+// Tab nav
+echo '<ul class="nav nav-tabs mb-0 px-3 pt-2">';
+echo '<li class="nav-item"><a class="nav-link" href="' . htmlescape($CFG_GLPI['root_doc']) . '/plugins/refactorytools/front/reservations.php"><i class="ti ti-calendar me-1"></i>' . htmlescape(__('Reservations', 'refactorytools')) . '</a></li>';
+echo '<li class="nav-item"><a class="nav-link" href="' . htmlescape($CFG_GLPI['root_doc']) . '/plugins/refactorytools/front/reservation_history.php"><i class="ti ti-history me-1"></i>' . htmlescape(__('History', 'refactorytools')) . '</a></li>';
+echo '<li class="nav-item"><a class="nav-link active" href="#"><i class="ti ti-chart-bar me-1"></i>' . htmlescape(__('Reports', 'refactorytools')) . '</a></li>';
+echo '</ul>';
+
+Search::show(ReservationSearchView::class);
 
 Html::footer();

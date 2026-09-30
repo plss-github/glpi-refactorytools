@@ -1109,6 +1109,45 @@ msgstr "Visita"
 msgid "Who can see the reservation report"
 msgstr "Quem pode ver o relatório de reservas"
 
+msgid "Reserve for"
+msgstr "Reservar para"
+
+msgid "Yourself"
+msgstr "Você mesmo"
+
+msgid "Another person"
+msgstr "Outra pessoa"
+
+msgid "Reports"
+msgstr "Relatórios"
+
+msgid "Who can see the reservation report (groups)"
+msgstr "Quem pode ver o relatório de reservas (grupos)"
+
+msgid "Members of these groups can also access the reservation report."
+msgstr "Membros desses grupos também podem acessar o relatório de reservas."
+
+msgid "Reservation start"
+msgstr "Início da reserva"
+
+msgid "Reservation end"
+msgstr "Fim da reserva"
+
+msgid "Reserved by"
+msgstr "Reservado por"
+
+msgid "Clear reservation history older than 30 days"
+msgstr "Limpar histórico de reservas com mais de 30 dias"
+
+msgid "When"
+msgstr "Quando"
+
+msgid "Justification"
+msgstr "Justificativa"
+
+msgid "Asset type"
+msgstr "Tipo de ativo"
+
 #~ msgid "Upcoming"
 #~ msgstr "Próximas"
 

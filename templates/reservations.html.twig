@@ -10,6 +10,26 @@
  # e Calendário e Lista já cobrem as duas.
  #}
 
+<ul class="nav nav-tabs mb-0 refactorytools-page-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" href="{{ root_doc }}/plugins/refactorytools/front/reservations.php">
+            <i class="ti ti-calendar"></i> {{ __('Reservations', 'refactorytools') }}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ root_doc }}/plugins/refactorytools/front/reservation_history.php">
+            <i class="ti ti-history"></i> {{ __('History', 'refactorytools') }}
+        </a>
+    </li>
+    {% if can_view_report %}
+    <li class="nav-item">
+        <a class="nav-link" href="{{ root_doc }}/plugins/refactorytools/front/reservation_report.php">
+            <i class="ti ti-chart-bar"></i> {{ __('Reports', 'refactorytools') }}
+        </a>
+    </li>
+    {% endif %}
+</ul>
+
 {# `refactorytools-page-reservations` é o gancho de CSS que diferencia as duas telas
    onde o significado muda: uma reserva "encerrada" é só uma que já passou,
    não uma que foi cancelada. #}
@@ -285,6 +305,31 @@
                        ausência do campo) não precisa de nenhuma mudança para
                        isto voltar quando for reativado. #}
 
+                    <div class="mb-3">
+                        <label class="form-label">{{ __('Reserve for', 'refactorytools') }}</label>
+                        <div class="d-flex gap-2 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="behalf_mode"
+                                       id="behalf-myself" value="myself" checked>
+                                <label class="form-check-label" for="behalf-myself">{{ __('Yourself', 'refactorytools') }}</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="behalf_mode"
+                                       id="behalf-other" value="other">
+                                <label class="form-check-label" for="behalf-other">{{ __('Another person', 'refactorytools') }}</label>
+                            </div>
+                        </div>
+                        <div id="refactorytools-behalf-picker" hidden>
+                            {{ 'User'|itemtype_dropdown({
+                                name: 'behalf_users_id',
+                                value: 0,
+                                entity: session('glpiactive_entity'),
+                                entity_sons: session('glpiactive_entity_recursive'),
+                                width: '100%'
+                            }) }}
+                        </div>
+                    </div>
+
                     {# Recorrência: mesmos nomes de campo (`periodicity[...]`)
                        que o formulário nativo de reserva usa, então
                        `Reservation::handleAddForm()` entende sem tradução. #}
@@ -500,6 +545,11 @@
                 $('.refactorytools-res-periodicity-detail').prop('hidden', !type);
                 $('.refactorytools-res-periodicity-week').prop('hidden', type !== 'week');
                 $('.refactorytools-res-periodicity-month').prop('hidden', type !== 'month');
+            });
+
+            $('input[name="behalf_mode"]').on('change', function () {
+                var isOther = $(this).val() === 'other';
+                $('#refactorytools-behalf-picker').prop('hidden', !isOther);
             });
 
         });

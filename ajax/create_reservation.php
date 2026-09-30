@@ -24,6 +24,7 @@
  */
 
 use GlpiPlugin\Refactorytools\EventTypes;
+use GlpiPlugin\Refactorytools\ReservationBehalf;
 use GlpiPlugin\Refactorytools\ReservationView;
 use GlpiPlugin\Refactorytools\Settings;
 use GlpiPlugin\Refactorytools\VisitLink;
@@ -37,7 +38,19 @@ if (!ReservationView::canReserve()) {
         false,
         ERROR
     );
+    ReservationBehalf::clearPending();
     Html::back();
+}
+
+$behalf_users_id = (int) ($_POST['behalf_users_id'] ?? 0);
+if ($behalf_users_id > 0 && $behalf_users_id !== (int) Session::getLoginUserID()) {
+    $behalf_user = new User();
+    if (!$behalf_user->getFromDB($behalf_users_id)) {
+        $behalf_users_id = 0;
+    }
+}
+if ($behalf_users_id > 0) {
+    ReservationBehalf::setPending($behalf_users_id);
 }
 
 $comment = trim((string) ($_POST['comment'] ?? ''));
@@ -48,6 +61,7 @@ if ($comment === '') {
         false,
         ERROR
     );
+    ReservationBehalf::clearPending();
     Html::back();
 }
 
@@ -66,6 +80,7 @@ if ($items === [] || $begin === '' || $end === '' || $begin >= $end) {
         false,
         ERROR
     );
+    ReservationBehalf::clearPending();
     Html::back();
 }
 
@@ -84,6 +99,7 @@ if ($items === []) {
         false,
         ERROR
     );
+    ReservationBehalf::clearPending();
     Html::back();
 }
 
@@ -103,6 +119,8 @@ if (isset($_POST['periodicity']) && is_array($_POST['periodicity']) && !empty($_
 }
 
 Reservation::handleAddForm($input);
+
+ReservationBehalf::clearPending();
 
 // Cria um compromisso de Visita/Viagem já ligado a esta reserva — só quando
 // dá para saber, sem ambiguidade, a qual reserva ligar: UM item, sem

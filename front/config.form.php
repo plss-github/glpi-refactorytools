@@ -56,6 +56,11 @@ if (isset($_POST['update'])) {
         Settings::saveReservationReportUserIds(is_array($users) ? $users : [$users]);
     }
 
+    if (($_POST['reservation_report_group_ids_defined'] ?? '') === '1') {
+        $groups = $_POST['reservation_report_group_ids'] ?? [];
+        Settings::saveReservationReportGroupIds(is_array($groups) ? $groups : [$groups]);
+    }
+
     // Mesma convenção de `_defined` acima: sem ela, desmarcar TODOS os tipos
     // chegaria como "campo ausente" e nenhum ficaria realmente desligado.
     if (($_POST['enabled_types_defined'] ?? '') === '1') {
@@ -96,6 +101,7 @@ TemplateRenderer::getInstance()->display('@refactorytools/config.html.twig', [
     'reservation_types' => ReservationView::getReservableTypesForAdmin(),
     'reservation_items' => ReservationView::getReservableItemsForAdmin(),
     'reservation_report_user_ids' => Settings::getReservationReportUserIds(),
+    'reservation_report_group_ids' => Settings::getReservationReportGroupIds(),
     'csrf'         => Session::getNewCSRFToken(),
 ]);
 

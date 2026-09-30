@@ -1089,3 +1089,42 @@ msgstr "Visit"
 msgid "Who can see the reservation report"
 msgstr "Who can see the reservation report"
 
+msgid "Reserve for"
+msgstr "Reserve for"
+
+msgid "Yourself"
+msgstr "Yourself"
+
+msgid "Another person"
+msgstr "Another person"
+
+msgid "Reports"
+msgstr "Reports"
+
+msgid "Who can see the reservation report (groups)"
+msgstr "Who can see the reservation report (groups)"
+
+msgid "Members of these groups can also access the reservation report."
+msgstr "Members of these groups can also access the reservation report."
+
+msgid "Reservation start"
+msgstr "Reservation start"
+
+msgid "Reservation end"
+msgstr "Reservation end"
+
+msgid "Reserved by"
+msgstr "Reserved by"
+
+msgid "Clear reservation history older than 30 days"
+msgstr "Clear reservation history older than 30 days"
+
+msgid "When"
+msgstr "When"
+
+msgid "Justification"
+msgstr "Justification"
+
+msgid "Asset type"
+msgstr "Asset type"
+

@@ -101,6 +101,7 @@ final class ReservationView
             // "acesso negado".
             'reads_all'    => Right::has(Right::READ_ALL),
             'can_view_history' => Settings::canViewReservationHistory(),
+            'can_view_report' => Settings::canViewReservationReport(),
             'me'           => (int) Session::getLoginUserID(),
             'today'        => date('Y-m-d'),
             // O Kanban não é oferecido aqui: ele agrupa em colunas, e uma
