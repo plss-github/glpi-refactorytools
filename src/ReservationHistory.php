@@ -120,6 +120,9 @@ final class ReservationHistory
         $out = [];
         foreach ($DB->request([
             'FROM'  => self::getTable(),
+            'WHERE' => [
+                ['date', '>=', date('Y-m-d H:i:s', strtotime('-30 days'))],
+            ],
             'ORDER' => 'date DESC',
             'LIMIT' => $limit,
         ]) as $row) {

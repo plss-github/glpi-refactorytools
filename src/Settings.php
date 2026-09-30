@@ -104,6 +104,7 @@ final class Settings
             // Ligar isto libera a aba para qualquer pessoa com acesso à
             // tela de Reservas.
             'reservation_history_visible_to_all' => '0',
+            'reservation_report_groups' => '',
         ];
     }
 
@@ -297,8 +298,8 @@ final class Settings
     }
 
     /**
-     * Mesmo padrão de `canViewReservationReport()`: quem tem READ_ALL vê
-     * sempre; a chave de configuração libera o histórico para os demais.
+     * Qualquer pessoa com acesso à tela de Reservas (READ, CREATE ou
+     * RESERVEANITEM) pode ver o histórico de reservas.
      */
     public static function canViewReservationHistory(?int $user_id = null): bool
     {
@@ -307,7 +308,10 @@ final class Settings
             return false;
         }
 
-        return Right::has(Right::READ_ALL) || self::isTrue('reservation_history_visible_to_all');
+        return Session::haveRightsOr(
+            \Reservation::$rightname,
+            [READ, CREATE, \ReservationItem::RESERVEANITEM]
+        );
     }
 
     /** Modos de visualização da tela principal. */
@@ -435,10 +439,36 @@ final class Settings
     }
 
     /**
+     * @return array<int, int>
+     */
+    public static function getReservationReportGroupIds(): array
+    {
+        $raw = trim(self::get('reservation_report_groups'));
+        if ($raw === '') {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('intval', explode(',', $raw)), static fn($id) => $id > 0));
+    }
+
+    /**
+     * @param array<int, int|string> $group_ids
+     */
+    public static function saveReservationReportGroupIds(array $group_ids): void
+    {
+        $clean = array_values(array_unique(array_filter(array_map('intval', $group_ids), static fn($id) => $id > 0)));
+
+        Config::setConfigurationValues(self::CONTEXT, [
+            'reservation_report_groups' => implode(',', $clean),
+        ]);
+    }
+
+    /**
      * Quem tem READ_ALL do plugin já vê tudo mesmo, então também vê o
      * relatório sem precisar estar na lista — a lista é para dar acesso a
      * QUEM NÃO TEM esse direito administrativo, não uma segunda barreira
-     * para quem já tem.
+     * para quem já tem. Além da lista de usuários, grupos também podem ser
+     * autorizados (ver `getReservationReportGroupIds()`).
      */
     public static function canViewReservationReport(?int $user_id = null): bool
     {
@@ -451,7 +481,20 @@ final class Settings
             return true;
         }
 
-        return in_array($user_id, self::getReservationReportUserIds(), true);
+        if (in_array($user_id, self::getReservationReportUserIds(), true)) {
+            return true;
+        }
+
+        $allowed_groups = self::getReservationReportGroupIds();
+        if (!empty($allowed_groups)) {
+            $user_groups = \Group_User::getUserGroups($user_id);
+            $user_group_ids = array_map('intval', array_column($user_groups, 'id'));
+            if (!empty(array_intersect($user_group_ids, $allowed_groups))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

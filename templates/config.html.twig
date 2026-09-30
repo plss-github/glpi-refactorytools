@@ -277,6 +277,24 @@
                     </div>
                 </div>
 
+                <div class="mb-3">
+                    <label class="form-label">{{ __('Who can see the reservation report (groups)', 'refactorytools') }}</label>
+                    <div class="refactorytools-picker">
+                        {{ 'Group'|itemtype_dropdown({
+                            name: 'reservation_report_group_ids',
+                            value: reservation_report_group_ids,
+                            multiple: true,
+                            entity: session('glpiactive_entity'),
+                            entity_sons: session('glpiactive_entity_recursive'),
+                            width: '100%'
+                        }) }}
+                    </div>
+                    <input type="hidden" name="reservation_report_group_ids_defined" value="1">
+                    <div class="form-hint">
+                        {{ __('Members of these groups can also access the reservation report.', 'refactorytools') }}
+                    </div>
+                </div>
+
                 <h4 class="mb-2 mt-3">{{ __('Reservable asset type colours', 'refactorytools') }}</h4>
 
                 <div class="mb-3">

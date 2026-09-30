@@ -30,10 +30,11 @@ use GlpiPlugin\Refactorytools\Menu;
 use GlpiPlugin\Refactorytools\NativeRedirect;
 use GlpiPlugin\Refactorytools\NotificationTargetEventNoteItem;
 use GlpiPlugin\Refactorytools\ProfileRights;
+use GlpiPlugin\Refactorytools\ReservationHistoryCron;
 use GlpiPlugin\Refactorytools\ReservationMenu;
 use GlpiPlugin\Refactorytools\Share;
 
-define('PLUGIN_REFACTORYTOOLS_VERSION', '1.0.5');
+define('PLUGIN_REFACTORYTOOLS_VERSION', '1.0.6');
 
 // Alvo: GLPI 11.0.x. As assinaturas usadas aqui (Planning::$rightname,
 // CFG_GLPI['planning_types'], populatePlanning(), Html::requireJs('fullcalendar'))
@@ -101,6 +102,12 @@ function plugin_init_refactorytools(): void
     $PLUGIN_HOOKS[Hooks::ITEM_PURGE]['refactorytools'] = [
         Reservation::class => 'plugin_refactorytools_reservation_purge',
     ];
+
+    $PLUGIN_HOOKS[Hooks::PRE_ITEM_ADD]['refactorytools'] = [
+        Reservation::class => 'plugin_refactorytools_reservation_pre_add',
+    ];
+
+    $PLUGIN_HOOKS[Hooks::CRON]['refactorytools'] = ReservationHistoryCron::class;
 
     // O GLPI só carrega o FullCalendar quando a lib está declarada em
     // $CFG_GLPI['javascript'][setor][item] (ver Html::header(), que também

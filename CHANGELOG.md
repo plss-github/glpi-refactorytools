@@ -3,6 +3,51 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [1.0.6] — 2026-09-30
+
+### Adicionado
+
+- **Reservar em nome de outra pessoa**: no modal "Nova reserva", um novo campo
+  "Reservar para" permite escolher entre "Você mesmo" e "Outra pessoa". Quando
+  "Outra pessoa" é selecionado, aparece um seletor de usuário e a reserva é
+  gravada com o `users_id` da pessoa escolhida, não do operador. A associação
+  entre a reserva criada e o operador que a criou fica registrada na nova tabela
+  `glpi_plugin_refactorytools_reservation_behalf`.
+- **Tabs de navegação** entre Reservas / Histórico / Relatórios: aparece no topo
+  da tela principal de Reservas e nas páginas de Histórico e Relatório. A aba
+  "Relatórios" só aparece para quem tem acesso ao relatório.
+- **Histórico de reservas via Search::show()**: a página de histórico agora usa
+  a interface de busca nativa do GLPI (igual a chamados/mudanças) por meio da
+  nova classe `ReservationAuditSearch`, com filtros por ação, autor, dono,
+  ativo, período — e limita automaticamente aos últimos 30 dias.
+- **Relatório de reservas via Search::show()**: `front/reservation_report.php`
+  migrado para usar `ReservationSearchView` com a interface de busca nativa do
+  GLPI, substituindo a classe `ReservationReport` anterior.
+- **Grupos autorizados a ver o relatório**: além de usuários individuais,
+  grupos inteiros podem agora ser autorizados a acessar o Relatório de Reservas
+  (novo campo na configuração, chave `reservation_report_groups`).
+- **Cron de limpeza do histórico** (`clearhistory`): tarefa agendada que remove
+  entradas de histórico com mais de 30 dias, evitando crescimento indefinido da
+  tabela.
+- **Novas classes**: `ReservationBehalf`, `ReservationHistoryCron`,
+  `ReservationAuditSearch`, `ReservationSearchView`.
+- **Novas strings de tradução**: "Reserve for", "Yourself", "Another person",
+  "Reports", "Reservation start", "Reservation end", "Reserved by",
+  "Clear reservation history older than 30 days", "When", "Justification",
+  "Who can see the reservation report (groups)",
+  "Members of these groups can also access the reservation report." — em pt_BR e
+  en_GB.
+
+### Alterado
+
+- `Settings::canViewReservationHistory()`: antes exigia READ_ALL ou a chave
+  `reservation_history_visible_to_all`; agora libera para qualquer pessoa com
+  o direito de reserva (READ, CREATE ou RESERVEANITEM).
+- `Settings::canViewReservationReport()`: passou a verificar também grupos
+  (`getReservationReportGroupIds()`), além da lista de usuários e READ_ALL.
+- `ReservationHistory::getEntries()`: adicionado filtro WHERE para trazer apenas
+  entradas dos últimos 30 dias (o cron cuida da limpeza periódica).
+
 ## [1.0.5] - 2026-09-28
 
 ### Corrigido
