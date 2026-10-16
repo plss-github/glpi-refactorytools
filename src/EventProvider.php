@@ -376,22 +376,21 @@ final class EventProvider
 
         $viewer_id ??= (int) Session::getLoginUserID();
 
-        $itemtypes = [];
-        $items_ids = [];
+        $pairs = [];
         foreach ($events as $event) {
             $props = $event['extendedProps'];
             if ($props['itemtype'] === '' || $props['items_id'] <= 0) {
                 continue;
             }
-            $itemtypes[$props['itemtype']] = true;
-            $items_ids[$props['items_id']] = true;
+            $pairs[$props['itemtype'] . '|' . $props['items_id']] = [$props['itemtype'], (int) $props['items_id']];
         }
+        $pairs = array_values($pairs);
 
-        if ($itemtypes === [] || $items_ids === []) {
+        if ($pairs === []) {
             return;
         }
 
-        $notes = EventNotes::getForPairs(array_keys($itemtypes), array_keys($items_ids));
+        $notes = EventNotes::getForPairs($pairs);
         if ($notes === []) {
             return;
         }
@@ -480,6 +479,7 @@ final class EventProvider
             EventTypes::EVENT_INTERNAL,
             EventTypes::EVENT_TRAVEL,
             EventTypes::EVENT_MEETING,
+            EventTypes::EVENT_VISIT,
         ];
     }
 
@@ -714,7 +714,12 @@ final class EventProvider
                 continue;
             }
 
-            $duration = strtotime((string) $event['end']) - strtotime((string) $event['start']);
+            $end_ts   = strtotime((string) $event['end']);
+            $start_ts = strtotime((string) $event['start']);
+            if ($end_ts === false || $start_ts === false) {
+                continue;
+            }
+            $duration = $end_ts - $start_ts;
             if ($duration <= 0) {
                 continue;
             }
@@ -985,7 +990,9 @@ final class EventProvider
      */
     private static function getDuration(string $begin, string $end): string
     {
-        $seconds = max(0, strtotime($end) - strtotime($begin));
+        $end_ts   = strtotime($end);
+        $begin_ts = strtotime($begin);
+        $seconds  = ($end_ts !== false && $begin_ts !== false) ? max(0, $end_ts - $begin_ts) : 0;
 
         return sprintf(
             '%02d:%02d:%02d',

@@ -98,29 +98,29 @@ final class EventNotes
 
     /**
      * Uma consulta só, pelos pares (itemtype, items_id) já presentes na
-     * resposta — nunca uma consulta por evento. Faz um leve sobre-fetch (o
-     * WHERE combina IN/IN em vez de pares exatos), aceitável porque a lista
-     * de eventos de uma tela é sempre pequena.
+     * resposta — nunca uma consulta por evento. Usa OR de pares exatos para
+     * evitar contaminação cruzada entre itemtypes distintos com o mesmo items_id.
      *
-     * @param array<int, string> $itemtypes
-     * @param array<int, int>    $items_ids
+     * @param array<int, array{0: string, 1: int}> $pairs  lista de [itemtype, items_id]
      * @return array<string, array<int, array{id: int, note: string, author_name: string, users_id_owner: int, date_mod: string}>> chave "itemtype|items_id", notas mais recentes primeiro
      */
-    public static function getForPairs(array $itemtypes, array $items_ids): array
+    public static function getForPairs(array $pairs): array
     {
         /** @var \DBmysql $DB */
         global $DB;
 
-        if ($itemtypes === [] || $items_ids === []) {
+        if ($pairs === []) {
             return [];
         }
 
+        $or = [];
+        foreach ($pairs as [$type, $id]) {
+            $or[] = ['itemtype' => (string) $type, 'items_id' => (int) $id];
+        }
+
         $rows = $DB->request([
-            'FROM'    => self::getTable(),
-            'WHERE'   => [
-                'itemtype' => array_values($itemtypes),
-                'items_id' => array_values($items_ids),
-            ],
+            'FROM'  => self::getTable(),
+            'WHERE' => ['OR' => $or],
             'ORDER' => 'date_mod DESC',
         ]);
 
