@@ -190,3 +190,4 @@ if (
 }
 
 Html::back();
+return;

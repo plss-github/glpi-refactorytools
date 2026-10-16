@@ -178,3 +178,4 @@ if ($new_id) {
 }
 
 Html::back();
+return;

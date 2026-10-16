@@ -19,7 +19,7 @@
                 {% for entry in entries %}
                     <tr>
                         <td>{{ entry.date|e }}</td>
-                        <td>{{ entry.action_label }}</td>
+                        <td>{{ entry.action_label|e }}</td>
                         <td>{{ entry.item_label|e }}</td>
                         <td>{{ entry.owner|e }}</td>
                         <td>{{ entry.author|e }}</td>

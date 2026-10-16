@@ -649,7 +649,9 @@ final class EventProvider
         // Recorrência: só Reminder e PlanningExternalEvent trazem rrule. O
         // FullCalendar embarcado já vem com o plugin 'rrule' registrado (é o
         // que o planejamento nativo usa), então basta repassar.
-        if (!empty($row['rrule']) && is_array($row['rrule'])) {
+        // Só para LEVEL_DETAILS: o padrão de recorrência (freq, byday, dtstart)
+        // revela horário e ritmo de um compromisso cujo título foi ocultado.
+        if ($is_details && !empty($row['rrule']) && is_array($row['rrule'])) {
             $rrule = $row['rrule'];
 
             // O core (`PlanningEvent::deleteInstance()`) grava ocorrências

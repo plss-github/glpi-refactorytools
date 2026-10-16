@@ -80,7 +80,7 @@ final class EventNotes
         /** @var \DBmysql $DB */
         global $DB;
 
-        $result = $DB->doQuery("SHOW INDEX FROM `{$table}` WHERE Key_name = '{$index_name}'");
+        $result = $DB->doQuery('SHOW INDEX FROM `' . $table . '` WHERE Key_name = ' . $DB->quoteValue($index_name));
 
         return $result !== false && $DB->numrows($result) > 0;
     }

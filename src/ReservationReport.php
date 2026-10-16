@@ -75,8 +75,9 @@ final class ReservationReport
                 ],
             ],
             'WHERE'   => [
-                'glpi_reservations.begin' => ['<=', $end . ' 23:59:59'],
-                'glpi_reservations.end'   => ['>=', $begin . ' 00:00:00'],
+                'glpi_reservations.begin'        => ['<=', $end . ' 23:59:59'],
+                'glpi_reservations.end'          => ['>=', $begin . ' 00:00:00'],
+                'glpi_reservationitems.entities_id' => $_SESSION['glpiactiveentities'] ?? [0],
             ],
             'GROUPBY' => 'glpi_reservationitems.itemtype',
             'ORDER'   => 'c DESC',
@@ -101,13 +102,22 @@ final class ReservationReport
 
         $counts = [];
         foreach ($DB->request([
-            'SELECT'  => ['users_id', new QueryExpression('COUNT(*) AS c')],
-            'FROM'    => Reservation::getTable(),
-            'WHERE'   => [
-                'begin' => ['<=', $end . ' 23:59:59'],
-                'end'   => ['>=', $begin . ' 00:00:00'],
+            'SELECT'     => ['glpi_reservations.users_id', new QueryExpression('COUNT(*) AS c')],
+            'FROM'       => Reservation::getTable(),
+            'INNER JOIN' => [
+                ReservationItem::getTable() => [
+                    'ON' => [
+                        Reservation::getTable()     => 'reservationitems_id',
+                        ReservationItem::getTable() => 'id',
+                    ],
+                ],
             ],
-            'GROUPBY' => 'users_id',
+            'WHERE'   => [
+                'glpi_reservations.begin'           => ['<=', $end . ' 23:59:59'],
+                'glpi_reservations.end'             => ['>=', $begin . ' 00:00:00'],
+                'glpi_reservationitems.entities_id' => $_SESSION['glpiactiveentities'] ?? [0],
+            ],
+            'GROUPBY' => 'glpi_reservations.users_id',
             'ORDER'   => 'c DESC',
             'LIMIT'   => 20,
         ]) as $row) {
@@ -126,11 +136,20 @@ final class ReservationReport
         global $DB;
 
         return (int) $DB->request([
-            'COUNT'   => 'c',
-            'FROM'    => Reservation::getTable(),
+            'COUNT'      => 'c',
+            'FROM'       => Reservation::getTable(),
+            'INNER JOIN' => [
+                ReservationItem::getTable() => [
+                    'ON' => [
+                        Reservation::getTable()     => 'reservationitems_id',
+                        ReservationItem::getTable() => 'id',
+                    ],
+                ],
+            ],
             'WHERE'   => [
-                'begin' => ['<=', $end . ' 23:59:59'],
-                'end'   => ['>=', $begin . ' 00:00:00'],
+                'glpi_reservations.begin'           => ['<=', $end . ' 23:59:59'],
+                'glpi_reservations.end'             => ['>=', $begin . ' 00:00:00'],
+                'glpi_reservationitems.entities_id' => $_SESSION['glpiactiveentities'] ?? [0],
             ],
         ])->current()['c'];
     }

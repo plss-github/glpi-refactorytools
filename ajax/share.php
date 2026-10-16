@@ -101,3 +101,4 @@ if ($message === '') {
 Session::addMessageAfterRedirect(htmlescape($message), false, $ok ? INFO : ERROR);
 
 Html::back();
+return;

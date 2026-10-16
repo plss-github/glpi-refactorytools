@@ -37,6 +37,7 @@ final class ReservationBehalf
 
     public static function record(int $reservations_id, int $for_users_id): void
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $created_by = (int) Session::getLoginUserID();
