@@ -42,7 +42,9 @@ $text  = trim((string) ($_POST['text'] ?? ''));
 $begin = (string) ($_POST['begin'] ?? '');
 $end   = (string) ($_POST['end'] ?? '');
 
-if ($begin === '' || $end === '' || $begin >= $end) {
+$date_re = '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/';
+if ($begin === '' || $end === '' || $begin >= $end
+    || !preg_match($date_re, $begin) || !preg_match($date_re, $end)) {
     Session::addMessageAfterRedirect(
         htmlescape(__('Error in entering dates. The starting date is later than the ending date', 'refactorytools')),
         false,

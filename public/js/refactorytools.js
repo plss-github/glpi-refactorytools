@@ -1831,10 +1831,6 @@ var GlpiRefactoryTools = {
     /**
      * Cada tela escolhe quais indicadores mostra; os seletores ausentes
      * simplesmente não recebem nada. Por isso não há lista fixa de KPIs aqui.
-     */
-    /**
-     * Cada tela escolhe quais indicadores mostra; os seletores ausentes
-     * simplesmente não recebem nada. Por isso não há lista fixa de KPIs aqui.
      *
      * `selected` e `people` são coisas diferentes de propósito: o primeiro é
      * quantas linhas estão MARCADAS na barra lateral, o segundo é quantas

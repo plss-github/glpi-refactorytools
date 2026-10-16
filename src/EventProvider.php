@@ -151,19 +151,6 @@ final class EventProvider
     }
 
     /**
-     * Duração total já registrada no CHAMADO por trás de um compromisso de
-     * tipo Chamado — é o que aparece ao passar o mouse no evento, a
-     * pergunta original era "quanto tempo esse chamado já tomou", não
-     * "quanto tempo esta tarefa específica levou".
-     *
-     * `glpi_tickets.actiontime` já é a soma mantida pelo próprio core sobre
-     * TODAS as tarefas do chamado (qualquer técnico) — não há necessidade de
-     * somar `glpi_tickettasks` aqui. Duas consultas em lote (tarefa -> chamado,
-     * chamado -> actiontime), nunca uma por evento.
-     *
-     * @param array<int, array<string, mixed>> $events
-     */
-    /**
      * Anexa, em lote, a reserva ligada a cada Visita/Viagem (ver
      * `VisitLink`, `EventTypes::LINKABLE_WITH_RESERVATION`) — o que o
      * popover mostra como "Reserva vinculada".
@@ -296,6 +283,19 @@ final class EventProvider
         return $count > 0;
     }
 
+    /**
+     * Duração total já registrada no CHAMADO por trás de um compromisso de
+     * tipo Chamado — é o que aparece ao passar o mouse no evento, a
+     * pergunta original era "quanto tempo esse chamado já tomou", não
+     * "quanto tempo esta tarefa específica levou".
+     *
+     * `glpi_tickets.actiontime` já é a soma mantida pelo próprio core sobre
+     * TODAS as tarefas do chamado (qualquer técnico) — não há necessidade de
+     * somar `glpi_tickettasks` aqui. Duas consultas em lote (tarefa -> chamado,
+     * chamado -> actiontime), nunca uma por evento.
+     *
+     * @param array<int, array<string, mixed>> $events
+     */
     private static function attachTicketDurations(array &$events): void
     {
         /** @var \DBmysql $DB */
