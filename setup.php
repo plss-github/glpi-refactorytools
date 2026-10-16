@@ -47,6 +47,7 @@ define('PLUGIN_REFACTORYTOOLS_MAX_GLPI', '11.0.99');
  */
 function plugin_init_refactorytools(): void
 {
+    /** @var array $CFG_GLPI */
     global $PLUGIN_HOOKS, $CFG_GLPI;
 
     $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT]['refactorytools'] = true;

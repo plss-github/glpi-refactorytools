@@ -563,7 +563,7 @@ final class EventProvider
         // antes de o payload sair do servidor.
         $content = RichText::getSafeHtml((string) ($row['content'] ?? $row['text'] ?? ''));
 
-        $type_color  = self::getTypeColor($virtual_key, $viewer_id);
+        $type_color  = self::getTypeColor($virtual_key);
         $type_label  = EventTypes::getLabel($virtual_key);
         $type_icon   = EventTypes::getIcon($virtual_key);
         $state       = isset($row['state']) ? (int) $row['state'] : null;
@@ -877,9 +877,7 @@ final class EventProvider
      * `$viewer_id` continua sendo parâmetro (não é mais usado aqui) só para
      * não obrigar os chamadores a mudar de assinatura.
      */
-    /** @param string $key tipo virtual do evento
-     *  @param int|null $viewer_id mantido por compatibilidade de assinatura; não é mais usado internamente */
-    public static function getTypeColor(string $key, ?int $viewer_id = null): string
+    public static function getTypeColor(string $key): string
     {
         $admin = Settings::getTypeColors();
 
@@ -922,7 +920,7 @@ final class EventProvider
                 'itemtype' => $key,
                 'label'    => EventTypes::getLabel($key),
                 'icon'     => EventTypes::getIcon($key),
-                'color'    => self::getTypeColor($key, $viewer_id),
+                'color'    => self::getTypeColor($key),
                 'default'  => EventTypes::getDefaultColor($key),
             ];
         }
