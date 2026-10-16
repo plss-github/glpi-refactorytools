@@ -15,6 +15,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use Glpi\RichText\RichText;
 use NotificationTarget;
 use User;
 
@@ -86,7 +87,9 @@ class NotificationTargetEventNoteItem extends NotificationTarget
             $url = $item::getFormURLWithID($items_id);
         }
 
-        $this->data['##refactorytoolsnote.content##'] = htmlescape((string) $note->getField('note'));
+        $raw_note = (string) $note->getField('note');
+        $this->data['##refactorytoolsnote.content##']      = RichText::getSafeHtml($raw_note);
+        $this->data['##refactorytoolsnote.content_text##'] = strip_tags(html_entity_decode($raw_note, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         $this->data['##refactorytoolsnote.author##']   = $author_name;
         $this->data['##refactorytoolsnote.url##']      = $url !== '' ? $this->getUrlBase() . $url : '';
     }

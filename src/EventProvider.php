@@ -549,8 +549,10 @@ final class EventProvider
         // título legível nem área para passar o mouse. 15 minutos é a
         // mesma granularidade mínima que os slots do próprio calendário já
         // usam, então o bloco fica alinhado à grade.
-        if (strtotime($end) <= strtotime($begin)) {
-            $end = date('Y-m-d H:i:s', strtotime($begin) + 15 * 60);
+        $end_ts   = strtotime($end);
+        $begin_ts = strtotime($begin);
+        if ($end_ts !== false && $begin_ts !== false && $end_ts <= $begin_ts) {
+            $end = date('Y-m-d H:i:s', $begin_ts + 15 * 60);
         }
 
         $real_itemtype = EventTypes::realItemtype($virtual_key);

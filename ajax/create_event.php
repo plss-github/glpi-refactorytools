@@ -124,7 +124,14 @@ if (in_array($kind, EventTypes::SHAREABLE, true)) {
     )));
 
     if ($all_guests !== []) {
-        $input['users_id_guests'] = $all_guests;
+        $active_entity = Session::getActiveEntity();
+        $valid_guests  = array_values(array_filter(
+            $all_guests,
+            static fn($uid) => in_array($active_entity, Profile_User::getUserEntities($uid, true), true)
+        ));
+        if ($valid_guests !== []) {
+            $input['users_id_guests'] = $valid_guests;
+        }
     }
 }
 
