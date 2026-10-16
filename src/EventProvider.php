@@ -39,6 +39,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use Glpi\RichText\RichText;
 use Planning;
 use PlanningExternalEvent;
 use Session;
@@ -265,9 +266,11 @@ final class EventProvider
         $overlap = ['begin' => ['<', $end], 'end' => ['>', $begin]];
 
         $checks = [
-            ['table' => 'glpi_tickettasks', 'user_field' => 'users_id_tech'],
-            ['table' => 'glpi_projecttasks', 'user_field' => 'users_id'],
-            ['table' => 'glpi_reminders', 'user_field' => 'users_id'],
+            ['table' => 'glpi_tickettasks',   'user_field' => 'users_id_tech'],
+            ['table' => 'glpi_changetasks',   'user_field' => 'users_id_tech'],
+            ['table' => 'glpi_problemtasks',  'user_field' => 'users_id_tech'],
+            ['table' => 'glpi_projecttasks',  'user_field' => 'users_id'],
+            ['table' => 'glpi_reminders',     'user_field' => 'users_id'],
         ];
 
         foreach ($checks as $check) {
@@ -550,7 +553,10 @@ final class EventProvider
         $is_details    = $level === Settings::LEVEL_DETAILS;
 
         $title   = (string) ($row['name'] ?? '');
-        $content = (string) ($row['content'] ?? $row['text'] ?? '');
+        // getSafeHtml filtra tags/atributos perigosos (XSS); o GLPI grava o HTML
+        // do editor rico sem sanitização adicional, então a limpeza é feita aqui,
+        // antes de o payload sair do servidor.
+        $content = RichText::getSafeHtml((string) ($row['content'] ?? $row['text'] ?? ''));
 
         $type_color  = self::getTypeColor($virtual_key, $viewer_id);
         $type_label  = EventTypes::getLabel($virtual_key);

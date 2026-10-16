@@ -54,6 +54,7 @@ final class ReservationBehalf
 
     public static function install(Migration $migration): void
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $table = self::getTable();
@@ -81,6 +82,7 @@ final class ReservationBehalf
 
     public static function uninstall(): void
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $table = self::getTable();

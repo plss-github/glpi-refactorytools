@@ -184,7 +184,7 @@ if (
         $new_event_id = $event->add($event_input);
 
         if ($new_event_id) {
-            VisitLink::link((int) $new_event_id, (int) $created['id']);
+            VisitLink::link((int) $new_event_id, (int) $created['id'], $behalf_users_id);
         }
     }
 }
