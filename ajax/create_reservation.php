@@ -62,7 +62,14 @@ if ($behalf_users_id > 0 && $behalf_users_id !== (int) Session::getLoginUserID()
     } else {
         // Verifica se o usuário behalf tem acesso à entidade ativa
         if (!in_array(Session::getActiveEntity(), Profile_User::getUserEntities($behalf_users_id, true), true)) {
-            $behalf_users_id = 0;
+            Session::addMessageAfterRedirect(
+                htmlescape(__('The selected user does not belong to the current entity.', 'refactorytools')),
+                false,
+                ERROR
+            );
+            ReservationBehalf::clearPending();
+            Html::back();
+            return;
         }
     }
 }
