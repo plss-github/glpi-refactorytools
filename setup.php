@@ -34,7 +34,7 @@ use GlpiPlugin\Refactorytools\ReservationHistoryCron;
 use GlpiPlugin\Refactorytools\ReservationMenu;
 use GlpiPlugin\Refactorytools\Share;
 
-define('PLUGIN_REFACTORYTOOLS_VERSION', '1.0.6');
+define('PLUGIN_REFACTORYTOOLS_VERSION', '1.0.7');
 
 // Alvo: GLPI 11.0.x. As assinaturas usadas aqui (Planning::$rightname,
 // CFG_GLPI['planning_types'], populatePlanning(), Html::requireJs('fullcalendar'))

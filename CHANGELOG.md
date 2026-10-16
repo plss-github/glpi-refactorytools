@@ -3,6 +3,38 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 versionamento semântico.
 
+## [1.0.7] — 2026-10-16
+
+### Corrigido
+
+- **Segurança — reserva em nome de outro sem permissão (S1)**: qualquer usuário
+  com acesso à tela de Reservas conseguia forjar o campo `behalf_users_id` via
+  POST e criar reservas aparecendo no nome de qualquer outro usuário. Agora é
+  exigido o direito `READ_ALL` do plugin para usar essa funcionalidade.
+- **Segurança — toggle de visibilidade do histórico ignorado (S2)**: desde a
+  1.0.6, `canViewReservationHistory()` ignorava a configuração
+  `reservation_history_visible_to_all` e sempre liberava o acesso a qualquer
+  pessoa com direito de reserva. O check foi restaurado; o padrão continua `'1'`
+  (visível a todos) e a migração mantém esse valor em instalações existentes.
+- **Evento vinculado nunca criado ao reservar em nome de outro (B1)**: ao
+  reservar em nome de outra pessoa + tipo Visita ou Viagem, a query que busca a
+  reserva recém-criada usava o `users_id` do operador, mas a reserva tinha sido
+  gravada com o `users_id` do beneficiário — o `PlanningExternalEvent` nunca era
+  criado. Corrigido.
+- **Parâmetro `$user_id` ignorado em `canViewReservationHistory()` (B2)**: a
+  função aceitava `?int $user_id` mas internamente sempre consultava a sessão
+  atual. Parâmetro removido — nenhum chamador o utilizava.
+- **Cron de histórico reportava volume incorreto (B3)**: `addVolume(1)` era
+  chamado mesmo quando nenhuma linha antiga existia. Agora reporta o número
+  real de linhas removidas (zero se não houver nada para limpar).
+- **Campo espúrio em `rawSearchOptions()` (B4)**: a opção "Dono da reserva"
+  tinha `specific_items => []` sem efeito que obscurecia a intenção do JOIN.
+  Removido.
+- **Schema de `ReservationBehalf` sem `for_users_id` (D1)**: a tabela
+  `glpi_plugin_refactorytools_reservation_behalf` não armazenava o ID do
+  beneficiário, impossibilitando consultas do tipo "todas as reservas feitas em
+  nome de X". Coluna `for_users_id` adicionada com migração automática.
+
 ## [1.0.6] — 2026-09-30
 
 ### Adicionado
