@@ -53,14 +53,19 @@ function plugin_refactorytools_install(): bool
         'mode'    => CronTask::MODE_INTERNAL,
     ]);
 
-    // Em 1.0.6 o check de `reservation_history_visible_to_all` foi removido
-    // por engano (a função ignorava o valor e sempre liberava o acesso). Ao
-    // restaurar o check em 1.0.7, forçamos '1' em instalações existentes para
-    // preservar o comportamento efetivo da 1.0.6 — quem quiser restringir pode
-    // ir em Configuração e mudar para '0'.
-    $current = Config::getConfigurationValues(Settings::CONTEXT, ['reservation_history_visible_to_all']);
-    if (($current['reservation_history_visible_to_all'] ?? '') === '0') {
-        Config::setConfigurationValues(Settings::CONTEXT, ['reservation_history_visible_to_all' => '1']);
+    // Migração única 1.0.6 → 1.0.7: o check de `reservation_history_visible_to_all`
+    // foi ignorado na 1.0.6 (sempre liberava acesso). Ao restaurar o check na 1.0.7,
+    // forçamos '1' em instalações que ainda têm o valor padrão antigo '0', para
+    // preservar o comportamento efetivo que os usuários já tinham. Executado apenas
+    // quando a versão instalada é anterior à 1.0.7, evitando sobrescrever uma
+    // configuração intencional do administrador em upgrades futuros.
+    $plugin_row      = $DB->request(['SELECT' => 'version', 'FROM' => 'glpi_plugins', 'WHERE' => ['directory' => 'refactorytools']])->current();
+    $installed_ver   = $plugin_row['version'] ?? '0';
+    if (version_compare($installed_ver, '1.0.7', '<')) {
+        $hist_cfg = Config::getConfigurationValues(Settings::CONTEXT, ['reservation_history_visible_to_all']);
+        if (($hist_cfg['reservation_history_visible_to_all'] ?? '') === '0') {
+            Config::setConfigurationValues(Settings::CONTEXT, ['reservation_history_visible_to_all' => '1']);
+        }
     }
 
     // A cor de tipo de compromisso deixou de ser personalizável por usuário

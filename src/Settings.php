@@ -310,6 +310,10 @@ final class Settings
             return false;
         }
 
+        if (Right::has(Right::READ_ALL)) {
+            return true;
+        }
+
         if (self::isTrue('reservation_history_visible_to_all')) {
             return Session::haveRightsOr(
                 \Reservation::$rightname,
@@ -317,7 +321,7 @@ final class Settings
             );
         }
 
-        return Right::has(Right::READ_ALL);
+        return false;
     }
 
     /** Modos de visualização da tela principal. */

@@ -19,9 +19,10 @@ final class ReservationHistoryCron
         $deleted = (int) $DB->affectedRows();
         if ($deleted > 0) {
             $task->addVolume($deleted);
+            return 1;
         }
 
-        return 1;
+        return 0;
     }
 
     public static function cronInfo(string $name): array

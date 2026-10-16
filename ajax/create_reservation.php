@@ -41,6 +41,7 @@ if (!ReservationView::canReserve()) {
     );
     ReservationBehalf::clearPending();
     Html::back();
+    return;
 }
 
 $behalf_users_id = (int) ($_POST['behalf_users_id'] ?? 0);
@@ -52,6 +53,7 @@ if ($behalf_users_id > 0 && $behalf_users_id !== (int) Session::getLoginUserID()
             ERROR
         );
         Html::back();
+        return;
     }
     $behalf_user = new User();
     if (!$behalf_user->getFromDB($behalf_users_id)) {
@@ -72,6 +74,7 @@ if ($comment === '') {
     );
     ReservationBehalf::clearPending();
     Html::back();
+    return;
 }
 
 $items = $_POST['items'] ?? [];
@@ -91,6 +94,7 @@ if ($items === [] || $begin === '' || $end === '' || $begin >= $end) {
     );
     ReservationBehalf::clearPending();
     Html::back();
+    return;
 }
 
 // Reconfere no servidor: só os itens que ainda estão livres neste intervalo
@@ -110,6 +114,7 @@ if ($items === []) {
     );
     ReservationBehalf::clearPending();
     Html::back();
+    return;
 }
 
 $input = [
