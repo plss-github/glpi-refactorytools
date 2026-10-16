@@ -142,7 +142,8 @@ $input = [
 // `Reservation::computePeriodicities()`, no core, quem sabe o que fazer com
 // eles.
 if (isset($_POST['periodicity']) && is_array($_POST['periodicity']) && !empty($_POST['periodicity']['type'])) {
-    $input['periodicity'] = $_POST['periodicity'];
+    $allowed_periodicity = ['type' => 1, 'end' => 1, 'subtype' => 1, 'days' => 1];
+    $input['periodicity'] = array_intersect_key($_POST['periodicity'], $allowed_periodicity);
 }
 
 Reservation::handleAddForm($input);

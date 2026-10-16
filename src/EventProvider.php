@@ -495,6 +495,11 @@ final class EventProvider
      * @param array<string, mixed> $row
      * @return array<string, mixed>|null
      */
+    /** Hora de início do expediente (inclusive). */
+    private const BUSINESS_HOUR_START = 8;
+    /** Hora de corte do expediente (exclusive — 19 = até 18:59). */
+    private const BUSINESS_HOUR_END   = 19;
+
     /**
      * Dia útil (segunda a sexta) e horário entre 8h e 19h, pelo INÍCIO do
      * compromisso — sábado, domingo e qualquer coisa começando antes das 8h
@@ -510,7 +515,7 @@ final class EventProvider
         $weekday = (int) date('N', $ts); // 1 (segunda) .. 7 (domingo)
         $hour    = (int) date('H', $ts);
 
-        return $weekday <= 5 && $hour >= 8 && $hour < 19;
+        return $weekday <= 5 && $hour >= self::BUSINESS_HOUR_START && $hour < self::BUSINESS_HOUR_END;
     }
 
     private static function normalize(
@@ -872,6 +877,8 @@ final class EventProvider
      * `$viewer_id` continua sendo parâmetro (não é mais usado aqui) só para
      * não obrigar os chamadores a mudar de assinatura.
      */
+    /** @param string $key tipo virtual do evento
+     *  @param int|null $viewer_id mantido por compatibilidade de assinatura; não é mais usado internamente */
     public static function getTypeColor(string $key, ?int $viewer_id = null): string
     {
         $admin = Settings::getTypeColors();

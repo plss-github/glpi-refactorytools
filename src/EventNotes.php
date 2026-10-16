@@ -169,9 +169,12 @@ final class EventNotes
             }
 
             return $DB->delete(self::getTable(), [
-                'id'       => $note_id,
-                'itemtype' => $itemtype,
-                'items_id' => $items_id,
+                'id'              => $note_id,
+                'itemtype'        => $itemtype,
+                'items_id'        => $items_id,
+                // Só o autor da nota pode apagá-la; evita que outro gestor
+                // do mesmo evento delete uma nota que não escreveu.
+                'users_id_author' => $users_id_author,
             ]);
         }
 
@@ -186,9 +189,11 @@ final class EventNotes
 
         if ($note_id > 0) {
             $ok = (bool) $DB->update(self::getTable(), $fields, [
-                'id'       => $note_id,
-                'itemtype' => $itemtype,
-                'items_id' => $items_id,
+                'id'              => $note_id,
+                'itemtype'        => $itemtype,
+                'items_id'        => $items_id,
+                // Só o autor pode editar; evita IDOR entre gestores do mesmo evento.
+                'users_id_author' => $users_id_author,
             ]);
         } else {
             $ok      = (bool) $DB->insert(self::getTable(), $fields);
