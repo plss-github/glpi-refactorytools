@@ -26,6 +26,7 @@
 use GlpiPlugin\Refactorytools\EventTypes;
 use GlpiPlugin\Refactorytools\ReservationBehalf;
 use GlpiPlugin\Refactorytools\ReservationView;
+use GlpiPlugin\Refactorytools\Right;
 use GlpiPlugin\Refactorytools\Settings;
 use GlpiPlugin\Refactorytools\VisitLink;
 
@@ -44,6 +45,14 @@ if (!ReservationView::canReserve()) {
 
 $behalf_users_id = (int) ($_POST['behalf_users_id'] ?? 0);
 if ($behalf_users_id > 0 && $behalf_users_id !== (int) Session::getLoginUserID()) {
+    if (!Right::has(Right::READ_ALL)) {
+        Session::addMessageAfterRedirect(
+            htmlescape(__('You are not allowed to create reservations on behalf of other users.', 'refactorytools')),
+            false,
+            ERROR
+        );
+        Html::back();
+    }
     $behalf_user = new User();
     if (!$behalf_user->getFromDB($behalf_users_id)) {
         $behalf_users_id = 0;
@@ -139,7 +148,7 @@ if (
     $created = $DB->request([
         'FROM'  => Reservation::getTable(),
         'WHERE' => [
-            'users_id'            => Session::getLoginUserID(),
+            'users_id'            => $behalf_users_id > 0 ? $behalf_users_id : (int) Session::getLoginUserID(),
             'reservationitems_id' => $items[0],
             'begin'               => $begin,
             'end'                 => $end,

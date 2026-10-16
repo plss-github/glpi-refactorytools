@@ -53,6 +53,16 @@ function plugin_refactorytools_install(): bool
         'mode'    => CronTask::MODE_INTERNAL,
     ]);
 
+    // Em 1.0.6 o check de `reservation_history_visible_to_all` foi removido
+    // por engano (a função ignorava o valor e sempre liberava o acesso). Ao
+    // restaurar o check em 1.0.7, forçamos '1' em instalações existentes para
+    // preservar o comportamento efetivo da 1.0.6 — quem quiser restringir pode
+    // ir em Configuração e mudar para '0'.
+    $current = Config::getConfigurationValues(Settings::CONTEXT, ['reservation_history_visible_to_all']);
+    if (($current['reservation_history_visible_to_all'] ?? '') === '0') {
+        Config::setConfigurationValues(Settings::CONTEXT, ['reservation_history_visible_to_all' => '1']);
+    }
+
     // A cor de tipo de compromisso deixou de ser personalizável por usuário
     // (ver `EventProvider::getTypeColor()`): só o administrador define, para
     // "vermelho" continuar significando a mesma coisa para quem olha a
@@ -388,7 +398,10 @@ function plugin_refactorytools_reservation_add(Reservation $reservation): void
 {
     ReservationHistory::log($reservation, ReservationHistory::ACTION_ADD);
     if (ReservationBehalf::hasPending()) {
-        ReservationBehalf::record((int) ($reservation->fields['id'] ?? 0));
+        ReservationBehalf::record(
+            (int) ($reservation->fields['id'] ?? 0),
+            ReservationBehalf::getPendingForUserId()
+        );
     }
 }
 

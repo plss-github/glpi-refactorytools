@@ -16,7 +16,10 @@ final class ReservationHistoryCron
             ['date', '<', $cutoff],
         ]);
 
-        $task->addVolume(1);
+        $deleted = (int) $DB->affectedRows();
+        if ($deleted > 0) {
+            $task->addVolume($deleted);
+        }
 
         return 1;
     }

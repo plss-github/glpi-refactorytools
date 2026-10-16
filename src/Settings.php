@@ -103,7 +103,7 @@ final class Settings
             // visível só para quem tem "Ver todas as agendas" por padrão.
             // Ligar isto libera a aba para qualquer pessoa com acesso à
             // tela de Reservas.
-            'reservation_history_visible_to_all' => '0',
+            'reservation_history_visible_to_all' => '1',
             'reservation_report_groups' => '',
         ];
     }
@@ -298,20 +298,26 @@ final class Settings
     }
 
     /**
-     * Qualquer pessoa com acesso à tela de Reservas (READ, CREATE ou
-     * RESERVEANITEM) pode ver o histórico de reservas.
+     * Quem pode ver o histórico de reservas.
+     *
+     * Com `reservation_history_visible_to_all = '1'` (padrão): qualquer pessoa
+     * com READ, CREATE ou RESERVEANITEM. Com '0': apenas quem tem READ_ALL
+     * (administradores do plugin).
      */
-    public static function canViewReservationHistory(?int $user_id = null): bool
+    public static function canViewReservationHistory(): bool
     {
-        $user_id ??= (int) Session::getLoginUserID();
-        if ($user_id <= 0) {
+        if (!(int) Session::getLoginUserID()) {
             return false;
         }
 
-        return Session::haveRightsOr(
-            \Reservation::$rightname,
-            [READ, CREATE, \ReservationItem::RESERVEANITEM]
-        );
+        if (self::isTrue('reservation_history_visible_to_all')) {
+            return Session::haveRightsOr(
+                \Reservation::$rightname,
+                [READ, CREATE, \ReservationItem::RESERVEANITEM]
+            );
+        }
+
+        return Right::has(Right::READ_ALL);
     }
 
     /** Modos de visualização da tela principal. */
