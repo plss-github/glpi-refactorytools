@@ -15,6 +15,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use DBConnection;
 use Migration;
 use NotificationEvent;
 
@@ -42,6 +43,9 @@ final class EventNotes
             $DB->doQuery("RENAME TABLE `{$old_table}` TO `{$table}`");
         }
 
+        $charset   = DBConnection::getDefaultCharset();
+        $collation = DBConnection::getDefaultCollation();
+
         if (!$DB->tableExists($table)) {
             $DB->doQuery("
                 CREATE TABLE `{$table}` (
@@ -55,7 +59,7 @@ final class EventNotes
                     PRIMARY KEY (`id`),
                     KEY `pair` (`itemtype`, `items_id`),
                     KEY `users_id_owner` (`users_id_owner`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation}
             ");
 
             return;
@@ -71,30 +75,12 @@ final class EventNotes
         }
     }
 
-    private static function columnType(string $table, string $column): ?string
-    {
-        /** @var \DBmysql $DB */
-        global $DB;
-
-        $result = $DB->doQuery("SHOW FIELDS FROM `{$table}` WHERE Field = '{$column}'");
-        $row    = $result !== false ? $DB->fetchAssoc($result) : null;
-
-        if (!$row) {
-            return null;
-        }
-
-        // `SHOW FIELDS` devolve algo como "timestamp" ou "datetime" (sem
-        // parênteses/tamanho para estes dois tipos), então comparar o valor
-        // inteiro em minúsculas já basta.
-        return strtolower((string) $row['Type']);
-    }
-
     private static function hasUniqueIndex(string $table, string $index_name): bool
     {
         /** @var \DBmysql $DB */
         global $DB;
 
-        $result = $DB->doQuery("SHOW INDEX FROM `{$table}` WHERE Key_name = '{$index_name}'");
+        $result = $DB->doQuery('SHOW INDEX FROM `' . $table . '` WHERE Key_name = ' . $DB->quoteValue($index_name));
 
         return $result !== false && $DB->numrows($result) > 0;
     }
@@ -183,9 +169,12 @@ final class EventNotes
             }
 
             return $DB->delete(self::getTable(), [
-                'id'       => $note_id,
-                'itemtype' => $itemtype,
-                'items_id' => $items_id,
+                'id'              => $note_id,
+                'itemtype'        => $itemtype,
+                'items_id'        => $items_id,
+                // Só o autor da nota pode apagá-la; evita que outro gestor
+                // do mesmo evento delete uma nota que não escreveu.
+                'users_id_author' => $users_id_author,
             ]);
         }
 
@@ -200,9 +189,11 @@ final class EventNotes
 
         if ($note_id > 0) {
             $ok = (bool) $DB->update(self::getTable(), $fields, [
-                'id'       => $note_id,
-                'itemtype' => $itemtype,
-                'items_id' => $items_id,
+                'id'              => $note_id,
+                'itemtype'        => $itemtype,
+                'items_id'        => $items_id,
+                // Só o autor pode editar; evita IDOR entre gestores do mesmo evento.
+                'users_id_author' => $users_id_author,
             ]);
         } else {
             $ok      = (bool) $DB->insert(self::getTable(), $fields);

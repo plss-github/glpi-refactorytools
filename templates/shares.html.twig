@@ -26,11 +26,11 @@
                 {% for row in pending %}
                     <div class="list-group-item d-flex flex-wrap align-items-center gap-2">
                         <div class="flex-fill">
-                            <strong>{{ row.other_name }}</strong>
+                            <strong>{{ row.other_name|e }}</strong>
                             {{ __('wants to see your schedule', 'refactorytools') }}
                             <span class="badge bg-blue-lt">{{ level_labels[row.level] ?? row.level }}</span>
                             {% if row.comment %}
-                                <div class="text-muted small mt-1">{{ row.comment }}</div>
+                                <div class="text-muted small mt-1">{{ row.comment|e }}</div>
                             {% endif %}
                         </div>
                         <form method="post" action="{{ root_doc }}/plugins/refactorytools/ajax/share.php" class="d-inline">
@@ -108,14 +108,14 @@
                     {% for row in granted %}
                         <div class="list-group-item d-flex flex-wrap align-items-center gap-2">
                             <div class="flex-fill">
-                                <strong>{{ row.other_name }}</strong>
+                                <strong>{{ row.other_name|e }}</strong>
                                 <span class="badge bg-blue-lt">{{ level_labels[row.level] ?? row.level }}</span>
                                 <span class="badge {{ row.status == 'accepted' ? 'bg-green-lt' : 'bg-secondary-lt' }}">
                                     {{ status_labels[row.status] ?? row.status }}
                                 </span>
                                 {% if row.date_end %}
                                     <div class="text-muted small">
-                                        {{ __('Until', 'refactorytools') }} {{ row.date_end }}
+                                        {{ __('Until', 'refactorytools') }} {{ row.date_end|e }}
                                     </div>
                                 {% endif %}
                             </div>
@@ -195,7 +195,7 @@
                     {% for row in received %}
                         <div class="list-group-item d-flex flex-wrap align-items-center gap-2">
                             <div class="flex-fill">
-                                <strong>{{ row.other_name }}</strong>
+                                <strong>{{ row.other_name|e }}</strong>
                                 <span class="badge bg-blue-lt">{{ level_labels[row.level] ?? row.level }}</span>
                                 <span class="badge {{ row.status == 'accepted' ? 'bg-green-lt' : (row.status == 'pending' ? 'bg-yellow-lt' : 'bg-secondary-lt') }}">
                                     {{ status_labels[row.status] ?? row.status }}

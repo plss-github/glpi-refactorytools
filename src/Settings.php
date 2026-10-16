@@ -310,6 +310,10 @@ final class Settings
             return false;
         }
 
+        if (Right::has(Right::READ_ALL)) {
+            return true;
+        }
+
         if (self::isTrue('reservation_history_visible_to_all')) {
             return Session::haveRightsOr(
                 \Reservation::$rightname,
@@ -317,7 +321,7 @@ final class Settings
             );
         }
 
-        return Right::has(Right::READ_ALL);
+        return false;
     }
 
     /** Modos de visualização da tela principal. */
@@ -414,6 +418,10 @@ final class Settings
     public static function purge(): void
     {
         Config::deleteConfigurationValues(self::CONTEXT, array_keys(self::getDefaults()));
+        // Flags de migração pontual — não estão em getDefaults() para não
+        // aparecerem como configuração editável, mas precisam ser limpas no
+        // uninstall junto com o restante do contexto do plugin.
+        Config::deleteConfigurationValues(self::CONTEXT, ['migration_history_visible_1_0_7_done']);
     }
 
     /**

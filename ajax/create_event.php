@@ -34,6 +34,7 @@ $kind = (string) ($_POST['kind'] ?? '');
 if (!in_array($kind, EventTypes::CREATABLE, true)) {
     Session::addMessageAfterRedirect(htmlescape(__('Unknown event type.', 'refactorytools')), false, ERROR);
     Html::back();
+    return;
 }
 
 $name  = trim((string) ($_POST['name'] ?? ''));
@@ -41,13 +42,16 @@ $text  = trim((string) ($_POST['text'] ?? ''));
 $begin = (string) ($_POST['begin'] ?? '');
 $end   = (string) ($_POST['end'] ?? '');
 
-if ($begin === '' || $end === '' || $begin >= $end) {
+$date_re = '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/';
+if ($begin === '' || $end === '' || $begin >= $end
+    || !preg_match($date_re, $begin) || !preg_match($date_re, $end)) {
     Session::addMessageAfterRedirect(
         htmlescape(__('Error in entering dates. The starting date is later than the ending date', 'refactorytools')),
         false,
         ERROR
     );
     Html::back();
+    return;
 }
 
 // `required` no HTML não impede um POST direto sem o campo — a validação
@@ -55,6 +59,7 @@ if ($begin === '' || $end === '' || $begin >= $end) {
 if ($text === '') {
     Session::addMessageAfterRedirect(htmlescape(__('Description is required.', 'refactorytools')), false, ERROR);
     Html::back();
+    return;
 }
 
 $itemtype = EventTypes::realItemtype($kind);
@@ -67,6 +72,7 @@ if (!$item::canCreate()) {
         ERROR
     );
     Html::back();
+    return;
 }
 
 $input = [
@@ -91,7 +97,13 @@ if ($itemtype === PlanningExternalEvent::class) {
     // converte esse array para o JSON gravado na coluna — não há nada para
     // este endpoint fazer além de repassar.
     if (isset($_POST['rrule']) && is_array($_POST['rrule']) && !empty($_POST['rrule']['freq'])) {
-        $input['rrule'] = $_POST['rrule'];
+        $allowed_rrule_keys = ['freq', 'interval', 'until', 'byday', 'bymonth', 'bymonthday', 'count'];
+        $rrule_raw = $_POST['rrule'];
+        $input['rrule'] = array_intersect_key($rrule_raw, array_flip($allowed_rrule_keys));
+        // Só passa se ainda sobrou alguma chave válida
+        if (empty($input['rrule'])) {
+            unset($input['rrule']);
+        }
     }
 }
 
@@ -168,3 +180,4 @@ if ($new_id) {
 }
 
 Html::back();
+return;

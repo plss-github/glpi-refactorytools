@@ -16,6 +16,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use DBConnection;
 use Migration;
 use Session;
 
@@ -37,6 +38,9 @@ final class MeetingGuest
 
         $table = self::getTable();
 
+        $charset   = DBConnection::getDefaultCharset();
+        $collation = DBConnection::getDefaultCollation();
+
         if (!$DB->tableExists($table)) {
             $DB->doQuery("
                 CREATE TABLE `{$table}` (
@@ -48,7 +52,7 @@ final class MeetingGuest
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `unicity` (`items_id`, `users_id`),
                     KEY `users_id` (`users_id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation}
             ");
         }
     }

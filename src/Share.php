@@ -27,6 +27,7 @@
 namespace GlpiPlugin\Refactorytools;
 
 use CommonDBTM;
+use DBConnection;
 use Migration;
 use Session;
 use User;
@@ -342,6 +343,9 @@ class Share extends CommonDBTM
             $DB->doQuery("RENAME TABLE `{$old_table}` TO `{$table}`");
         }
 
+        $charset   = DBConnection::getDefaultCharset();
+        $collation = DBConnection::getDefaultCollation();
+
         if (!$DB->tableExists($table)) {
             $DB->doQuery("
                 CREATE TABLE `{$table}` (
@@ -360,26 +364,11 @@ class Share extends CommonDBTM
                     UNIQUE KEY `unicity` (`users_id_owner`, `users_id_grantee`),
                     KEY `users_id_grantee` (`users_id_grantee`),
                     KEY `status` (`status`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation}
             ");
 
             return;
         }
-    }
-
-    private static function columnType(string $table, string $column): ?string
-    {
-        /** @var \DBmysql $DB */
-        global $DB;
-
-        $result = $DB->doQuery("SHOW FIELDS FROM `{$table}` WHERE Field = '{$column}'");
-        $row    = $result !== false ? $DB->fetchAssoc($result) : null;
-
-        if (!$row) {
-            return null;
-        }
-
-        return strtolower((string) $row['Type']);
     }
 
     public static function uninstall(): void
