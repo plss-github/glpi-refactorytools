@@ -15,6 +15,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use DBConnection;
 use Migration;
 use NotificationEvent;
 
@@ -42,6 +43,9 @@ final class EventNotes
             $DB->doQuery("RENAME TABLE `{$old_table}` TO `{$table}`");
         }
 
+        $charset   = DBConnection::getDefaultCharset();
+        $collation = DBConnection::getDefaultCollation();
+
         if (!$DB->tableExists($table)) {
             $DB->doQuery("
                 CREATE TABLE `{$table}` (
@@ -55,7 +59,7 @@ final class EventNotes
                     PRIMARY KEY (`id`),
                     KEY `pair` (`itemtype`, `items_id`),
                     KEY `users_id_owner` (`users_id_owner`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation}
             ");
 
             return;
@@ -69,24 +73,6 @@ final class EventNotes
             $DB->doQuery("ALTER TABLE `{$table}` DROP INDEX `unicity`");
             $DB->doQuery("ALTER TABLE `{$table}` ADD INDEX `pair` (`itemtype`, `items_id`)");
         }
-    }
-
-    private static function columnType(string $table, string $column): ?string
-    {
-        /** @var \DBmysql $DB */
-        global $DB;
-
-        $result = $DB->doQuery("SHOW FIELDS FROM `{$table}` WHERE Field = '{$column}'");
-        $row    = $result !== false ? $DB->fetchAssoc($result) : null;
-
-        if (!$row) {
-            return null;
-        }
-
-        // `SHOW FIELDS` devolve algo como "timestamp" ou "datetime" (sem
-        // parênteses/tamanho para estes dois tipos), então comparar o valor
-        // inteiro em minúsculas já basta.
-        return strtolower((string) $row['Type']);
     }
 
     private static function hasUniqueIndex(string $table, string $index_name): bool

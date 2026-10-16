@@ -20,6 +20,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use DBConnection;
 use Migration;
 
 final class UserColors
@@ -108,6 +109,9 @@ final class UserColors
             $DB->doQuery("RENAME TABLE `{$old_table}` TO `{$table}`");
         }
 
+        $charset   = DBConnection::getDefaultCharset();
+        $collation = DBConnection::getDefaultCollation();
+
         if (!$DB->tableExists($table)) {
             $DB->doQuery("
                 CREATE TABLE `{$table}` (
@@ -118,7 +122,7 @@ final class UserColors
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `unicity` (`users_id`, `type_key`),
                     KEY `users_id` (`users_id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation}
             ");
         }
     }

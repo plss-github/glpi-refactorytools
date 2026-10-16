@@ -59,6 +59,11 @@ if ($behalf_users_id > 0 && $behalf_users_id !== (int) Session::getLoginUserID()
     $behalf_user = new User();
     if (!$behalf_user->getFromDB($behalf_users_id)) {
         $behalf_users_id = 0;
+    } else {
+        // Verifica se o usuário behalf tem acesso à entidade ativa
+        if (!in_array(Session::getActiveEntity(), Profile_User::getUserEntities($behalf_users_id, true), true)) {
+            $behalf_users_id = 0;
+        }
     }
 }
 if ($behalf_users_id > 0) {

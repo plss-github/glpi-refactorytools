@@ -329,7 +329,7 @@
                                 <input type="color" name="reservation_item_color[{{ item.id }}]"
                                        value="{{ item.color }}"
                                        data-refactorytools-default="{{ item.default }}">
-                                <span class="refactorytools-color-name">{{ item.type_name }} — {{ item.name }}</span>
+                                <span class="refactorytools-color-name">{{ item.type_name|e }} — {{ item.name|e }}</span>
                                 <button type="button" class="btn btn-sm btn-ghost-secondary refactorytools-color-reset"
                                         title="{{ __('Back to default', 'refactorytools') }}">
                                     <i class="ti ti-rotate"></i>

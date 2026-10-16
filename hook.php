@@ -7,6 +7,7 @@
  */
 
 use GlpiPlugin\Refactorytools\EventNoteItem;
+use GlpiPlugin\Refactorytools\NotificationTargetEventNoteItem;
 use GlpiPlugin\Refactorytools\EventNotes;
 use GlpiPlugin\Refactorytools\EventTypes;
 use GlpiPlugin\Refactorytools\KanbanPrefs;
@@ -312,7 +313,7 @@ function plugin_refactorytools_seed_note_notification(): void
     // é a base de toda a lógica de RESOLUÇÃO de destinatário (o que este
     // arquivo não quer executar aqui) — a tabela é só 4 colunas simples.
     $DB->insert('glpi_notificationtargets', [
-        'items_id'         => 9999,
+        'items_id'         => NotificationTargetEventNoteItem::TARGET_OWNER,
         'type'             => Notification::USER_TYPE,
         'notifications_id' => $notifications_id,
         'is_exclusion'     => 0,

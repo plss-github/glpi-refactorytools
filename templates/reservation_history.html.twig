@@ -18,12 +18,12 @@
             <tbody>
                 {% for entry in entries %}
                     <tr>
-                        <td>{{ entry.date }}</td>
+                        <td>{{ entry.date|e }}</td>
                         <td>{{ entry.action_label }}</td>
-                        <td>{{ entry.item_label }}</td>
-                        <td>{{ entry.owner }}</td>
-                        <td>{{ entry.author }}</td>
-                        <td>{{ entry.begin }} — {{ entry.end }}</td>
+                        <td>{{ entry.item_label|e }}</td>
+                        <td>{{ entry.owner|e }}</td>
+                        <td>{{ entry.author|e }}</td>
+                        <td>{{ entry.begin|e }} — {{ entry.end|e }}</td>
                     </tr>
                 {% else %}
                     <tr><td colspan="6" class="text-muted">{{ __('No entries yet.', 'refactorytools') }}</td></tr>

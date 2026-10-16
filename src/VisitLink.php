@@ -15,6 +15,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use DBConnection;
 use Html;
 use Migration;
 use Reservation;
@@ -35,6 +36,9 @@ final class VisitLink
 
         $table = self::getTable();
 
+        $charset   = DBConnection::getDefaultCharset();
+        $collation = DBConnection::getDefaultCollation();
+
         if (!$DB->tableExists($table)) {
             $DB->doQuery("
                 CREATE TABLE `{$table}` (
@@ -44,7 +48,7 @@ final class VisitLink
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `unicity` (`items_id`),
                     KEY `reservations_id` (`reservations_id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation}
             ");
         }
     }

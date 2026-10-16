@@ -33,13 +33,14 @@ final class ReservationReport
         /** @var array $CFG_GLPI */
         global $CFG_GLPI;
 
-        $begin = (string) ($_GET['begin'] ?? date('Y-m-01'));
-        $end   = (string) ($_GET['end'] ?? date('Y-m-t'));
+        $begin = (string) ($_GET['begin'] ?? '');
+        $end   = (string) ($_GET['end'] ?? '');
 
-        if (date_create($begin) === false) {
+        // Aceita apenas YYYY-MM-DD; strings relativas como '1 year ago' são rejeitadas
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $begin) || strtotime($begin) === false) {
             $begin = date('Y-m-01');
         }
-        if (date_create($end) === false) {
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $end) || strtotime($end) === false) {
             $end = date('Y-m-t');
         }
 

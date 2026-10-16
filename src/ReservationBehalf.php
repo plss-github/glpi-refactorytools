@@ -2,6 +2,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use DBConnection;
 use Migration;
 use Session;
 
@@ -56,6 +57,9 @@ final class ReservationBehalf
 
         $table = self::getTable();
 
+        $charset   = DBConnection::getDefaultCharset();
+        $collation = DBConnection::getDefaultCollation();
+
         if (!$DB->tableExists($table)) {
             $DB->doQuery("
                 CREATE TABLE `{$table}` (
@@ -66,7 +70,7 @@ final class ReservationBehalf
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `reservations_id` (`reservations_id`),
                     KEY `for_users_id` (`for_users_id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation}
             ");
         } else {
             $migration->addField($table, 'for_users_id', 'int unsigned NOT NULL DEFAULT 0', ['after' => 'reservations_id']);

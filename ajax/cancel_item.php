@@ -65,7 +65,7 @@ if (in_array($itemtype, CANCELABLE_ITEMTYPES, true) && $items_id > 0) {
         // continua sem poder nada aqui.
         $bypass_owner = $itemtype === 'Reservation' && Settings::canEditAnyReservation();
 
-        if ($bypass_owner ? Reservation::canDelete() : $item->can($items_id, PURGE)) {
+        if ($bypass_owner ? Reservation::canView() : $item->can($items_id, PURGE)) {
             $is_recurring = $itemtype !== 'Reservation'
                 && method_exists($item, 'deleteInstance')
                 && ($item->fields['rrule'] ?? '') !== '';
@@ -73,7 +73,7 @@ if (in_array($itemtype, CANCELABLE_ITEMTYPES, true) && $items_id > 0) {
             if ($is_recurring && $occurrence_date !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $occurrence_date)) {
                 $ok = (bool) $item->deleteInstance($items_id, $occurrence_date);
             } else {
-                $ok = (bool) $item->delete(['id' => $items_id]);
+                $ok = (bool) $item->purge(['id' => $items_id]);
             }
         }
     }

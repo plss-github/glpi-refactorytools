@@ -29,7 +29,7 @@ class NotificationTargetEventNoteItem extends NotificationTarget
      * (1, 11, 5, 23, 6, 3 no core 11.0.9) — a coluna é `int unsigned`, por
      * isso um número alto em vez de um valor negativo.
      */
-    private const TARGET_OWNER = 9999;
+    public const TARGET_OWNER = 9999;
 
     public function getEvents()
     {
@@ -86,7 +86,7 @@ class NotificationTargetEventNoteItem extends NotificationTarget
             $url = $item::getFormURLWithID($items_id);
         }
 
-        $this->data['##refactorytoolsnote.content##'] = (string) $note->getField('note');
+        $this->data['##refactorytoolsnote.content##'] = htmlescape((string) $note->getField('note'));
         $this->data['##refactorytoolsnote.author##']   = $author_name;
         $this->data['##refactorytoolsnote.url##']      = $url !== '' ? $this->getUrlBase() . $url : '';
     }

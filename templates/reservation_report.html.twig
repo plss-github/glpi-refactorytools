@@ -32,7 +32,7 @@
                     <tbody>
                         {% for row in by_type %}
                             <tr>
-                                <td>{{ row.label }}</td>
+                                <td>{{ row.label|e }}</td>
                                 <td class="text-end">{{ row.count }}</td>
                             </tr>
                         {% else %}
@@ -50,7 +50,7 @@
                     <tbody>
                         {% for row in by_user %}
                             <tr>
-                                <td>{{ row.label }}</td>
+                                <td>{{ row.label|e }}</td>
                                 <td class="text-end">{{ row.count }}</td>
                             </tr>
                         {% else %}
