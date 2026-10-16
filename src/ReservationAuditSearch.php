@@ -108,9 +108,8 @@ final class ReservationAuditSearch extends CommonDBTM
             'name'          => __('Reservation owner', 'refactorytools'),
             'datatype'      => 'dropdown',
             'joinparams'    => [
-                'jointype'       => 'standard',
-                'linkfield'      => 'users_id_owner',
-                'specific_items' => [],
+                'jointype'  => 'standard',
+                'linkfield' => 'users_id_owner',
             ],
             'massiveaction' => false,
         ];

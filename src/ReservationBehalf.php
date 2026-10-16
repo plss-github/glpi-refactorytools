@@ -34,17 +34,18 @@ final class ReservationBehalf
         return self::$pending_for_users_id;
     }
 
-    public static function record(int $reservations_id): void
+    public static function record(int $reservations_id, int $for_users_id): void
     {
         global $DB;
 
         $created_by = (int) Session::getLoginUserID();
-        if ($created_by <= 0 || $reservations_id <= 0) {
+        if ($created_by <= 0 || $reservations_id <= 0 || $for_users_id <= 0) {
             return;
         }
 
         $DB->insert(self::getTable(), [
-            'reservations_id'    => $reservations_id,
+            'reservations_id'     => $reservations_id,
+            'for_users_id'        => $for_users_id,
             'created_by_users_id' => $created_by,
         ]);
     }
@@ -60,11 +61,16 @@ final class ReservationBehalf
                 CREATE TABLE `{$table}` (
                     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
                     `reservations_id` INT UNSIGNED NOT NULL,
+                    `for_users_id` INT UNSIGNED NOT NULL DEFAULT 0,
                     `created_by_users_id` INT UNSIGNED NOT NULL,
                     PRIMARY KEY (`id`),
-                    UNIQUE KEY `reservations_id` (`reservations_id`)
+                    UNIQUE KEY `reservations_id` (`reservations_id`),
+                    KEY `for_users_id` (`for_users_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             ");
+        } else {
+            $migration->addField($table, 'for_users_id', 'int unsigned NOT NULL DEFAULT 0', ['after' => 'reservations_id']);
+            $migration->addKey($table, 'for_users_id');
         }
     }
 
