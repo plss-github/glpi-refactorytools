@@ -180,9 +180,10 @@ if (
 
     if ($created) {
         $event_input = [
-            'name' => $comment,
-            'text' => $comment,
-            'plan' => ['begin' => $begin, 'end' => $end],
+            'name'     => $comment,
+            'text'     => $comment,
+            'plan'     => ['begin' => $begin, 'end' => $end],
+            'users_id' => $behalf_users_id > 0 ? $behalf_users_id : (int) Session::getLoginUserID(),
         ];
 
         $category_id = Settings::getCategoryId($linked_kind);

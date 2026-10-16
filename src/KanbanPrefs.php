@@ -75,7 +75,7 @@ final class KanbanPrefs
         ])->current();
 
         if ($existing) {
-            return $DB->update(self::getTable(), ['state_order' => $csv], ['id' => $existing['id']]);
+            return (bool) $DB->update(self::getTable(), ['state_order' => $csv], ['id' => $existing['id']]);
         }
 
         return (bool) $DB->insert(self::getTable(), ['users_id' => $users_id, 'state_order' => $csv]);

@@ -132,6 +132,10 @@ if (in_array($kind, EventTypes::SHAREABLE, true)) {
         if ($valid_guests !== []) {
             $input['users_id_guests'] = $valid_guests;
         }
+        // Sincroniza as listas de obrigatorio/opcional com o filtro de entidade
+        $valid_set        = array_flip($valid_guests);
+        $guests_mandatory = array_values(array_filter($guests_mandatory, static fn($id) => isset($valid_set[$id])));
+        $guests_optional  = array_values(array_filter($guests_optional,  static fn($id) => isset($valid_set[$id])));
     }
 }
 
