@@ -418,6 +418,10 @@ final class Settings
     public static function purge(): void
     {
         Config::deleteConfigurationValues(self::CONTEXT, array_keys(self::getDefaults()));
+        // Flags de migração pontual — não estão em getDefaults() para não
+        // aparecerem como configuração editável, mas precisam ser limpas no
+        // uninstall junto com o restante do contexto do plugin.
+        Config::deleteConfigurationValues(self::CONTEXT, ['migration_history_visible_1_0_7_done']);
     }
 
     /**

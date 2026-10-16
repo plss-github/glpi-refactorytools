@@ -28,6 +28,9 @@ use GlpiPlugin\Refactorytools\VisitLink;
  */
 function plugin_refactorytools_install(): bool
 {
+    /** @var \DBmysql $DB */
+    global $DB;
+
     $migration = new Migration(PLUGIN_REFACTORYTOOLS_VERSION);
 
     // Rename do plugin (planner -> refactorytools): linhas que outras
@@ -54,18 +57,23 @@ function plugin_refactorytools_install(): bool
     ]);
 
     // Migração única 1.0.6 → 1.0.7: o check de `reservation_history_visible_to_all`
-    // foi ignorado na 1.0.6 (sempre liberava acesso). Ao restaurar o check na 1.0.7,
-    // forçamos '1' em instalações que ainda têm o valor padrão antigo '0', para
-    // preservar o comportamento efetivo que os usuários já tinham. Executado apenas
-    // quando a versão instalada é anterior à 1.0.7, evitando sobrescrever uma
-    // configuração intencional do administrador em upgrades futuros.
-    $plugin_row      = $DB->request(['SELECT' => 'version', 'FROM' => 'glpi_plugins', 'WHERE' => ['directory' => 'refactorytools']])->current();
-    $installed_ver   = $plugin_row['version'] ?? '0';
-    if (version_compare($installed_ver, '1.0.7', '<')) {
+    // foi ignorado na 1.0.6 (sempre liberava acesso a todos). Ao restaurar o check
+    // na 1.0.7, forçamos '1' em instalações que ainda têm o valor padrão antigo '0',
+    // preservando o comportamento efetivo que os usuários já conheciam.
+    //
+    // Usa uma flag de config em vez de ler `glpi_plugins.version`, porque o GLPI
+    // pode gravar a nova versão na tabela antes ou depois de chamar install() —
+    // comportamento interno não documentado que tornaria o guard baseado em versão
+    // não confiável. A flag é gravada uma única vez e nunca sobrescreve uma '0'
+    // escolhida intencionalmente pelo admin após a migração ter rodado.
+    $mig_flag = 'migration_history_visible_1_0_7_done';
+    $mig_done = Config::getConfigurationValues(Settings::CONTEXT, [$mig_flag]);
+    if (!isset($mig_done[$mig_flag])) {
         $hist_cfg = Config::getConfigurationValues(Settings::CONTEXT, ['reservation_history_visible_to_all']);
         if (($hist_cfg['reservation_history_visible_to_all'] ?? '') === '0') {
             Config::setConfigurationValues(Settings::CONTEXT, ['reservation_history_visible_to_all' => '1']);
         }
+        Config::setConfigurationValues(Settings::CONTEXT, [$mig_flag => '1']);
     }
 
     // A cor de tipo de compromisso deixou de ser personalizável por usuário

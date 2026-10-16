@@ -52,6 +52,7 @@ if ($behalf_users_id > 0 && $behalf_users_id !== (int) Session::getLoginUserID()
             false,
             ERROR
         );
+        ReservationBehalf::clearPending();
         Html::back();
         return;
     }
