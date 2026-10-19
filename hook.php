@@ -267,18 +267,23 @@ function plugin_refactorytools_seed_note_notification(): void
         return;
     }
 
-    $translation = new NotificationTemplateTranslation();
-    $translation->add([
+    $translation    = new NotificationTemplateTranslation();
+    $translation_id = $translation->add([
         'notificationtemplates_id' => $templates_id,
         // Vazio = modelo padrão, usado por qualquer idioma sem tradução
         // própria — é a mesma convenção do core.
         'language'     => '',
         'subject'      => __('A note was added to your schedule', 'refactorytools'),
-        'content_text' => "##refactorytoolsnote.author##\n\n##refactorytoolsnote.content##\n\n##refactorytoolsnote.url##",
+        'content_text' => "##refactorytoolsnote.author##\n\n##refactorytoolsnote.content_text##\n\n##refactorytoolsnote.url##",
         'content_html' => '<p><strong>##refactorytoolsnote.author##</strong></p>'
             . '<p>##refactorytoolsnote.content##</p>'
             . '<p><a href="##refactorytoolsnote.url##">##refactorytoolsnote.url##</a></p>',
     ]);
+
+    if (!$translation_id) {
+        $template->delete(['id' => $templates_id], true);
+        return;
+    }
 
     $notification = new Notification();
     $notifications_id = $notification->add([

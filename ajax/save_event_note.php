@@ -32,7 +32,7 @@ header('Content-Type: application/json; charset=UTF-8');
  * cada um — é dali, não do POST, que o dono usado na checagem de permissão
  * vem.
  */
-const ALLOWED_NOTE_ITEMTYPES = [
+$allowed_note_itemtypes = [
     'TicketTask'            => 'users_id_tech',
     'ChangeTask'             => 'users_id_tech',
     'ProblemTask'            => 'users_id_tech',
@@ -54,11 +54,11 @@ $note = mb_substr((string) ($_POST['note'] ?? ''), 0, 2000);
 $ok             = false;
 $users_id_owner = 0;
 
-if (array_key_exists($itemtype, ALLOWED_NOTE_ITEMTYPES) && $items_id > 0) {
+if (array_key_exists($itemtype, $allowed_note_itemtypes) && $items_id > 0) {
     $item = getItemForItemtype($itemtype);
 
     if ($item !== false && $item->getFromDB($items_id)) {
-        $owner_field    = ALLOWED_NOTE_ITEMTYPES[$itemtype];
+        $owner_field    = $allowed_note_itemtypes[$itemtype];
         $users_id_owner = (int) ($item->fields[$owner_field] ?? 0);
 
         if ($users_id_owner > 0 && AccessPolicy::canManageNoteFor($users_id_owner)) {

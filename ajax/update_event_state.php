@@ -29,7 +29,7 @@ Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);
 header('Content-Type: application/json; charset=UTF-8');
 
 /** Itemtypes cujo estado pode ser trocado por este endpoint. */
-const ALLOWED_STATE_ITEMTYPES = [
+$allowed_state_itemtypes = [
     'TicketTask', 'ChangeTask', 'ProblemTask', 'ProjectTask',
     'Reminder', 'PlanningExternalEvent',
 ];
@@ -41,7 +41,7 @@ $state    = (int) ($_POST['state'] ?? -1);
 $ok = false;
 
 if (
-    in_array($itemtype, ALLOWED_STATE_ITEMTYPES, true)
+    in_array($itemtype, $allowed_state_itemtypes, true)
     && $items_id > 0
     && in_array($state, [Planning::INFO, Planning::TODO, Planning::DONE], true)
 ) {

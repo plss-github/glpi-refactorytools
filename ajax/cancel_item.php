@@ -43,7 +43,7 @@ Session::checkRight(Right::NAME, Right::USE_REFACTORYTOOLS);
 
 header('Content-Type: application/json; charset=UTF-8');
 
-const CANCELABLE_ITEMTYPES = [
+$cancelable_itemtypes = [
     'Reminder',
     'PlanningExternalEvent',
     'Reservation',
@@ -55,7 +55,7 @@ $occurrence_date = (string) ($_POST['occurrence_date'] ?? '');
 
 $ok = false;
 
-if (in_array($itemtype, CANCELABLE_ITEMTYPES, true) && $items_id > 0) {
+if (in_array($itemtype, $cancelable_itemtypes, true) && $items_id > 0) {
     $item = new $itemtype();
 
     if ($item->getFromDB($items_id)) {
