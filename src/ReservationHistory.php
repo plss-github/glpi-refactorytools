@@ -16,6 +16,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use DBConnection;
 use Migration;
 use Reservation;
 use ReservationItem;
@@ -39,6 +40,9 @@ final class ReservationHistory
 
         $table = self::getTable();
 
+        $charset   = DBConnection::getDefaultCharset();
+        $collation = DBConnection::getDefaultCollation();
+
         if (!$DB->tableExists($table)) {
             $DB->doQuery("
                 CREATE TABLE `{$table}` (
@@ -61,7 +65,7 @@ final class ReservationHistory
                     PRIMARY KEY (`id`),
                     KEY `reservations_id` (`reservations_id`),
                     KEY `date` (`date`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation}
             ");
         }
     }
@@ -100,7 +104,7 @@ final class ReservationHistory
         $DB->insert(self::getTable(), [
             'reservations_id' => (int) ($fields['id'] ?? 0),
             'action'          => $action,
-            'users_id_author' => (int) Session::getLoginUserID(),
+            'users_id_author' => (int) (Session::getLoginUserID() ?: 0), // 0 = ação automática (cron/API sem sessão)
             'users_id_owner'  => (int) ($fields['users_id'] ?? 0),
             'item_label'      => $item_label,
             'begin'           => $fields['begin'] ?? null,
@@ -109,40 +113,4 @@ final class ReservationHistory
         ]);
     }
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    public static function getEntries(int $limit = 200): array
-    {
-        /** @var \DBmysql $DB */
-        global $DB;
-
-        $out = [];
-        foreach ($DB->request([
-            'FROM'  => self::getTable(),
-            'WHERE' => [
-                ['date', '>=', date('Y-m-d H:i:s', strtotime('-30 days'))],
-            ],
-            'ORDER' => 'date DESC',
-            'LIMIT' => $limit,
-        ]) as $row) {
-            $out[] = [
-                'action'      => (string) $row['action'],
-                'action_label' => match ($row['action']) {
-                    self::ACTION_ADD    => __('Created', 'refactorytools'),
-                    self::ACTION_UPDATE => __('Edited', 'refactorytools'),
-                    self::ACTION_PURGE  => __('Cancelled', 'refactorytools'),
-                    default             => (string) $row['action'],
-                },
-                'author'      => EventProvider::getUserName((int) $row['users_id_author']),
-                'owner'       => EventProvider::getUserName((int) $row['users_id_owner']),
-                'item_label'  => (string) $row['item_label'],
-                'begin'       => (string) $row['begin'],
-                'end'         => (string) $row['end'],
-                'date'        => (string) $row['date'],
-            ];
-        }
-
-        return $out;
-    }
 }

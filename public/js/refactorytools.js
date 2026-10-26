@@ -875,14 +875,16 @@ var GlpiRefactoryTools = {
         // não só desta) — só existe em eventos de tipo Chamado.
         if (props.ticketDuration) {
             $('<div class="refactorytools-popover-meta"></div>')
-                .html('<i class="ti ti-clock-hour-4"></i> ' + (self.label('ticket_duration') || 'Total time') + ': ' + props.ticketDuration)
+                .html('<i class="ti ti-clock-hour-4"></i> ')
+                .append($('<span></span>').text((self.label('ticket_duration') || 'Total time') + ': ' + props.ticketDuration))
                 .appendTo($pop);
         }
 
         // Reserva vinculada a uma Visita (ver `VisitLink`).
         if (props.visitReservation) {
             $('<div class="refactorytools-popover-meta"></div>')
-                .html('<i class="ti ti-calendar-time"></i> ' + (self.label('linked_reservation') || 'Linked reservation') + ': ' + props.visitReservation)
+                .html('<i class="ti ti-calendar-time"></i> ')
+                .append($('<span></span>').text((self.label('linked_reservation') || 'Linked reservation') + ': ' + props.visitReservation))
                 .appendTo($pop);
         }
 
@@ -1826,10 +1828,6 @@ var GlpiRefactoryTools = {
     // Indicadores e estados
     // -----------------------------------------------------------------
 
-    /**
-     * Cada tela escolhe quais indicadores mostra; os seletores ausentes
-     * simplesmente não recebem nada. Por isso não há lista fixa de KPIs aqui.
-     */
     /**
      * Cada tela escolhe quais indicadores mostra; os seletores ausentes
      * simplesmente não recebem nada. Por isso não há lista fixa de KPIs aqui.

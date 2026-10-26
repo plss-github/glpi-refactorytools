@@ -13,6 +13,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use DBConnection;
 use Migration;
 
 final class KanbanPrefs
@@ -74,7 +75,7 @@ final class KanbanPrefs
         ])->current();
 
         if ($existing) {
-            return $DB->update(self::getTable(), ['state_order' => $csv], ['id' => $existing['id']]);
+            return (bool) $DB->update(self::getTable(), ['state_order' => $csv], ['id' => $existing['id']]);
         }
 
         return (bool) $DB->insert(self::getTable(), ['users_id' => $users_id, 'state_order' => $csv]);
@@ -119,6 +120,9 @@ final class KanbanPrefs
             $DB->doQuery("RENAME TABLE `{$old_table}` TO `{$table}`");
         }
 
+        $charset   = DBConnection::getDefaultCharset();
+        $collation = DBConnection::getDefaultCollation();
+
         if (!$DB->tableExists($table)) {
             $DB->doQuery("
                 CREATE TABLE `{$table}` (
@@ -127,7 +131,7 @@ final class KanbanPrefs
                     `state_order` VARCHAR(20) NOT NULL,
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `unicity` (`users_id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation}
             ");
         }
     }

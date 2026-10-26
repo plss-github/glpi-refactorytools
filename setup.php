@@ -34,19 +34,20 @@ use GlpiPlugin\Refactorytools\ReservationHistoryCron;
 use GlpiPlugin\Refactorytools\ReservationMenu;
 use GlpiPlugin\Refactorytools\Share;
 
-define('PLUGIN_REFACTORYTOOLS_VERSION', '1.0.7');
+define('PLUGIN_REFACTORYTOOLS_VERSION', '1.0.8');
 
 // Alvo: GLPI 11.0.x. As assinaturas usadas aqui (Planning::$rightname,
 // CFG_GLPI['planning_types'], populatePlanning(), Html::requireJs('fullcalendar'))
 // foram conferidas contra o código-fonte da imagem oficial glpi/glpi:11.0.9.
 define('PLUGIN_REFACTORYTOOLS_MIN_GLPI', '11.0.0');
-define('PLUGIN_REFACTORYTOOLS_MAX_GLPI', '11.9.99');
+define('PLUGIN_REFACTORYTOOLS_MAX_GLPI', '11.1.0');
 
 /**
  * Init: registrado a cada carregamento do GLPI.
  */
 function plugin_init_refactorytools(): void
 {
+    /** @var array $CFG_GLPI */
     global $PLUGIN_HOOKS, $CFG_GLPI;
 
     $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT]['refactorytools'] = true;

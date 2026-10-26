@@ -151,7 +151,11 @@ final class TechnicianStats
             $realized_total += (int) $row['actiontime'];
 
             if (!empty($row['begin']) && !empty($row['end'])) {
-                $planned_total += max(0, strtotime((string) $row['end']) - strtotime((string) $row['begin']));
+                $end_ts   = strtotime((string) $row['end']);
+                $begin_ts = strtotime((string) $row['begin']);
+                if ($end_ts !== false && $begin_ts !== false) {
+                    $planned_total += max(0, $end_ts - $begin_ts);
+                }
             }
         }
 

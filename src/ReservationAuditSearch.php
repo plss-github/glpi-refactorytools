@@ -28,10 +28,7 @@ final class ReservationAuditSearch extends CommonDBTM
 
     public static function canView(): bool
     {
-        return Session::haveRightsOr(
-            \Reservation::$rightname,
-            [READ, CREATE, \ReservationItem::RESERVEANITEM]
-        );
+        return Settings::canViewReservationHistory();
     }
 
     public static function canCreate(): bool { return false; }
@@ -45,6 +42,7 @@ final class ReservationAuditSearch extends CommonDBTM
 
     public static function getSearchURL(bool $full = true): string
     {
+        /** @var array $CFG_GLPI */
         global $CFG_GLPI;
 
         return ($full ? $CFG_GLPI['root_doc'] : '')

@@ -39,6 +39,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use Glpi\RichText\RichText;
 use Planning;
 use PlanningExternalEvent;
 use Session;
@@ -150,19 +151,6 @@ final class EventProvider
     }
 
     /**
-     * Duração total já registrada no CHAMADO por trás de um compromisso de
-     * tipo Chamado — é o que aparece ao passar o mouse no evento, a
-     * pergunta original era "quanto tempo esse chamado já tomou", não
-     * "quanto tempo esta tarefa específica levou".
-     *
-     * `glpi_tickets.actiontime` já é a soma mantida pelo próprio core sobre
-     * TODAS as tarefas do chamado (qualquer técnico) — não há necessidade de
-     * somar `glpi_tickettasks` aqui. Duas consultas em lote (tarefa -> chamado,
-     * chamado -> actiontime), nunca uma por evento.
-     *
-     * @param array<int, array<string, mixed>> $events
-     */
-    /**
      * Anexa, em lote, a reserva ligada a cada Visita/Viagem (ver
      * `VisitLink`, `EventTypes::LINKABLE_WITH_RESERVATION`) — o que o
      * popover mostra como "Reserva vinculada".
@@ -265,9 +253,11 @@ final class EventProvider
         $overlap = ['begin' => ['<', $end], 'end' => ['>', $begin]];
 
         $checks = [
-            ['table' => 'glpi_tickettasks', 'user_field' => 'users_id_tech'],
-            ['table' => 'glpi_projecttasks', 'user_field' => 'users_id'],
-            ['table' => 'glpi_reminders', 'user_field' => 'users_id'],
+            ['table' => 'glpi_tickettasks',   'user_field' => 'users_id_tech'],
+            ['table' => 'glpi_changetasks',   'user_field' => 'users_id_tech'],
+            ['table' => 'glpi_problemtasks',  'user_field' => 'users_id_tech'],
+            ['table' => 'glpi_projecttasks',  'user_field' => 'users_id'],
+            ['table' => 'glpi_reminders',     'user_field' => 'users_id'],
         ];
 
         foreach ($checks as $check) {
@@ -293,6 +283,19 @@ final class EventProvider
         return $count > 0;
     }
 
+    /**
+     * Duração total já registrada no CHAMADO por trás de um compromisso de
+     * tipo Chamado — é o que aparece ao passar o mouse no evento, a
+     * pergunta original era "quanto tempo esse chamado já tomou", não
+     * "quanto tempo esta tarefa específica levou".
+     *
+     * `glpi_tickets.actiontime` já é a soma mantida pelo próprio core sobre
+     * TODAS as tarefas do chamado (qualquer técnico) — não há necessidade de
+     * somar `glpi_tickettasks` aqui. Duas consultas em lote (tarefa -> chamado,
+     * chamado -> actiontime), nunca uma por evento.
+     *
+     * @param array<int, array<string, mixed>> $events
+     */
     private static function attachTicketDurations(array &$events): void
     {
         /** @var \DBmysql $DB */
@@ -373,22 +376,21 @@ final class EventProvider
 
         $viewer_id ??= (int) Session::getLoginUserID();
 
-        $itemtypes = [];
-        $items_ids = [];
+        $pairs = [];
         foreach ($events as $event) {
             $props = $event['extendedProps'];
             if ($props['itemtype'] === '' || $props['items_id'] <= 0) {
                 continue;
             }
-            $itemtypes[$props['itemtype']] = true;
-            $items_ids[$props['items_id']] = true;
+            $pairs[$props['itemtype'] . '|' . $props['items_id']] = [$props['itemtype'], (int) $props['items_id']];
         }
+        $pairs = array_values($pairs);
 
-        if ($itemtypes === [] || $items_ids === []) {
+        if ($pairs === []) {
             return;
         }
 
-        $notes = EventNotes::getForPairs(array_keys($itemtypes), array_keys($items_ids));
+        $notes = EventNotes::getForPairs($pairs);
         if ($notes === []) {
             return;
         }
@@ -477,6 +479,7 @@ final class EventProvider
             EventTypes::EVENT_INTERNAL,
             EventTypes::EVENT_TRAVEL,
             EventTypes::EVENT_MEETING,
+            EventTypes::EVENT_VISIT,
         ];
     }
 
@@ -492,6 +495,11 @@ final class EventProvider
      * @param array<string, mixed> $row
      * @return array<string, mixed>|null
      */
+    /** Hora de início do expediente (inclusive). */
+    private const BUSINESS_HOUR_START = 8;
+    /** Hora de corte do expediente (exclusive — 19 = até 18:59). */
+    private const BUSINESS_HOUR_END   = 19;
+
     /**
      * Dia útil (segunda a sexta) e horário entre 8h e 19h, pelo INÍCIO do
      * compromisso — sábado, domingo e qualquer coisa começando antes das 8h
@@ -507,7 +515,7 @@ final class EventProvider
         $weekday = (int) date('N', $ts); // 1 (segunda) .. 7 (domingo)
         $hour    = (int) date('H', $ts);
 
-        return $weekday <= 5 && $hour >= 8 && $hour < 19;
+        return $weekday <= 5 && $hour >= self::BUSINESS_HOUR_START && $hour < self::BUSINESS_HOUR_END;
     }
 
     private static function normalize(
@@ -541,8 +549,10 @@ final class EventProvider
         // título legível nem área para passar o mouse. 15 minutos é a
         // mesma granularidade mínima que os slots do próprio calendário já
         // usam, então o bloco fica alinhado à grade.
-        if (strtotime($end) <= strtotime($begin)) {
-            $end = date('Y-m-d H:i:s', strtotime($begin) + 15 * 60);
+        $end_ts   = strtotime($end);
+        $begin_ts = strtotime($begin);
+        if ($end_ts !== false && $begin_ts !== false && $end_ts <= $begin_ts) {
+            $end = date('Y-m-d H:i:s', $begin_ts + 15 * 60);
         }
 
         $real_itemtype = EventTypes::realItemtype($virtual_key);
@@ -550,9 +560,12 @@ final class EventProvider
         $is_details    = $level === Settings::LEVEL_DETAILS;
 
         $title   = (string) ($row['name'] ?? '');
-        $content = (string) ($row['content'] ?? $row['text'] ?? '');
+        // getSafeHtml filtra tags/atributos perigosos (XSS); o GLPI grava o HTML
+        // do editor rico sem sanitização adicional, então a limpeza é feita aqui,
+        // antes de o payload sair do servidor.
+        $content = RichText::getSafeHtml((string) ($row['content'] ?? $row['text'] ?? ''));
 
-        $type_color  = self::getTypeColor($virtual_key, $viewer_id);
+        $type_color  = self::getTypeColor($virtual_key);
         $type_label  = EventTypes::getLabel($virtual_key);
         $type_icon   = EventTypes::getIcon($virtual_key);
         $state       = isset($row['state']) ? (int) $row['state'] : null;
@@ -649,7 +662,9 @@ final class EventProvider
         // Recorrência: só Reminder e PlanningExternalEvent trazem rrule. O
         // FullCalendar embarcado já vem com o plugin 'rrule' registrado (é o
         // que o planejamento nativo usa), então basta repassar.
-        if (!empty($row['rrule']) && is_array($row['rrule'])) {
+        // Só para LEVEL_DETAILS: o padrão de recorrência (freq, byday, dtstart)
+        // revela horário e ritmo de um compromisso cujo título foi ocultado.
+        if ($is_details && !empty($row['rrule']) && is_array($row['rrule'])) {
             $rrule = $row['rrule'];
 
             // O core (`PlanningEvent::deleteInstance()`) grava ocorrências
@@ -699,7 +714,12 @@ final class EventProvider
                 continue;
             }
 
-            $duration = strtotime((string) $event['end']) - strtotime((string) $event['start']);
+            $end_ts   = strtotime((string) $event['end']);
+            $start_ts = strtotime((string) $event['start']);
+            if ($end_ts === false || $start_ts === false) {
+                continue;
+            }
+            $duration = $end_ts - $start_ts;
             if ($duration <= 0) {
                 continue;
             }
@@ -864,7 +884,7 @@ final class EventProvider
      * `$viewer_id` continua sendo parâmetro (não é mais usado aqui) só para
      * não obrigar os chamadores a mudar de assinatura.
      */
-    public static function getTypeColor(string $key, ?int $viewer_id = null): string
+    public static function getTypeColor(string $key): string
     {
         $admin = Settings::getTypeColors();
 
@@ -907,7 +927,7 @@ final class EventProvider
                 'itemtype' => $key,
                 'label'    => EventTypes::getLabel($key),
                 'icon'     => EventTypes::getIcon($key),
-                'color'    => self::getTypeColor($key, $viewer_id),
+                'color'    => self::getTypeColor($key),
                 'default'  => EventTypes::getDefaultColor($key),
             ];
         }
@@ -970,7 +990,9 @@ final class EventProvider
      */
     private static function getDuration(string $begin, string $end): string
     {
-        $seconds = max(0, strtotime($end) - strtotime($begin));
+        $end_ts   = strtotime($end);
+        $begin_ts = strtotime($begin);
+        $seconds  = ($end_ts !== false && $begin_ts !== false) ? max(0, $end_ts - $begin_ts) : 0;
 
         return sprintf(
             '%02d:%02d:%02d',

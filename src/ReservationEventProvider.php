@@ -14,6 +14,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use Glpi\RichText\RichText;
 use Reservation;
 use Session;
 
@@ -189,7 +190,7 @@ final class ReservationEventProvider
                     // barra lateral, para os dois marcadores do mesmo item
                     // baterem (ver ReservationView::getItemInitials()).
                     'actorInitials' => ReservationView::getItemInitials($item_name),
-                    'content'    => (string) ($row['comment'] ?? ''),
+                    'content'    => RichText::getSafeHtml((string) ($row['comment'] ?? '')),
                     'url'        => Reservation::getFormURLWithID((int) $row['id']),
                     'state'      => $state,
                     'stateLabel' => ReservationView::getStateLabel($state),

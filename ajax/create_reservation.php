@@ -41,6 +41,7 @@ if (!ReservationView::canReserve()) {
     );
     ReservationBehalf::clearPending();
     Html::back();
+    return;
 }
 
 $behalf_users_id = (int) ($_POST['behalf_users_id'] ?? 0);
@@ -51,11 +52,25 @@ if ($behalf_users_id > 0 && $behalf_users_id !== (int) Session::getLoginUserID()
             false,
             ERROR
         );
+        ReservationBehalf::clearPending();
         Html::back();
+        return;
     }
     $behalf_user = new User();
     if (!$behalf_user->getFromDB($behalf_users_id)) {
         $behalf_users_id = 0;
+    } else {
+        // Verifica se o usuário behalf tem acesso à entidade ativa
+        if (!in_array(Session::getActiveEntity(), Profile_User::getUserEntities($behalf_users_id, true), true)) {
+            Session::addMessageAfterRedirect(
+                htmlescape(__('The selected user does not belong to the current entity.', 'refactorytools')),
+                false,
+                ERROR
+            );
+            ReservationBehalf::clearPending();
+            Html::back();
+            return;
+        }
     }
 }
 if ($behalf_users_id > 0) {
@@ -72,6 +87,7 @@ if ($comment === '') {
     );
     ReservationBehalf::clearPending();
     Html::back();
+    return;
 }
 
 $items = $_POST['items'] ?? [];
@@ -83,7 +99,9 @@ $items = array_values(array_unique(array_filter(array_map('intval', $items))));
 $begin = (string) ($_POST['resa']['begin'] ?? '');
 $end   = (string) ($_POST['resa']['end'] ?? '');
 
-if ($items === [] || $begin === '' || $end === '' || $begin >= $end) {
+$date_re = '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/';
+if ($items === [] || $begin === '' || $end === '' || $begin >= $end
+    || !preg_match($date_re, $begin) || !preg_match($date_re, $end)) {
     Session::addMessageAfterRedirect(
         htmlescape(__('Fill in the item and the period before reserving.', 'refactorytools')),
         false,
@@ -91,6 +109,7 @@ if ($items === [] || $begin === '' || $end === '' || $begin >= $end) {
     );
     ReservationBehalf::clearPending();
     Html::back();
+    return;
 }
 
 // Reconfere no servidor: só os itens que ainda estão livres neste intervalo
@@ -110,6 +129,7 @@ if ($items === []) {
     );
     ReservationBehalf::clearPending();
     Html::back();
+    return;
 }
 
 $input = [
@@ -124,7 +144,8 @@ $input = [
 // `Reservation::computePeriodicities()`, no core, quem sabe o que fazer com
 // eles.
 if (isset($_POST['periodicity']) && is_array($_POST['periodicity']) && !empty($_POST['periodicity']['type'])) {
-    $input['periodicity'] = $_POST['periodicity'];
+    $allowed_periodicity = ['type' => 1, 'end' => 1, 'subtype' => 1, 'days' => 1];
+    $input['periodicity'] = array_intersect_key($_POST['periodicity'], $allowed_periodicity);
 }
 
 Reservation::handleAddForm($input);
@@ -159,9 +180,10 @@ if (
 
     if ($created) {
         $event_input = [
-            'name' => $comment,
-            'text' => $comment,
-            'plan' => ['begin' => $begin, 'end' => $end],
+            'name'     => $comment,
+            'text'     => $comment,
+            'plan'     => ['begin' => $begin, 'end' => $end],
+            'users_id' => $behalf_users_id > 0 ? $behalf_users_id : (int) Session::getLoginUserID(),
         ];
 
         $category_id = Settings::getCategoryId($linked_kind);
@@ -173,9 +195,10 @@ if (
         $new_event_id = $event->add($event_input);
 
         if ($new_event_id) {
-            VisitLink::link((int) $new_event_id, (int) $created['id']);
+            VisitLink::link((int) $new_event_id, (int) $created['id'], $behalf_users_id);
         }
     }
 }
 
 Html::back();
+return;

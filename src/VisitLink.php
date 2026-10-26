@@ -15,6 +15,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use DBConnection;
 use Html;
 use Migration;
 use Reservation;
@@ -35,6 +36,9 @@ final class VisitLink
 
         $table = self::getTable();
 
+        $charset   = DBConnection::getDefaultCharset();
+        $collation = DBConnection::getDefaultCollation();
+
         if (!$DB->tableExists($table)) {
             $DB->doQuery("
                 CREATE TABLE `{$table}` (
@@ -44,7 +48,7 @@ final class VisitLink
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `unicity` (`items_id`),
                     KEY `reservations_id` (`reservations_id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation}
             ");
         }
     }
@@ -62,10 +66,10 @@ final class VisitLink
 
     /**
      * Liga (ou troca o vínculo de) uma visita a uma reserva. Só grava se a
-     * reserva pertencer a quem está logado — a mesma regra usada na tela de
-     * Reservas: não existe "vincular a reserva de outra pessoa".
+     * reserva pertencer ao dono esperado. Em reservas behalf, `$owner_users_id`
+     * deve ser o usuário alvo (não o admin logado).
      */
-    public static function link(int $items_id, int $reservations_id): bool
+    public static function link(int $items_id, int $reservations_id, int $owner_users_id = 0): bool
     {
         if ($items_id <= 0 || $reservations_id <= 0) {
             return false;
@@ -75,7 +79,8 @@ final class VisitLink
         if (!$reservation->getFromDB($reservations_id)) {
             return false;
         }
-        if ((int) $reservation->fields['users_id'] !== (int) Session::getLoginUserID()) {
+        $expected = $owner_users_id > 0 ? $owner_users_id : (int) Session::getLoginUserID();
+        if ((int) $reservation->fields['users_id'] !== $expected) {
             return false;
         }
 

@@ -41,6 +41,7 @@ final class ReservationSearchView extends CommonDBTM
 
     public static function getSearchURL(bool $full = true): string
     {
+        /** @var array $CFG_GLPI */
         global $CFG_GLPI;
 
         return ($full ? $CFG_GLPI['root_doc'] : '')
@@ -138,6 +139,7 @@ final class ReservationSearchView extends CommonDBTM
     {
         if ($field === 'itemtype') {
             // Busca os tipos únicos da tabela de itens reserváveis
+            /** @var \DBmysql $DB */
             global $DB;
             $elements = [];
             foreach ($DB->request(['SELECT' => 'itemtype', 'DISTINCT' => true, 'FROM' => 'glpi_reservationitems']) as $row) {

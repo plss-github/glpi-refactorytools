@@ -2,6 +2,7 @@
 
 namespace GlpiPlugin\Refactorytools;
 
+use DBConnection;
 use Migration;
 use Session;
 
@@ -36,6 +37,7 @@ final class ReservationBehalf
 
     public static function record(int $reservations_id, int $for_users_id): void
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $created_by = (int) Session::getLoginUserID();
@@ -52,9 +54,13 @@ final class ReservationBehalf
 
     public static function install(Migration $migration): void
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $table = self::getTable();
+
+        $charset   = DBConnection::getDefaultCharset();
+        $collation = DBConnection::getDefaultCollation();
 
         if (!$DB->tableExists($table)) {
             $DB->doQuery("
@@ -66,7 +72,7 @@ final class ReservationBehalf
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `reservations_id` (`reservations_id`),
                     KEY `for_users_id` (`for_users_id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation}
             ");
         } else {
             $migration->addField($table, 'for_users_id', 'int unsigned NOT NULL DEFAULT 0', ['after' => 'reservations_id']);
@@ -76,6 +82,7 @@ final class ReservationBehalf
 
     public static function uninstall(): void
     {
+        /** @var \DBmysql $DB */
         global $DB;
 
         $table = self::getTable();
